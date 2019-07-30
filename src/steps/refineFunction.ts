@@ -167,10 +167,7 @@ const visitor: Visitor<FunctionState> = {
     ];
 
     if (info.consumes && info.consumes.some(consumes => consumes === 'multipart/form-data')) {
-      body.body = [
-        u.statement('$PARAM = parseMultipart($PARAM);', { $PARAM: firstParam }),
-        ...body.body,
-      ];
+      body.body.unshift(u.statement('$PARAM = parseMultipart($PARAM);', { $PARAM: firstParam }));
       const snippet = u.snippetFor('misc.multipart');
       stmtPath.insertBefore(snippet);
     }

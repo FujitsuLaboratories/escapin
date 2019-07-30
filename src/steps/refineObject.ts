@@ -98,8 +98,6 @@ const visitor: Visitor<ObjectState> = {
       }
     }
 
-    //TODO create resource for firstDeclarator
-
     path.remove();
   },
   MemberExpression(path, state) {
@@ -231,7 +229,6 @@ const visitor: Visitor<ObjectState> = {
     parentPath.traverse({
       Statement(path) {
         if (u.test(path, path => path.isIdentifier() && !path.isReferenced())) {
-          // console.log(u.generate(path.node));
           path.skip();
         } else if (path.isReturnStatement()) {
           path.skip();
@@ -244,7 +241,6 @@ const visitor: Visitor<ObjectState> = {
     });
 
     if (movedStmts.length === 0) {
-      // console.log('AWS_Lambda$DynamoDB_Declare was canceled');
       return;
     }
 
@@ -259,34 +255,12 @@ const visitor: Visitor<ObjectState> = {
       scope: path.scope,
     });
 
-    // const object = left.object as u.Identifier;
-    // const handler = `${Path.basename(state.currentFile, '.js')}.${variable.name}`;
-    // add config to serverless.yaml
-    // state.insert(
-    //   state.launcherFile,
-    //   state.generateSnippet({
-    //     $NAME: u.stringLiteral(`${object.name}-${state.escapin.id}`),
-    //     $VARNAME: u.stringLiteral(`${handler.replace('.', '-')}-${state.escapin.id}`),
-    //     $HANDLER: u.stringLiteral(handler),
-    //   }),
-    // );
-    // state.addDependency(state.launcherFile, 'lambda', '@cc/aws-lambda');
     state.insert(
       u.snippetFor(`${service}.lambda`, {
         $VAR: variable,
         $BODY: movedStmts,
       }),
     );
-
-    // if (state.AWS_Lambda === undefined) {
-    //   state.AWS_Lambda = [];
-    // }
-    // state.AWS_Lambda.push(variable);
-
-    // if (state.AWS_DynamoDB === undefined) {
-    //   state.AWS_DynamoDB = [];
-    // }
-    // state.AWS_DynamoDB.push(object);
 
     path.skip();
   },

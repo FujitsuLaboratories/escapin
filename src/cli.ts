@@ -20,7 +20,7 @@ function main() {
 
   program
     .description('Transpile source code')
-    .option('-d, --dir <dir>', 'Working directory', dir)
+    .option('-d, --dir <dir>', 'Working directory', dir, process.cwd())
     .action(doTranspileProcess)
     .on('--help', function () {
       console.log('escapin [-d <dir>]');

@@ -2,6 +2,9 @@
 
 **the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs**
 
+[![dependencies Status](https://david-dm.org/FujitsuLaboratories/escapin/status.svg)](https://david-dm.org/FujitsuLaboratories/escapin)
+[![devDependencies Status](https://david-dm.org/FujitsuLaboratories/escapin/dev-status.svg)](https://david-dm.org/FujitsuLaboratories/escapin?type=dev)
+
 ## Installation
 
 - Install globally:

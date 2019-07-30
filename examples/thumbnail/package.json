@@ -1,0 +1,17 @@
+{
+  "name": "thumbnail",
+  "version": "1.0.0",
+  "main": "instance.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.labs.fujitsu.com:info-sys-tech/cc-thumbnail.git"
+  },
+  "scripts": {
+    "start": "node instance.js"
+  },
+  "author": "Kosaku Kimura",
+  "dependencies": {
+    "imagemagick": "^0.1.3"
+  }
+}

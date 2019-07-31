@@ -1,4 +1,3 @@
-// import { transform } from '@babel/core';
 import cosmiconfig from 'cosmiconfig';
 import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
@@ -51,7 +50,6 @@ export interface IServerlessConfig {
   resources: { [name: string]: any };
 }
 
-// const LAUNCHER_FILE = '.cc/launcher.js';
 const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
 const ESCAPIN_IGNORE_FILE = '.escapinignore';
 const OUTPUT_DIR = 'build';

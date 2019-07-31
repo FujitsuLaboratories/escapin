@@ -6,7 +6,7 @@ import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function (baseState: BaseState) {
+export default function(baseState: BaseState) {
   console.log('refineFunction');
   u.traverse(visitor, new FunctionState(baseState));
 }
@@ -90,9 +90,9 @@ const visitor: Visitor<FunctionState> = {
               if (param.in !== property.name) {
                 throw new SyntaxError(
                   `Wrong parameter access "${u.generate(init)}.${
-                  param.name
+                    param.name
                   }". The correct parameter access is "${u.generate(req)}.${param.in}.${
-                  param.name
+                    param.name
                   }"`,
                   init,
                   state,
@@ -128,7 +128,7 @@ const visitor: Visitor<FunctionState> = {
                 `Wrong parameter access "${u.generate(
                   node,
                 )}". The correct parameter access is "${u.generate(req)}.${param.in}.${
-                param.name
+                  param.name
                 }"`,
                 node,
                 state,

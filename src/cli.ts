@@ -11,6 +11,7 @@ function dir(val: string): string {
 
 function main() {
   const packageJson = JSON.parse(
+    // eslint-disable-next-line no-undef
     fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'),
   );
 
@@ -20,7 +21,7 @@ function main() {
     .description('Transpile source code')
     .option('-d, --dir <dir>', 'Working directory', dir, process.cwd())
     .action(doTranspileProcess)
-    .on('--help', function () {
+    .on('--help', function() {
       console.log('escapin [-d <dir>]');
     });
 

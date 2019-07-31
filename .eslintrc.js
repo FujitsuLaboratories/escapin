@@ -20,6 +20,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
     'node/no-missing-import': 'error',
     'node/no-unpublished-import': 'off',
+    'node/shebang': 'off',
     'no-dupe-class-members': 'off',
   },
 };

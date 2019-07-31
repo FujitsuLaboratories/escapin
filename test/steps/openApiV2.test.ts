@@ -133,6 +133,12 @@ const {
   state.ast = astBefore;
   state.escapin = new Escapin('dummy');
   state.escapin.basePath = process.cwd();
+  state.escapin.config = {
+    name: 'test',
+    platform: 'aws',
+    // eslint-disable-next-line no-undef
+    output_dir: __dirname,
+  };
 
   step(state);
 

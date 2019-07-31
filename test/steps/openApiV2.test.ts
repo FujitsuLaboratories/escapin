@@ -133,6 +133,11 @@ const {
   state.ast = astBefore;
   state.escapin = new Escapin('dummy');
   state.escapin.basePath = process.cwd();
+  state.escapin.config = {
+    name: 'test',
+    platform: 'aws',
+    output_dir: __dirname,
+  }
 
   step(state);
 

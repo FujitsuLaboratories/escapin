@@ -22,6 +22,12 @@ test.before(async t => {
   await ncp(EXAMPLES_DIR, TEMP_DIR);
 });
 
+test.after(t => {
+  if (fs.existsSync(TEMP_DIR)) {
+    rimraf(TEMP_DIR);
+  }
+})
+
 test('test index', async t => {
   const names = fs.readdirSync(TEMP_DIR, 'utf8');
   for (const name of names) {

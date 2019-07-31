@@ -7,6 +7,7 @@ import Path from 'path';
 import requestOrg from 'request';
 import { dereference } from 'swagger-parser';
 import { promisify } from 'util';
+import { sync as rimraf } from 'rimraf';
 import { isURL } from 'validator';
 import * as u from '../util';
 import { SyntaxError } from '../error';
@@ -14,7 +15,7 @@ import { BaseState } from '../state';
 
 const request = promisify(requestOrg);
 
-export default function(baseState: BaseState) {
+export default function (baseState: BaseState) {
   console.log('openApiV2');
   u.traverse(visitor, new OpenApiV2State(baseState));
 }
@@ -53,22 +54,18 @@ const visitor: Visitor<OpenApiV2State> = {
     let resolved;
     let spec = null;
     let done = false;
+    let cleanupNeeded = false;
     (async () => {
       try {
         if (isURL(uri)) {
-          uri = Path.join(state.escapin.basePath, encodeURIComponent(uri));
-          if (!fs.existsSync(uri)) {
-            uri = originalUri;
-            const response = await request({
-              headers: {},
-              method: 'GET',
-              uri,
-            });
-            resolved = Path.join(state.escapin.basePath, encodeURIComponent(uri));
-            fs.writeFileSync(resolved, response.body);
-          } else {
-            resolved = uri;
-          }
+          const response = await request({
+            headers: {},
+            method: 'GET',
+            uri,
+          });
+          resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
+          fs.writeFileSync(resolved, response.body);
+          cleanupNeeded = true;
         } else {
           resolved = state.resolvePath(uri);
           if (resolved === undefined) {
@@ -78,6 +75,9 @@ const visitor: Visitor<OpenApiV2State> = {
           }
         }
         spec = await dereference(resolved);
+        if (cleanupNeeded) {
+          rimraf(resolved);
+        }
       } catch (err) {
         if (state.hasDependency(originalUri)) {
           console.log(`${originalUri} is a module.`);
@@ -459,7 +459,7 @@ function createRequestOptions(
       if (security.type === 'basic') {
         const basicCred = `Basic ${
           isBase64Encoded(value) ? value : Buffer.from(value).toString('base64')
-        }`;
+          }`;
         headers.properties.push(
           u.objectProperty(u.stringLiteral('authorization'), u.stringLiteral(basicCred)),
         );

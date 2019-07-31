@@ -16,8 +16,6 @@ function main() {
 
   program.version(packageJson.version);
 
-  program;
-
   program
     .description('Transpile source code')
     .option('-d, --dir <dir>', 'Working directory', dir, process.cwd())

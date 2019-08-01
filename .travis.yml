@@ -1,4 +1,5 @@
 language: node_js
+node_js: 10
 cache:
   yarn: true
 install:
@@ -17,27 +18,24 @@ jobs:
   include:
     - name: Testing for pull requests
       if: type = pull_request
-      node_js: 10
       script:
         - yarn prettier-check-updated
         - yarn lint-updated
         - yarn test
     - name: Testing
       if: type != pull_request
-      node_js: 10
       script:
         - yarn lint
         - yarn test
     - name: Coverage
-      node_js: 10
       script:
         - yarn coverage
       after_success:
         - yarn report
     - stage: Deploy
       if: tag IS present
-      node_js: 10
-      script: yarn build
+      script:
+        - yarn build
       deploy:
         provider: npm
         email: "$NPM_EMAIL"

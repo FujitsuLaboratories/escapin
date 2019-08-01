@@ -40,7 +40,7 @@ jobs:
         - printf "//registry.yarnpkg.com/:_authToken=${NPM_TOKEN}\n" >> ~/.npmrc
       deploy:
         provider: script
-        script: yarn publish
+        script: yarn publish --new-version
         skip_cleanup: true
         on:
           tags: true

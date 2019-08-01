@@ -36,10 +36,11 @@ jobs:
       if: tag IS present
       script:
         - yarn build
+      before_deploy:
+        - printf "//registry.yarnpkg.com/:_authToken=${NPM_TOKEN}\n" >> ~/.npmrc
       deploy:
-        provider: npm
-        email: "$NPM_EMAIL"
-        api_key: "$NPM_TOKEN"
+        provider: script
+        script: yarn publish
         skip_cleanup: true
         on:
           tags: true

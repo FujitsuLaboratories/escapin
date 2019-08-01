@@ -11,8 +11,6 @@
 
 ## Installation
 
-- Install globally:
-
 ```sh
 yarn global add escapin
 ```
@@ -23,18 +21,30 @@ or
 npm install -g escapin
 ```
 
+Using Yarn is preferred because Escapin internally uses Yarn to install TypeScript type declarations (@types) for your project.
+
 ## Usage
 
+Escapin provides CLI `escapin` that is working on Node.js project directories containing `./package.json`.
+
 ```sh
-escapin [options]
+cd examples/sendmail
+
+escapin
 ```
 
-- Options
+or
 
 ```sh
-  -V, --version    output the version number
+escapin -d examples/sendmail
+```
+
+- CLI options are:
+
+```sh
+  -V, --version    Output the version number
   -d, --dir <dir>  Working directory
-  -h, --help       output usage information
+  -h, --help       Output usage information
 ```
 
 ## Documentation

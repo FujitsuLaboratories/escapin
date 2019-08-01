@@ -1,8 +1,8 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: mailgun API
   description: a subset of mailgun API
-  version: '1.0.0'
+  version: "1.0.0"
 schemes:
   - https
 host: api.mailgun.net
@@ -10,7 +10,7 @@ basePath: /v3
 security:
   - basicAuth: []
 paths:
-  '/{domain}/messages':
+  "/{domain}/messages":
     parameters:
       - name: domain
         description: domain
@@ -37,40 +37,40 @@ paths:
           type: string
           in: formData
       responses:
-        '200':
+        "200":
           schema:
-            $ref: '#/responses/Succeeded'
-        '400':
+            $ref: "#/responses/Succeeded"
+        "400":
           schema:
-            $ref: '#/responses/Error'
-        '401':
+            $ref: "#/responses/Error"
+        "401":
           schema:
-            $ref: '#/responses/Error'
-        '402':
+            $ref: "#/responses/Error"
+        "402":
           schema:
-            $ref: '#/responses/Error'
-        '404':
+            $ref: "#/responses/Error"
+        "404":
           schema:
-            $ref: '#/responses/Error'
-        '500':
+            $ref: "#/responses/Error"
+        "500":
           schema:
-            $ref: '#/responses/Error'
-        '502':
+            $ref: "#/responses/Error"
+        "502":
           schema:
-            $ref: '#/responses/Error'
-        '503':
+            $ref: "#/responses/Error"
+        "503":
           schema:
-            $ref: '#/responses/Error'
-        '504':
+            $ref: "#/responses/Error"
+        "504":
           schema:
-            $ref: '#/responses/Error'
+            $ref: "#/responses/Error"
 responses:
   Succeeded:
     schema:
-      $ref: '#/definitions/Message'
+      $ref: "#/definitions/Message"
   Error:
     schema:
-      $ref: '#/definitions/ErrorMessage'
+      $ref: "#/definitions/ErrorMessage"
 definitions:
   Message:
     type: object
@@ -80,7 +80,7 @@ definitions:
       message:
         type: string
     example:
-      message: 'メッセージ'
+      message: "メッセージ"
   ErrorMessage:
     type: object
     required:
@@ -92,8 +92,8 @@ definitions:
       message:
         type: string
     example:
-      error_code: 'エラーコード'
-      message: 'エラーの説明'
+      error_code: "エラーコード"
+      message: "エラーの説明"
 securityDefinitions:
   basicAuth:
     type: basic

@@ -7,9 +7,9 @@ info:
 host: "thumbnail.org"
 basePath: "/v1"
 schemes:
-- "http"
+  - "http"
 produces:
-- "application/json"
+  - "application/json"
 paths:
   /images:
     get:
@@ -27,19 +27,19 @@ paths:
       description: "Upload an image and create a thumbnail of it"
       x-escapin-handler: "instance.imagesPOST"
       consumes:
-      - "multipart/form-data"
-      - "application/x-www-form-urlencoded"
+        - "multipart/form-data"
+        - "application/x-www-form-urlencoded"
       parameters:
-      - name: "name"
-        in: "formData"
-        description: "name of an image"
-        required: true
-        type: "string"
-      - name: "image"
-        in: "formData"
-        description: "An image"
-        required: true
-        type: "file"
+        - name: "name"
+          in: "formData"
+          description: "name of an image"
+          required: true
+          type: "string"
+        - name: "image"
+          in: "formData"
+          description: "An image"
+          required: true
+          type: "file"
       responses:
         201:
           description: "Resource Created"
@@ -55,17 +55,17 @@ paths:
             $ref: "#/definitions/ErrorMessage"
   /images/{id}:
     parameters:
-    - name: "id"
-      in: "path"
-      description: "id of an image"
-      required: true
-      type: "string"
+      - name: "id"
+        in: "path"
+        description: "id of an image"
+        required: true
+        type: "string"
     get:
       summary: "Download an image"
       description: "Download an image by id"
       x-escapin-handler: "instance.imagesIdGET"
       produces:
-      - "application/octet-stream"
+        - "application/octet-stream"
       responses:
         200:
           description: "an image"
@@ -96,17 +96,17 @@ paths:
             $ref: "#/definitions/ErrorMessage"
   /images/{id}/thumbnail:
     parameters:
-    - name: "id"
-      in: "path"
-      description: "id of an image"
-      required: true
-      type: "string"
+      - name: "id"
+        in: "path"
+        description: "id of an image"
+        required: true
+        type: "string"
     get:
       summary: "Download a thumbnail of an image"
       description: "Download a thumbnail of an image by id"
       x-escapin-handler: "instance.imagesIdThumbnailGET"
       produces:
-      - "image/jpeg"
+        - "image/jpeg"
       responses:
         200:
           description: "a thumbnail of an image"
@@ -123,7 +123,7 @@ definitions:
   Id:
     type: "object"
     required:
-    - "id"
+      - "id"
     properties:
       id:
         type: "string"
@@ -132,7 +132,7 @@ definitions:
   Message:
     type: "object"
     required:
-    - "message"
+      - "message"
     properties:
       message:
         type: "string"
@@ -141,8 +141,8 @@ definitions:
   ErrorMessage:
     type: "object"
     required:
-    - "error_code"
-    - "message"
+      - "error_code"
+      - "message"
     properties:
       error_code:
         type: "string"

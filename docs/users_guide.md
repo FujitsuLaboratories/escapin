@@ -2,21 +2,21 @@
 
 ### Table of Contents
 
-1. [AWSリソースのソースコード中での利用](#aws-resources)
-    - [DynamoDB, S3](#dynamodb-s3)
-    - [Lambda](#lambda)
-2. [APIのインポート](#import-api)
-3. [APIのエクスポート](#export-api)
+1. [AWS リソースのソースコード中での利用](#aws-resources)
+   - [DynamoDB, S3](#dynamodb-s3)
+   - [Lambda](#lambda)
+2. [API のインポート](#import-api)
+3. [API のエクスポート](#export-api)
 4. [非同期処理の同期的記述](#async)
 5. [非同期的記述の許容](#compatibility)
 
-### Escapinが提供するJavaScriptの意味規則およびコンパイル例
+### Escapin が提供する JavaScript の意味規則およびコンパイル例
 
-#### <a name="aws-resources"></a> 1. AWSリソースのソースコード中での利用
+#### <a name="aws-resources"></a> 1. AWS リソースのソースコード中での利用
 
-Escapinは，DynamoDB TableやS3 Bucket，Lambda Function等のAWSのリソースの操作をJavaScript上での単純なオブジェクト変数や関数の操作にマップすることで，よりビジネスロジックの実装に集中できるようなプログラミング体験を提供します．
+Escapin は，DynamoDB Table や S3 Bucket，Lambda Function 等の AWS のリソースの操作を JavaScript 上での単純なオブジェクト変数や関数の操作にマップすることで，よりビジネスロジックの実装に集中できるようなプログラミング体験を提供します．
 
-Escapinは[Serverless Framework](https://github.com/serverless/serverless)と連携させるために，コンパイルの過程でAWSリソースの作成・管理のための定義ファイル `serverless.yml` を生成・編集します．
+Escapin は[Serverless Framework](https://github.com/serverless/serverless)と連携させるために，コンパイルの過程で AWS リソースの作成・管理のための定義ファイル `serverless.yml` を生成・編集します．
 
 ##### <a name="dynamodb-s3"></a> DynamoDB, S3
 
@@ -45,18 +45,23 @@ delete foo[id];
 ```
 
 は以下のような同期的記述にコンパイルされます．
-DynamoDBのTableName，S3のBucketNameには，変数名の後にランダムUUIDが自動で追加されます．
+DynamoDB の TableName，S3 の BucketName には，変数名の後にランダム UUID が自動で追加されます．
 
 ```javascript
-import { DynamoDB } from 'aws-sdk';
+import { DynamoDB } from "aws-sdk";
 
 // foo[id] = bar;
 new DynamoDB().putItem({
   TableName: "foo-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
   Item: {
-    "key": { S: id },
-    "type": { S: typeof bar },
-    "value": { S: typeof bar === "object" || typeof bar === "function" ? JSON.stringify(bar) : bar }
+    key: { S: id },
+    type: { S: typeof bar },
+    value: {
+      S:
+        typeof bar === "object" || typeof bar === "function"
+          ? JSON.stringify(bar)
+          : bar
+    }
   }
 });
 
@@ -64,91 +69,96 @@ new DynamoDB().putItem({
 const temp = new DynamoDB().getItem({
   TableName: "foo-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
   Item: {
-    "key": { S: id }
+    key: { S: id }
   }
 });
-baz = temp === null || temp.Item === undefined ? undefined : _temp.Item.type.S === 'object' || temp.Item.type.S === 'function' ? JSON.parse(temp.Item.value.S) : temp.Item.value.S;
+baz =
+  temp === null || temp.Item === undefined
+    ? undefined
+    : _temp.Item.type.S === "object" || temp.Item.type.S === "function"
+    ? JSON.parse(temp.Item.value.S)
+    : temp.Item.value.S;
 
 // qux = Object.keys(foo);
 qux = new DynamoDB().scan({
   TableName: "csv-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
-  ExpressionAttributeNames: { '#ky': 'key' },
-  ProjectionExpression: '#ky'
+  ExpressionAttributeNames: { "#ky": "key" },
+  ProjectionExpression: "#ky"
 });
 
 // delete foo[id];
 new DynamoDB().deleteItem({
   TableName: "csv-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
-  Key: { "key": { S: id } }
+  Key: { key: { S: id } }
 });
 ```
 
-##### <a name="lambda"></a>　Lambda
+##### <a name="lambda"></a>　 Lambda
 
 ```javascript
 export function handler(req) {
   if (errorOccured()) {
-    throw new Error('An error occured');
+    throw new Error("An error occured");
   }
 
-  return { message: 'Succeeded' };
+  return { message: "Succeeded" };
 }
 ```
 
-のような関数が定義されている場合，「[3. APIのエクスポート](#export-api)」によるAPI仕様とのバインドを経て
+のような関数が定義されている場合，「[3. API のエクスポート](#export-api)」による API 仕様とのバインドを経て
 
 - Lambda Function
-- API GatewayのREST API
+- API Gateway の REST API
 
 が作成されるような `sererless.yml` の定義を自動生成し，以下のようにコンパイルされます．
 
 ```javascript
 export function handler(req, context, callback) {
   if (errorOccured()) {
-    callback(new Error('An error occured.'));
+    callback(new Error("An error occured."));
     return;
   }
 
-  callback(null, { message: 'Succeeded' });
+  callback(null, { message: "Succeeded" });
   return;
 }
 ```
 
-#### <a name="import-api"></a>2. APIのインポート
+#### <a name="import-api"></a>2. API のインポート
 
-ソースコード中で，OpenAPI Specification 2.0に準拠したAPI仕様ファイルを `import` 文でインポートすることできます．
+ソースコード中で，OpenAPI Specification 2.0 に準拠した API 仕様ファイルを `import` 文でインポートすることできます．
 
-ファイルの場所はHTTP URIまたはプロジェクトフォルダからの相対ファイルパスで指定します．
+ファイルの場所は HTTP URI またはプロジェクトフォルダからの相対ファイルパスで指定します．
 
 ```javascript
-import api from 'http://path/to/swagger.yaml';
+import api from "http://path/to/swagger.yaml";
 ```
 
-上記でインポートしたAPIの各々の呼び出しは，変数 `api` のメンバ操作，メンバ関数呼び出しとして記述することが出来ます．
+上記でインポートした API の各々の呼び出しは，変数 `api` のメンバ操作，メンバ関数呼び出しとして記述することが出来ます．
 
-以下の各々のHTTPメソッドと操作が対応します．
+以下の各々の HTTP メソッドと操作が対応します．
 
 - GET <--> メンバ参照: MemberExpression
-- POST <--> メンバ関数呼び出し: CallExpression(MemberExpression, *)
-- PUT <--> メンバへの代入: AssignmentExpression(MemberExpression, *)
+- POST <--> メンバ関数呼び出し: CallExpression(MemberExpression, \*)
+- PUT <--> メンバへの代入: AssignmentExpression(MemberExpression, \*)
 - DELETE <--> メンバの削除: UnaryExpression('delete', MemberExpression)
 
-以下に，HTTPメソッド，パス，ヘッダ，ボディ，およびそれに対応する記述を示します．
+以下に，HTTP メソッド，パス，ヘッダ，ボディ，およびそれに対応する記述を示します．
 
-| メソッド | パス | ヘッダ | ボディ | 記述例 |
-|-|-|-|-|-|
-| `GET` | `/items` | | | `items = api.items;` |
-| `GET` | `/items/:id` | | | `item = api.items[id];` |
-| `GET` | `/items/:id/props` | | | `props = api.items[id].props;`
-| `GET` | `/items/:id?foo=bar` | | | `item = api.items[id]` **[** `{ foo: 'bar' }` **]** `;` |
-| `GET` | `/items/:id?foo=bar` | `baz: qux` | | `item = api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** `;` |
-| `POST` | `/:domain/messages` | | `{ quux: 'corge' }` | `api.`**domain**`[domain].messages` **(** `{ quux: 'corge' }` **)** `;` ※ |
-| `POST` | `/items` | | `{ quux: 'corge' }` | `api.items` **(** `{ quux: 'corge' }` **)** `;` |
-| `POST` | `/items/:id?foo=bar` | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** **(** `{ quux: 'corge' }` **)** `;` |
-| `PUT` | `/items/:id` | `baz: qux` |`{ quux: 'corge' }` | `api.items[id]` **[** `{ baz: 'qux' }` **]** `= { quux: 'corge' };` |
-| `DELETE` | `/items/:id` | | | `delete api.items[id];` |
+| メソッド | パス                 | ヘッダ     | ボディ              | 記述例                                                                                       |
+| -------- | -------------------- | ---------- | ------------------- | -------------------------------------------------------------------------------------------- |
+| `GET`    | `/items`             |            |                     | `items = api.items;`                                                                         |
+| `GET`    | `/items/:id`         |            |                     | `item = api.items[id];`                                                                      |
+| `GET`    | `/items/:id/props`   |            |                     | `props = api.items[id].props;`                                                               |
+| `GET`    | `/items/:id?foo=bar` |            |                     | `item = api.items[id]` **[** `{ foo: 'bar' }` **]** `;`                                      |
+| `GET`    | `/items/:id?foo=bar` | `baz: qux` |                     | `item = api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** `;`                          |
+| `POST`   | `/:domain/messages`  |            | `{ quux: 'corge' }` | `api.`**domain**`[domain].messages` **(** `{ quux: 'corge' }` **)** `;` ※                    |
+| `POST`   | `/items`             |            | `{ quux: 'corge' }` | `api.items` **(** `{ quux: 'corge' }` **)** `;`                                              |
+| `POST`   | `/items/:id?foo=bar` | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** **(** `{ quux: 'corge' }` **)** `;` |
+| `PUT`    | `/items/:id`         | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ baz: 'qux' }` **]** `= { quux: 'corge' };`                          |
+| `DELETE` | `/items/:id`         |            |                     | `delete api.items[id];`                                                                      |
 
-この対応を基に，変数 `api` のメンバ操作，メンバ関数呼び出しをHTTPクライアントを用いた記述にコンパイルします．
+この対応を基に，変数 `api` のメンバ操作，メンバ関数呼び出しを HTTP クライアントを用いた記述にコンパイルします．
 
 ※パスパラメータから始まる場合のみ，`api.<パラメータ名>[変数]` とします．
 
@@ -189,12 +199,12 @@ paths:
         - name: params
           in: body
           schema:
-            $ref: '#/definitions/Params'
+            $ref: "#/definitions/Params"
       responses:
         "200":
           description: Succeeded
           schema:
-            $ref: '#/definitions/Message'
+            $ref: "#/definitions/Message"
 definitions:
   Params:
     type: object
@@ -211,34 +221,34 @@ definitions:
 この場合，
 
 ```javascript
-import api from 'http://path/to/swagger.yaml';
-api.items[id][{ foo: 'bar', baz: 'qux' }]({ quux: 'corge' });
+import api from "http://path/to/swagger.yaml";
+api.items[id][{ foo: "bar", baz: "qux" }]({ quux: "corge" });
 ```
 
 は，以下のような同期的記述にコンパイルされます．
 
 ```javascript
-import request from 'request';
+import request from "request";
 const { _res, _body } = request({
-  "uri": `http://api.endpoint.com/v1/items/${id}`,
-  "method": "post",
-  "contentType": "application/json",
-  "json": true,
-  "qs": {
-    foo: 'bar'
+  uri: `http://api.endpoint.com/v1/items/${id}`,
+  method: "post",
+  contentType: "application/json",
+  json: true,
+  qs: {
+    foo: "bar"
   },
-  "headers": {
-    baz: 'qux'
+  headers: {
+    baz: "qux"
   },
-  "body": {
-    quux: 'corge'
+  body: {
+    quux: "corge"
   }
 });
 ```
 
-#### <a name="export-api"></a>3. APIのエクスポート
+#### <a name="export-api"></a>3. API のエクスポート
 
-アプリ自身の公開するAPI仕様が以下の `swagger.yaml` のように定義されていたとします．
+アプリ自身の公開する API 仕様が以下の `swagger.yaml` のように定義されていたとします．
 
 ```yaml
 swagger: "2.0"
@@ -276,12 +286,12 @@ paths:
         - name: params
           in: body
           schema:
-            $ref: '#/definitions/Params'
+            $ref: "#/definitions/Params"
       responses:
         "200":
           description: Succeeded
           schema:
-            $ref: '#/definitions/Message'
+            $ref: "#/definitions/Message"
 definitions:
   Params:
     type: object
@@ -307,14 +317,14 @@ export function handleItem(req) {
   const quux = req.body.quux;
 
   if (errorOccured()) {
-    throw new Error('An error occured.');
+    throw new Error("An error occured.");
   }
 
-  return { message: 'Succeeded' };
+  return { message: "Succeeded" };
 }
 ```
 
-(AWS Lambdaを用いる場合) 上記の `index.js` は，以下のようにコンパイルされます．
+(AWS Lambda を用いる場合) 上記の `index.js` は，以下のようにコンパイルされます．
 
 ```javascript
 export function handleItem(req, context, callback) {
@@ -324,18 +334,18 @@ export function handleItem(req, context, callback) {
   const quux = req.body.quux;
 
   if (errorOccured()) {
-    callback(new Error('An error occured.'));
+    callback(new Error("An error occured."));
     return;
   }
 
-  callback(null, { message: 'Succeeded' });
+  callback(null, { message: "Succeeded" });
   return;
 }
 ```
 
 #### <a name="async"></a>4. 非同期処理の同期的記述
 
-Escapinでは，コールバック関数，`async`, `await`, `Promise` を用いた非同期処理を全く意識せずにプログラムを記述することが出来ます．
+Escapin では，コールバック関数，`async`, `await`, `Promise` を用いた非同期処理を全く意識せずにプログラムを記述することが出来ます．
 
 ライブラリ `request`, `aws-sdk`については，コールバック関数を引数に持つ関数名を自動で抽出出来ており，以下のような同期的記述で書いておけば自動的に`async`, `await`, `Promise` を用いた記述に変換されます．
 
@@ -374,7 +384,7 @@ async function func() {
     const _data = await new Promise((resolve, reject) => {
       call(arg, (err, _data1, _data2) => {
         if (err) reject(err);
-        else resolve({ _data1, _data2});
+        else resolve({ _data1, _data2 });
       });
     });
     doSomething(_data._data1, _data._data2);
@@ -386,7 +396,7 @@ async function func() {
 
 上記のような同期的記述は，制御構文の中に記述しても正しく変換できます．
 
-##### 非同期呼び出しによって得られたコレクションのfor, for-in, for-of文
+##### 非同期呼び出しによって得られたコレクションの for, for-in, for-of 文
 
 ```javascript
 for (const item of api.call(arg)) {
@@ -401,14 +411,14 @@ const _data = await new Promise((resolve, reject) => {
   apis.call(arg, (err, data) => {
     if (err) reject(err);
     else resolve(data);
-  })
+  });
 });
 for (const item of _data) {
   doSomething(item);
 }
 ```
 
-##### 内部に非同期呼び出しのあるfor, for-in, for-of文（並列実行可）
+##### 内部に非同期呼び出しのある for, for-in, for-of 文（並列実行可）
 
 ```javascript
 for (const arg of args) {
@@ -421,19 +431,21 @@ for (const arg of args) {
 ```javascript
 const _promises = [];
 for (const arg of args) {
-  _promises.push((async () => {
-    await new Promise((resolve, reject) => {
-      apis.call(arg, (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
-      })
-    });
-  })());
+  _promises.push(
+    (async () => {
+      await new Promise((resolve, reject) => {
+        apis.call(arg, (err, data) => {
+          if (err) reject(err);
+          else resolve(data);
+        });
+      });
+    })()
+  );
 }
 await Promise.all(_promises);
 ```
 
-##### 内部に非同期呼び出しのあるfor, for-in, for-of文（並列実行不可）
+##### 内部に非同期呼び出しのある for, for-in, for-of 文（並列実行不可）
 
 ```javascript
 let sum = 0;
@@ -442,7 +454,7 @@ for (const arg of args) {
 }
 ```
 
-は，for文の外部変数に依存するため，以下のようにコンパイルされます．
+は，for 文の外部変数に依存するため，以下のようにコンパイルされます．
 
 ```javascript
 let sum = 0;
@@ -451,14 +463,13 @@ for (const arg of args) {
     apis.call(arg, (err, data) => {
       if (err) reject(err);
       else resolve(data);
-    })
+    });
   });
   sum += _data;
 }
 ```
 
-
-##### while，do-while文
+##### while，do-while 文
 
 ```javascript
 while ((data = api.call(arg)) === null) {
@@ -486,7 +497,7 @@ while ((data = _data) === null) {
 }
 ```
 
-##### if-else文
+##### if-else 文
 
 ```javascript
 if (api.call(arg)) {
@@ -520,14 +531,14 @@ if (_data) {
 }
 ```
 
-##### switch-case文
+##### switch-case 文
 
 ```javascript
 switch (api.call(arg)) {
-  case 'foo':
+  case "foo":
     api.call2(arg);
     break;
-  case 'bar':
+  case "bar":
     api.call3(arg);
     break;
   default:
@@ -546,7 +557,7 @@ const _data = await new Promise((resolve, reject) => {
   });
 });
 switch (_data) {
-  case 'foo':
+  case "foo":
     await new Promise((resolve, reject) => {
       apis.call2(arg, (err, data) => {
         if (err) reject(err);
@@ -554,7 +565,7 @@ switch (_data) {
       });
     });
     break;
-  case 'bar':
+  case "bar":
     await new Promise((resolve, reject) => {
       apis.call3(arg, (err, data) => {
         if (err) reject(err);
@@ -567,7 +578,7 @@ switch (_data) {
 }
 ```
 
-##### コールバック関数を引数に持つ関数 (Array.prototype.forEach等)
+##### コールバック関数を引数に持つ関数 (Array.prototype.forEach 等)
 
 現状， `map` , `forEach` のみ並行動作するコードに変換されます．
 
@@ -581,8 +592,7 @@ args.forEach(arg => api.call(arg));
 `map`はコールバック関数を非同期処理し，全てを `await` しています．
 
 一方で `forEach` は **各コールバック関数の終了を全て待たずに次の行に進む** ことに注意してください．
-全てのiterationを終わらせて次に進みたい場合は， `forEach` の代わりに `for-of` 文をご利用ください．
-
+全ての iteration を終わらせて次に進みたい場合は， `forEach` の代わりに `for-of` 文をご利用ください．
 
 ```javascript
 await Promise.all(args.map(async arg => await api.call(arg)));
@@ -592,7 +602,7 @@ args.forEach(async arg => await api.call(arg));
 それ以外の関数は，コールバック関数内で非同期処理の終了を待つ，以下のような記述にコンパイルされます（ `deasync` という同期化ライブラリを用います）．
 
 ```javascript
-import deasync from 'deasync';
+import deasync from "deasync";
 args.some(arg => {
   let _data;
   let done = false;
@@ -600,14 +610,14 @@ args.some(arg => {
     apis.call(arg, (err, data) => {
       if (err) reject(err);
       else resolve(data);
-    })
+    });
   }).then(data => {
-    _data = data
+    _data = data;
     done = true;
   });
   deasync.loopWhile(_ => !done);
   return _data;
-})
+});
 ```
 
 #### <a name="compatibility"></a>5. 非同期的記述の許容
@@ -625,7 +635,7 @@ args.map(arg => await promisifiedFunc(arg));
 ```
 
 という記述は，このままでは動作しませんが
-「コールバック関数を引数に持つ関数 (Array.prototype.forEach等)」と同様に以下のようにコンパイルされます．
+「コールバック関数を引数に持つ関数 (Array.prototype.forEach 等)」と同様に以下のようにコンパイルされます．
 
 ```javascript
 await Promise.all(args.map(async arg => await promisifiedFunc(arg)));

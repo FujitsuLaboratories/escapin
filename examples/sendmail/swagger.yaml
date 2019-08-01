@@ -7,9 +7,9 @@ info:
 host: "sendmail.org"
 basePath: "/v1"
 schemes:
-- "http"
+  - "http"
 produces:
-- "application/json"
+  - "application/json"
 paths:
   /csv:
     get:
@@ -27,14 +27,14 @@ paths:
       description: "Upload CSV file for sending emails"
       x-escapin-handler: "instance.csvPOST"
       consumes:
-      - "multipart/form-data"
-      - "application/x-www-form-urlencoded"
+        - "multipart/form-data"
+        - "application/x-www-form-urlencoded"
       parameters:
-      - name: "csv"
-        in: "formData"
-        description: "A csv file"
-        required: true
-        type: "file"
+        - name: "csv"
+          in: "formData"
+          description: "A csv file"
+          required: true
+          type: "file"
       responses:
         201:
           description: "Resource Created"
@@ -59,13 +59,13 @@ paths:
       description: "Download CSV file by id"
       x-escapin-handler: "instance.csvIdGET"
       produces:
-      - "text/csv"
+        - "text/csv"
       parameters:
-      - name: "id"
-        in: "path"
-        description: "id of a CSV file"
-        required: true
-        type: "string"
+        - name: "id"
+          in: "path"
+          description: "id of a CSV file"
+          required: true
+          type: "string"
       responses:
         200:
           description: "CSV file"
@@ -82,11 +82,11 @@ paths:
       description: "Delete CSV file by id"
       x-escapin-handler: "instance.csvIdDELETE"
       parameters:
-      - name: "id"
-        in: "path"
-        description: "id of a CSV file"
-        required: true
-        type: "string"
+        - name: "id"
+          in: "path"
+          description: "id of a CSV file"
+          required: true
+          type: "string"
       responses:
         200:
           description: "Succeeded"
@@ -104,7 +104,7 @@ definitions:
   Id:
     type: "object"
     required:
-    - "id"
+      - "id"
     properties:
       id:
         type: "string"
@@ -113,7 +113,7 @@ definitions:
   Message:
     type: "object"
     required:
-    - "message"
+      - "message"
     properties:
       message:
         type: "string"
@@ -122,8 +122,8 @@ definitions:
   ErrorMessage:
     type: "object"
     required:
-    - "error_code"
-    - "message"
+      - "error_code"
+      - "message"
     properties:
       error_code:
         type: "string"

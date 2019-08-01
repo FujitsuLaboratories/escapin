@@ -1,4 +1,25 @@
+# build artefact
 bin
+
+# dependencies
 node_modules
+
+# logs
+*.log
+
+# coverage directory
 coverage
-yarn-error.log
+/.nyc_output
+
+# vscode workspace
+*.code-workspace
+
+# OS stuff
+.DS_Store
+.tmp
+
+# eslint cache
+.eslintcache
+
+# tests
+test/temp/

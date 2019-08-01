@@ -12,7 +12,7 @@ export const imagesPOST = req => {
   images[id] = req.formData.image;
   resize(
     {
-      srcData: new Buffer(images[id], 'binary'),
+      srcData: Buffer.from(images[id], 'binary'),
       format: 'jpeg',
       width: 100,
     },
@@ -20,7 +20,7 @@ export const imagesPOST = req => {
       if (err) {
         throw new Error(`500: ${err}`);
       }
-      thumbnails[id] = new Buffer(stdout, 'binary');
+      thumbnails[id] = Buffer.from(stdout, 'binary');
       return { id };
     },
   );

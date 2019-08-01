@@ -26,6 +26,10 @@ test('test index', async t => {
   const names = fs.readdirSync(TEMP_DIR, 'utf8');
   for (const name of names) {
     const cwd = path.join(TEMP_DIR, name);
+    const stat = fs.lstatSync(cwd);
+    if (!stat.isDirectory()) {
+      continue;
+    }
     const escapin = new Escapin(cwd);
     await escapin.transpile();
   }

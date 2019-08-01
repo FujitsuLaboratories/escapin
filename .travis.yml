@@ -37,7 +37,7 @@ jobs:
     - stage: Deploy
       if: tag IS present
       node_js: 10
-      script: skip
+      script: yarn build
       deploy:
         provider: npm
         email: "$NPM_EMAIL"

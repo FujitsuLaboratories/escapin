@@ -1,8 +1,47 @@
 language: node_js
-node_js:
-  - "10"
-deploy:
-  provider: npm
-  email: "kimusaku@gmail.com"
-  on:
-    tags: true
+cache:
+  yarn: true
+install:
+  - yarn
+branches:
+  only:
+    - master
+    - "/^v\\d+\\.\\d+\\.\\d+$/"
+env:
+  global:
+    - FORCE_COLOR=1
+stages:
+  - name: Test
+  - name: Deploy
+    if: tag =~ ^v\d+\.\d+\.\d+$
+jobs:
+  include:
+    - name: Testing for pull requests
+      if: type = pull_request
+      node_js: 10
+      script:
+        - yarn prettier-check-updated
+        - yarn lint-updated
+        - yarn test
+    - name: Testing
+      if: type != pull_request
+      node_js: 10
+      script:
+        - yarn lint
+        - yarn test
+    - name: Coverage
+      node_js: 10
+      script:
+        - yarn coverage
+      after_success:
+        - yarn report
+    - state: Deploy
+      node_js: 10
+      script: skip
+      deploy:
+        provider: npm
+        email: kimusaku@gmail.com
+        on:
+          tags: true
+        api_key:
+          secure: ED32ZPmoxoX+ydYoiJMp2Z7zcKGdZ/i76ejkUyc8IgYWiFsQ5/t+BbzHO7KcsJuZjqvG8nWsDDD5t3Zrt73jIpyEpXt1R2O8sBssxh2J3indjSaMqDZtAWso/uv3WxuONOscrXGZ53Cqd/1tR8xq4SAw69VN/wp/27PTi0jFWi1D5i658BfYAkIDPWYHp6WihrEkf9AQkl0dHNch1C9sUn85Z2yTMAhm3Nb0KOYm5zDXijbKxyeH7y9QZATdCYsoZYKn0VN0J+gsUlobK/XSg3MpZUjnEcZKLRY8hEVL0Zr24SrdLnM6CuwHSpDgR3jx7VPwOWukXZeXqsFGshxzEEnLASJCm025e2m/IBxuXBjLg7y1Smv4ADxwC5PiYIfGUShEvwrPqyHVB8+EMxx1MFULWpbItJGOquHIeDV9f0sHKAZt84XD5eoY+k5CNKXrVB4B3cdRmfuWdvfHuVn6OPaFsL6JvU4t+J8vXoTGK+mH/0ExBhLwpstaBR4f4F40PIyJBN8g6X2B+I5WgL3E49Y3Mw/89aVzXn+xOOioXbgjt4fkc+GYyLXWfeaB55v3ZpLTHsZ+tkYF82JzAd+IZSCHVtwFfUaN9TdYzTVvIyzyEqgzUnWXAg5xyvIkbc3dA9pkQ+w0nnIOSVCNywpP5VZtUPxQm4K04FATJpdJ4tQ=

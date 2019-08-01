@@ -1,6 +1,6 @@
 {
   "name": "escapin",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Escapin the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs",
   "main": "bin/index.js",
   "type": "module",
@@ -25,7 +25,7 @@
     "test": "ava",
     "coverage": "nyc ava",
     "report": "nyc report | coveralls",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/cli.ts"
   },
   "repository": {
     "url": "https://github.com/FujitsuLaboratories/escapin.git"
@@ -54,7 +54,7 @@
     "package-json": "^6.5.0",
     "request": "^2.88.0",
     "rimraf": "^2.6.3",
-    "serverless": "^1.48.4",
+    "serverless": "^1.49.0",
     "swagger-parser": "^8.0.0",
     "types-installer": "^1.6.3",
     "typescript": "^3.5.3",

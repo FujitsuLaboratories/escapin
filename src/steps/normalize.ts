@@ -9,51 +9,38 @@ export default function(baseState: BaseState) {
 
 const visitor: Visitor = {
   VariableDeclaration(path) {
-    if (path.node.declarations.length === 1) {
+    const { kind, declarations } = path.node;
+    if (declarations.length === 1) {
       return;
     }
     const snippet = [];
-    for (const decl of path.node.declarations) {
-      snippet.push(u.variableDeclaration(path.node.kind, [decl]));
+    for (const decl of declarations) {
+      snippet.push(u.variableDeclaration(kind, [decl]));
     }
     path.replaceWithMultiple(snippet);
   },
   IfStatement(path) {
-    if (!u.isBlockStatement(path.node.consequent)) {
-      path.node.consequent = u.blockStatement([path.node.consequent]);
+    const { node } = path;
+    const { consequent, alternate } = node;
+    if (!u.isBlockStatement(consequent)) {
+      node.consequent = u.blockStatement([consequent]);
     }
-    if (path.node.alternate !== null && !u.isBlockStatement(path.node.alternate)) {
-      path.node.alternate = u.blockStatement([path.node.alternate]);
-    }
-  },
-  ForStatement(path) {
-    if (!u.isBlockStatement(path.node.body)) {
-      path.node.body = u.blockStatement([path.node.body]);
+    if (alternate !== null && !u.isBlockStatement(alternate)) {
+      node.alternate = u.blockStatement([alternate]);
     }
   },
-  ForInStatement(path) {
-    if (!u.isBlockStatement(path.node.body)) {
-      path.node.body = u.blockStatement([path.node.body]);
-    }
-  },
-  ForOfStatement(path) {
-    if (!u.isBlockStatement(path.node.body)) {
-      path.node.body = u.blockStatement([path.node.body]);
-    }
-  },
-  WhileStatement(path) {
-    if (!u.isBlockStatement(path.node.body)) {
-      path.node.body = u.blockStatement([path.node.body]);
-    }
-  },
-  DoWhileStatement(path) {
-    if (!u.isBlockStatement(path.node.body)) {
-      path.node.body = u.blockStatement([path.node.body]);
+  Loop(path) {
+    const { node } = path;
+    const { body } = node;
+    if (!u.isBlockStatement(body)) {
+      node.body = u.blockStatement([body]);
     }
   },
   ArrowFunctionExpression(path) {
-    if (!u.isBlockStatement(path.node.body)) {
-      path.node.body = u.blockStatement([u.returnStatement(path.node.body)]);
+    const { node } = path;
+    const { body } = node;
+    if (!u.isBlockStatement(body)) {
+      node.body = u.blockStatement([u.returnStatement(body)]);
     }
   },
 };

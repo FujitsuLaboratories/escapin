@@ -12,8 +12,8 @@ import { BaseState } from './state';
 
 export * from '@babel/types';
 export { NodePath } from '@babel/traverse';
-// export * from '..';
 
+export const ERROR_PATTERN = /(^e$|^e(r|x)+.*)/;
 const PLACEHOLDER_PATTERN = /^\$[_$A-Z0-9]+$/;
 
 export type OneOrMore<T> = T | T[];
@@ -285,59 +285,6 @@ export function replace(
   });
 }
 
-export function replaceIdOnValidScope(path: NodePath, target: t.Node, replacement: t.Node): void {
-  replace(path, target, replacement, path => {
-    const { node, parent } = path;
-    if (t.isVariableDeclarator(parent)) {
-      return equals(parent.id, target);
-    } else if (t.isMemberExpression(parent)) {
-      return parent.object === node;
-    } else if (t.isForOfStatement(node) || t.isForInStatement(node)) {
-      return (
-        t.isVariableDeclaration(node.left) &&
-        node.left.declarations.some(that => equals(that.id, target))
-      );
-    } else if (t.isForStatement(node)) {
-      return (
-        t.isVariableDeclaration(node.init) &&
-        node.init.declarations.some(that => equals(that.id, target))
-      );
-    } else if (t.isFunction(node)) {
-      return node.params.some(that => equals(that, target));
-    } else if (t.isBlockStatement(node)) {
-      return node.body.some(
-        stmt =>
-          t.isVariableDeclaration(stmt) && stmt.declarations.some(that => equals(that.id, target)),
-      );
-    }
-    return false;
-  });
-}
-
-export function hasSideEffect(path: NodePath): boolean {
-  const { node } = path;
-  if (t.isAssignmentExpression(node) && includes(path.get('right') as NodePath, node.left)) {
-    return true;
-  } else if (
-    t.isCallExpression(node) &&
-    t.isCallExpression(node.callee) &&
-    t.isIdentifier(node.callee.callee, { name: 'require' }) &&
-    t.isStringLiteral(node.callee.arguments[0], { value: 'request' })
-  ) {
-    const arguments0 = node.arguments[0];
-    return (
-      t.isObjectExpression(arguments0) &&
-      arguments0.properties.some(
-        prop =>
-          t.isObjectProperty(prop) &&
-          t.isStringLiteral(prop.key, { value: 'method' }) &&
-          t.isStringLiteral(prop.value, { value: 'post' }),
-      )
-    );
-  }
-  return false;
-}
-
 export function hasCallback(node: t.CallExpression): boolean {
   return node.arguments.length > 0 && t.isFunction(last(node.arguments));
 }
@@ -346,97 +293,8 @@ export function isSimpleAwaitStatement(node: t.Node): boolean {
   return t.isExpressionStatement(node) && t.isAwaitExpression(node.expression);
 }
 
-export function isPromise(node: t.Node): boolean {
-  return (
-    t.isCallExpression(node) &&
-    t.isMemberExpression(node.callee) &&
-    t.isIdentifier(node.callee.object, { name: 'Promise' })
-  );
-}
-
 export function isNewPromise(node: t.Node): boolean {
   return t.isNewExpression(node) && t.isIdentifier(node.callee, { name: 'Promise' });
-}
-
-export function isPromiseExpression(node: t.Expression): boolean {
-  if (isPromise(node) || isNewPromise(node)) {
-    return true;
-  } else if (
-    t.isCallExpression(node) &&
-    t.isMemberExpression(node.callee) &&
-    t.isCallExpression(node.callee.object)
-  ) {
-    return isPromiseExpression(node.callee.object);
-  }
-  return false;
-}
-
-export function getPromise(path: NodePath): NodePath | undefined {
-  if (path.isExpressionStatement() && isPromiseExpression(path.node.expression)) {
-    return path.get('expression') as NodePath;
-  } else if (path.isReturnStatement() && isPromiseExpression(path.node.argument as t.Expression)) {
-    return path.get('argument') as NodePath;
-  }
-  return undefined;
-}
-
-export function isPromiseStatement(node: t.Statement): boolean {
-  return (
-    (t.isExpressionStatement(node) && isPromiseExpression(node.expression)) ||
-    (t.isReturnStatement(node) && node.argument !== null && isPromiseExpression(node.argument))
-  );
-}
-
-export function isFunctionWithPromise(node: t.Node): boolean {
-  if (t.isFunctionExpression(node) || t.isArrowFunctionExpression(node)) {
-    const { body } = node;
-    if (t.isBlockStatement(body)) {
-      const lastStmt = last(body.body);
-      return lastStmt !== undefined && isPromiseStatement(lastStmt);
-    }
-  }
-  return false;
-}
-
-export function isThen(node: t.Node): boolean {
-  if (t.isCallExpression(node)) {
-    const { callee } = node;
-    return (
-      t.isMemberExpression(callee) &&
-      t.isIdentifier(callee.property, { name: 'then' }) &&
-      isPromiseExpression(node)
-    );
-  }
-  return false;
-}
-
-export function isCatch(node: t.Node): boolean {
-  if (t.isCallExpression(node)) {
-    const { callee } = node;
-    return (
-      t.isMemberExpression(callee) &&
-      t.isIdentifier(callee.property, { name: 'catch' }) &&
-      isPromiseExpression(node)
-    );
-  }
-  return false;
-}
-
-export function isPromiseWithSideEffects(path: NodePath): boolean {
-  const { node } = path;
-  if (t.isFunctionExpression(node) || t.isArrowFunctionExpression(node)) {
-    return test(path.get('body') as NodePath, hasSideEffect);
-  } else if (isPromise(node)) {
-    return false;
-  } else if (isNewPromise(node)) {
-    return isPromiseWithSideEffects(path.get('arguments.0') as NodePath);
-  } else if (isCatch(node) || isThen(node)) {
-    return (
-      isPromiseWithSideEffects((path.get('callee') as NodePath).get('object') as NodePath) ||
-      isPromiseWithSideEffects(path.get('arguments.0') as NodePath)
-    );
-  }
-  return false;
 }
 
 export function isCallback(node: t.Node): boolean {
@@ -463,14 +321,8 @@ export function getFunctionId(path: NodePath, func: t.Function): t.Identifier | 
   return undefined;
 }
 
-export function containsStatements(
-  node: t.Node,
-): node is t.BlockStatement | t.Program | t.SwitchCase {
-  return t.isBlockStatement(node) || t.isProgram(node) || t.isSwitchCase(node);
-}
-
 export function isErrorParam(node: t.Node): node is t.Identifier {
-  return t.isIdentifier(node) && node.name.match(/(^e$|^e(r|x)+.*)/) !== null;
+  return t.isIdentifier(node) && node.name.match(ERROR_PATTERN) !== null;
 }
 
 export function toStatements(node: t.Statement): t.Statement[] {

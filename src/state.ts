@@ -86,19 +86,6 @@ export class BaseState {
     return undefined;
   }
 
-  // public createLauncherFile() {
-  //   const path = Path.resolve(this.basePath, '.cc');
-  //   if (!fs.existsSync(path)) {
-  //     fs.mkdirSync(path);
-  //   }
-  //   this.launcherFile = LAUNCHER_FILE;
-  //   if (this.codes[this.launcherFile] === undefined) {
-  //     this.codes[this.launcherFile] = '';
-  //     fs.writeFileSync(Path.resolve(this.basePath, this.launcherFile), '', 'utf8');
-  //     this.escapin.packageJson.scripts.start = `node ${this.launcherFile}`;
-  //   }
-  // }
-
   public addDependency(variable: string, moduleName: string) {
     this.dependencies[variable] = moduleName;
     if (
@@ -110,33 +97,31 @@ export class BaseState {
   }
 
   public hasDependency(moduleName: string): boolean {
-    if (
-      this.escapin.packageJson === undefined ||
-      this.escapin.packageJson.dependencies === undefined
-    ) {
+    const { packageJson } = this.escapin;
+    if (packageJson === undefined) {
       return false;
     }
+    const {
+      dependencies,
+      devDependencies,
+      peerDependencies,
+      optionalDependencies,
+      bundledDependencies,
+    } = packageJson;
     return (
-      moduleName in this.escapin.packageJson.dependencies ||
-      (this.escapin.packageJson.devDependencies !== undefined &&
-        moduleName in this.escapin.packageJson.devDependencies) ||
-      (this.escapin.packageJson.peerDependencies !== undefined &&
-        moduleName in this.escapin.packageJson.peerDependencies) ||
-      (this.escapin.packageJson.optionalDependencies !== undefined &&
-        moduleName in this.escapin.packageJson.optionalDependencies) ||
-      (this.escapin.packageJson.bundledDependencies !== undefined &&
-        moduleName in this.escapin.packageJson.bundledDependencies)
+      (dependencies !== undefined && moduleName in dependencies) ||
+      (devDependencies !== undefined && moduleName in devDependencies) ||
+      (peerDependencies !== undefined && moduleName in peerDependencies) ||
+      (optionalDependencies !== undefined && moduleName in optionalDependencies) ||
+      (bundledDependencies !== undefined && moduleName in bundledDependencies)
     );
   }
 
   public addImportDeclaration() {
     for (const variable in this.dependencies) {
-      if (!(variable in this.dependencies)) {
-        continue;
-      }
       const moduleName = this.dependencies[variable];
       const decl = `import ${variable} from '${moduleName}';`;
-      this.ast.program.body = [...u.parse(decl).program.body, ...this.ast.program.body];
+      this.ast.program.body.unshift(...u.parse(decl).program.body);
     }
     this.code = u.generate(this.ast);
     delete this.dependencies;

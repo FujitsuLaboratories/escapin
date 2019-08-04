@@ -1,10 +1,32 @@
-import test from 'ava';
+import test, { ExecutionContext } from 'ava';
 import * as c from '../../src/util';
 import step from '../../src/steps/openApiV2';
 import { BaseState } from '../../src/state';
 import { Escapin } from '../../src';
 
-test('test openApiV2', t => {
+function compare(t: ExecutionContext, before: string, after: string) {
+  const astBefore = c.parse(before);
+
+  const state = new BaseState();
+  state.filename = 'dummy';
+  state.code = before;
+  state.ast = astBefore;
+  state.escapin = new Escapin(process.cwd());
+  state.escapin.config = {
+    name: 'test',
+    platform: 'aws',
+    // eslint-disable-next-line no-undef
+    output_dir: __dirname,
+  };
+
+  step(state);
+
+  const astAfter = c.parse(after);
+
+  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
+}
+
+test('nominal case of openApiV2', t => {
   const before = `
 import petstore from 'https://petstore.swagger.io/v2/swagger.json';
 
@@ -17,6 +39,15 @@ petstore.pet = petstore.pet[id];
 petstore.pet(newPet);
 petstore.pet[id].uploadImage(image);
 delete petstore.pet[id];
+const pets = petstore.pet.findByStatus[{status: 'available'}];
+const orderId = petstore.store.order({
+  "id": 0,
+  "petId": 0,
+  "quantity": 0,
+  "shipDate": "2017-10-03T06:03:36.447Z",
+  "status": "placed",
+  "complete": false
+});
   `;
 
   const after = `
@@ -123,26 +154,54 @@ const {
     "api_key": id.api_key
   }
 });
+const {
+  _res20,
+  _body20
+} = request({
+  "uri": \`https://petstore.swagger.io/v2/pet/findByStatus\`,
+  "method": "get",
+  "contentType": "application/json",
+  "json": true,
+  "qs": {
+    status: 'available'
+  }
+});
+let _get6 = _body20;
+const pets = _get6;
+const {
+  _res22,
+  _body22
+} = request({
+  "body": {
+    "id": 0,
+    "petId": 0,
+    "quantity": 0,
+    "shipDate": "2017-10-03T06:03:36.447Z",
+    "status": "placed",
+    "complete": false
+  },
+  "uri": \`https://petstore.swagger.io/v2/store/order\`,
+  "method": "post",
+  "contentType": "application/json",
+  "json": true
+});
+let _post3 = _body22;
+const orderId = _post3;
   `;
 
-  const astBefore = c.parse(before);
+  compare(t, before, after);
+});
 
-  const state = new BaseState();
-  state.filename = 'dummy';
-  state.code = before;
-  state.ast = astBefore;
-  state.escapin = new Escapin('dummy');
-  state.escapin.basePath = process.cwd();
-  state.escapin.config = {
-    name: 'test',
-    platform: 'aws',
-    // eslint-disable-next-line no-undef
-    output_dir: __dirname,
-  };
+test('ignore conventional import declarations', t => {
+  const before = `
+import fs from 'fs';
+import { Escapin } from 'src/index';
+`;
 
-  step(state);
+  const after = `
+import fs from 'fs';
+import { Escapin } from 'src/index';
+`;
 
-  const astAfter = c.parse(after);
-
-  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
+  compare(t, before, after);
 });

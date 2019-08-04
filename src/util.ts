@@ -4,7 +4,7 @@ import template from '@babel/template';
 import _traverse, { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import fs from 'fs';
-import { flatten, isEqual, last, remove as _remove, uniq } from 'lodash';
+import { isEqual, last, remove as _remove } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
 import vm from 'vm';
@@ -107,7 +107,7 @@ export function purify(node: t.Node): t.Node {
     'optional',
   ].forEach(key => delete _node[key]);
   for (const key in _node) {
-    if (!(key in _node) || _node[key] === null) {
+    if (_node[key] === null) {
       continue;
     }
     if (typeof _node[key] === 'object' && 'type' in _node[key]) {
@@ -227,36 +227,6 @@ export function test(
   return undefined !== find(path, positive, negative);
 }
 
-export function modifiers(
-  id: NodePath,
-  block: NodePath<t.BlockStatement>,
-  visited: NodePath[] = [],
-): NodePath[] {
-  let exprPath: NodePath | undefined;
-  for (const stmtPath of block.get('body') as NodePath[]) {
-    if (!stmtPath.isExpressionStatement(stmtPath)) {
-      continue;
-    }
-    exprPath = stmtPath.get('expression') as NodePath;
-    if (exprPath.isAssignmentExpression(exprPath) && equals(exprPath.node.left, id.node)) {
-      const ids = findAll(
-        exprPath.get('right') as NodePath,
-        path => path.isIdentifier(path) && block.scope.hasBinding(path.node.name),
-      );
-      visited.push(id);
-
-      return uniq(
-        flatten(
-          ids
-            .filter(id => visited.some(_id => equals(_id.node, id.node)))
-            .map(id => modifiers(id, block, visited)),
-        ),
-      );
-    }
-  }
-  return [];
-}
-
 export function equalsEither(path: NodePath, target: OneOrMore<t.Node>): boolean {
   return Array.isArray(target)
     ? target.some(that => equals(path.node, that))
@@ -295,10 +265,6 @@ export function isSimpleAwaitStatement(node: t.Node): boolean {
 
 export function isNewPromise(node: t.Node): boolean {
   return t.isNewExpression(node) && t.isIdentifier(node.callee, { name: 'Promise' });
-}
-
-export function isCallback(node: t.Node): boolean {
-  return ['callback', 'cb'].some(name => equals(node, t.identifier(name)));
 }
 
 export function getFunctionId(path: NodePath, func: t.Function): t.Identifier | undefined {

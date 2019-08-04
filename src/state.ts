@@ -1,6 +1,7 @@
 import { Scope } from '@babel/traverse';
 import * as t from '@babel/types';
 import fs from 'fs';
+import module from 'module';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
 import { Escapin } from '.';
@@ -97,6 +98,9 @@ export class BaseState {
   }
 
   public hasDependency(moduleName: string): boolean {
+    if (module.builtinModules.includes(moduleName)) {
+      return true;
+    }
     const { packageJson } = this.escapin;
     if (packageJson === undefined) {
       return false;
@@ -109,11 +113,14 @@ export class BaseState {
       bundledDependencies,
     } = packageJson;
     return (
-      (dependencies !== undefined && moduleName in dependencies) ||
-      (devDependencies !== undefined && moduleName in devDependencies) ||
-      (peerDependencies !== undefined && moduleName in peerDependencies) ||
-      (optionalDependencies !== undefined && moduleName in optionalDependencies) ||
-      (bundledDependencies !== undefined && moduleName in bundledDependencies)
+      moduleName in
+      Object.assign(
+        dependencies,
+        devDependencies,
+        peerDependencies,
+        optionalDependencies,
+        bundledDependencies,
+      )
     );
   }
 

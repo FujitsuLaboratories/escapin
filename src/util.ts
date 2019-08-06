@@ -106,6 +106,11 @@ export function purify(node: t.Node): t.Node {
     'typeArguments',
     'optional',
   ].forEach(key => delete _node[key]);
+  ['async', 'generator'].forEach(key => {
+    if (!_node[key]) {
+      delete _node[key];
+    }
+  });
   for (const key in _node) {
     if (_node[key] === null) {
       continue;

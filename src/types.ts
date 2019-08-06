@@ -22,20 +22,20 @@ export interface General extends FunctionType {
   type: 'general';
 }
 
-export function isAsynchronous(entry: FunctionType): entry is Asynchronous {
-  return entry.type === 'asynchronous';
+export function isAsynchronous(entry: FunctionType | undefined): entry is Asynchronous {
+  return entry !== undefined && entry.type === 'asynchronous';
 }
 
-export function isErrorFirstCallback(entry: FunctionType): entry is ErrorFirstCallback {
-  return entry.type === 'error-first-callback';
+export function isErrorFirstCallback(entry: FunctionType | undefined): entry is ErrorFirstCallback {
+  return entry !== undefined && entry.type === 'error-first-callback';
 }
 
-export function isGeneralCallback(entry: FunctionType): entry is GeneralCallback {
-  return entry.type === 'general-callback';
+export function isGeneralCallback(entry: FunctionType | undefined): entry is GeneralCallback {
+  return entry !== undefined && entry.type === 'general-callback';
 }
 
-export function isGeneral(entry: FunctionType): entry is General {
-  return entry.type === 'general';
+export function isGeneral(entry: FunctionType | undefined): entry is General {
+  return entry !== undefined && entry.type === 'general';
 }
 
 export function asynchronous(...names: string[]): Asynchronous {

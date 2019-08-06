@@ -131,6 +131,6 @@ export class BaseState {
       this.ast.program.body.unshift(...u.parse(decl).program.body);
     }
     this.code = u.generate(this.ast);
-    delete this.dependencies;
+    this.dependencies = {};
   }
 }

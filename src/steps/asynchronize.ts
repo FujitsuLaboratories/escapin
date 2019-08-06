@@ -44,7 +44,7 @@ const visitor: Visitor<AsynchronizationState> = {
     }
   },
   CallExpression(path, state) {
-    fetchCallbackSync(path, state) || fetchCallback(path, state) || fetchAsyncFunction(path, state);
+    fetchErrorFirstCallback(path, state) || fetchGeneralCallback(path, state) || fetchAsynchronous(path, state);
   },
   For(path, state) {
     if (!u.test(path, path => u.isSimpleAwaitStatement(path.node))) {
@@ -176,6 +176,7 @@ const visitor: Visitor<AsynchronizationState> = {
     if (!u.test(path.parentPath, path => u.equals(path.node, data), path => path.node === node)) {
       path.replaceWith(u.expressionStatement(declarations[0].init));
     }
+    path.skip();
   },
   BlockStatement(path, state) {
     const { node } = path;
@@ -309,23 +310,20 @@ const visitor: Visitor<AsynchronizationState> = {
   },
 };
 
-function fetchCallbackSync(
+function fetchErrorFirstCallback(
   path: u.NodePath<u.CallExpression>,
   state: AsynchronizationState,
 ): boolean {
   const names = t.getNames(path.get('callee') as u.NodePath);
   const entry = state.escapin.types.get(...names);
-  if (entry === undefined || t.isAsynchronous(entry)) {
+  if (!t.isErrorFirstCallback(entry) || state.asynchronized.includes(path.node)) {
     return false;
   }
   const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
   if (callbackPath === undefined || !callbackPath.isFunction()) {
-    return false;
+    throw new SyntaxError('This call expression does not have error-first callback.', path.node, state);
   }
   const callback = callbackPath.node;
-  if (!u.isErrorParam(callback.params[0]) || state.asynchronized.includes(callback)) {
-    return false;
-  }
 
   entry.type = 'error-first-callback';
   let id;
@@ -407,25 +405,24 @@ function fetchCallbackSync(
       }),
     );
   }
+  state.asynchronized.push(path.node);
+  path.skip();
   return true;
 }
 
-function fetchCallback(path: u.NodePath<u.CallExpression>, state: AsynchronizationState): boolean {
-  const { node } = path;
+function fetchGeneralCallback(path: u.NodePath<u.CallExpression>, state: AsynchronizationState): boolean {
+  const names = t.getNames(path.get('callee') as u.NodePath);
+  const entry = state.escapin.types.get(...names);
+  if (!t.isGeneralCallback(entry) || state.asynchronized.includes(path.node)) {
+    return false;
+  }
   const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
   if (callbackPath === undefined || !callbackPath.isFunction()) {
-    return false;
+    throw new SyntaxError('This call expression does not have general callback.', path.node, state);
   }
   const callback = callbackPath.node;
-  if (
-    u.isErrorParam(callback.params[0]) ||
-    !u.test(callbackPath, path => path.isAwaitExpression()) ||
-    callback.async ||
-    state.asynchronized.includes(node)
-  ) {
-    return false;
-  }
 
+  const { node } = path;
   const { callee } = node;
   let functionName;
 
@@ -434,7 +431,7 @@ function fetchCallback(path: u.NodePath<u.CallExpression>, state: Asynchronizati
   } else if (u.isIdentifier(callee)) {
     functionName = callee.name;
   } else {
-    throw new Error(`Invalid callee of the function call: ${u.generate(callee)}`);
+    throw new SyntaxError('Invalid callee', path.node, state);
   }
   switch (functionName) {
     case 'map':
@@ -456,54 +453,67 @@ function fetchCallback(path: u.NodePath<u.CallExpression>, state: Asynchronizati
     default:
       break;
   }
+  const temp = path.scope.generateUidIdentifier('temp');
   const data = path.scope.generateUidIdentifier('data');
   const done = path.scope.generateUidIdentifier('done');
   callbackPath.traverse({
     VariableDeclaration(path) {
-      const declarations0 = path.node.declarations[0];
-      if (
-        declarations0.init !== null &&
-        u.isAwaitExpression(declarations0.init) &&
-        u.isNewPromise(declarations0.init.argument)
-      ) {
-        const { id } = declarations0;
-        const promise = declarations0.init.argument;
-        path.replaceWithMultiple(
-          u.statements(
-            'let $ID; let $DONE = false; $PROMISE.then($DATA => { $ID = $DATA; $DONE = true; }); deasync.loopWhile(_ => !$DONE)',
-            {
-              $DATA: data,
-              $DONE: done,
-              $ID: id,
-              $PROMISE: promise,
-            },
-          ),
-        );
-        state.addDependency('deasync', 'deasync');
+      const declarations0 = path.get('declarations.0') as u.NodePath<u.VariableDeclarator>;
+      const init = declarations0.get('init') as u.NodePath;
+      if (init.isCallExpression()) {
+        const names = t.getNames(init.get('callee') as u.NodePath);
+        const entry = state.escapin.types.get(...names);
+        if (entry === undefined || !t.isAsynchronous(entry)) {
+          return;
+        }
+      } else if (!u.isAwaitExpression(init.node) || !u.isNewPromise(init.node.argument)) {
+        return;
       }
+      const func = u.isAwaitExpression(init.node) ? init.node.argument : init.node;
+      declarations0.node.init = u.expression(
+        '(() => { let $TEMP; let $DONE = false; $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; }); deasync.loopWhile(_ => !$DONE); return $TEMP; })()',
+        {
+          $DATA: data,
+          $DONE: done,
+          $FUNC: func,
+          $TEMP: temp,
+        },
+      );
+      state.addDependency('deasync', 'deasync');
+      path.skip();
     },
     ExpressionStatement(path) {
       const { expression } = path.node;
-      if (u.isAwaitExpression(expression) && u.isNewPromise(expression.argument)) {
-        const promise = expression.argument;
-        path.replaceWithMultiple(
-          u.statements(
-            'let $DONE = false; $PROMISE.then(_ => { $DONE = true; }); deasync.loopWhile(_ => !$DONE)',
-            {
-              $DONE: done,
-              $PROMISE: promise,
-            },
-          ),
-        );
-        state.addDependency('deasync', 'deasync');
+      const expressionPath = path.get('expression') as u.NodePath<u.Expression>;
+      if (expressionPath.isCallExpression()) {
+        const names = t.getNames(expressionPath.get('callee') as u.NodePath);
+        const entry = state.escapin.types.get(...names);
+        if (entry === undefined || !t.isAsynchronous(entry)) {
+          return;
+        }
+      } else if (!u.isAwaitExpression(expression) || !u.isNewPromise(expression.argument)) {
+        return;
       }
+      const func = u.isAwaitExpression(expression) ? expression.argument : expression;
+      path.replaceWithMultiple(
+        u.statements(
+          'let $DONE = false; $FUNC.then(_ => { $DONE = true; }); deasync.loopWhile(_ => !$DONE)',
+          {
+            $DONE: done,
+            $FUNC: func,
+          },
+        ),
+      );
+      state.addDependency('deasync', 'deasync');
+      path.skip();
     },
   });
   state.asynchronized.push(node);
+  path.skip();
   return true;
 }
 
-function fetchAsyncFunction(path: u.NodePath<u.CallExpression>, state: AsynchronizationState) {
+function fetchAsynchronous(path: u.NodePath<u.CallExpression>, state: AsynchronizationState) {
   const { node } = path;
   const parentFunc = path.findParent(path => u.isFunction(path.node));
   if (parentFunc === null) {
@@ -512,11 +522,7 @@ function fetchAsyncFunction(path: u.NodePath<u.CallExpression>, state: Asynchron
 
   const names = t.getNames(path.get('callee') as u.NodePath);
   const entry = state.escapin.types.get(...names);
-  if (entry === undefined) {
-    return false;
-  }
-
-  if (entry.type !== 'asynchronous' || state.asynchronized.includes(node)) {
+  if (!t.isAsynchronous(entry) || state.asynchronized.includes(node)) {
     return false;
   }
 
@@ -526,6 +532,7 @@ function fetchAsyncFunction(path: u.NodePath<u.CallExpression>, state: Asynchron
 
   makeParentFunctionAsync(path);
 
+  path.skip();
   return true;
 }
 

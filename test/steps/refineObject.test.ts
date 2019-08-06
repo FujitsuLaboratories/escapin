@@ -1,11 +1,8 @@
 import test from 'ava';
-import { v4 as uuid } from 'uuid';
-import * as c from '../../src/util';
 import step from '../../src/steps/refineObject';
-import { BaseState } from '../../src/state';
-import { Escapin } from '../../src';
+import { compare } from '../util';
 
-test('test object', t => {
+test('test object', async t => {
   const before = `
 export const store: aws.dynamodb = {};
 store[id] = {
@@ -18,8 +15,6 @@ for (const key of Object.keys(store)) {
 }
 `;
 
-  const id = uuid();
-
   const after = `
 const _store = {
   foo,
@@ -27,7 +22,7 @@ const _store = {
 };
 
 const _temp = new DynamoDB().putItem({
-  TableName: "store-${id}",
+  TableName: "store-test",
   Item: {
     key: {
       S: id
@@ -42,7 +37,7 @@ const _temp = new DynamoDB().putItem({
 });
 
 const _temp2 = new DynamoDB().getItem({
-  TableName: "store-${id}",
+  TableName: "store-test",
   Key: {
     key: {
       S: id2
@@ -61,7 +56,7 @@ if (_temp2 === null || _temp2.Item === undefined) {
 const foo = _store2[id2];
 
 const _temp4 = new DynamoDB().deleteItem({
-  TableName: "store-${id}",
+  TableName: "store-test",
   Key: {
     key: {
       S: id3
@@ -70,7 +65,7 @@ const _temp4 = new DynamoDB().deleteItem({
 });
 
 const _temp5 = new DynamoDB().scan({
-  TableName: "store-${id}",
+  TableName: "store-test",
   ExpressionAttributeNames: {
     '#ky': 'key'
   },
@@ -81,7 +76,7 @@ const _store3 = _temp5.Items.map(item => item.key.S);
 
 for (const key of _store3) {
   const _temp6 = new DynamoDB().getItem({
-    TableName: "store-${id}",
+    TableName: "store-test",
     Key: {
       key: {
         S: key
@@ -101,35 +96,5 @@ for (const key of _store3) {
 }
   `;
 
-  const astBefore = c.parse(before);
-
-  const state = new BaseState();
-  state.filename = 'test';
-  state.code = before;
-  state.ast = astBefore;
-  state.replacements = [];
-  state.escapin = new Escapin('test');
-  state.escapin.id = id;
-  state.escapin.config = {
-    name: 'test',
-    platform: 'aws',
-    output_dir: 'test',
-  };
-  state.escapin.serverlessConfig = {
-    service: state.escapin.config.name,
-    provider: {
-      name: state.escapin.config.platform,
-      runtime: 'nodejs10.x',
-      stage: 'dev',
-      apiKeys: {},
-    },
-    functions: {},
-    resources: {},
-  };
-
-  step(state);
-
-  const astAfter = c.parse(after);
-
-  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
+  await compare(t, before, after, step);
 });

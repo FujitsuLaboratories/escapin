@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-undef
 module.exports = {
-  reporter: ['text', 'text-lcov'],
+  reporter: ['text', 'lcov'],
   'temp-directory': './coverage/.nyc_output',
   all: true,
   sourceMap: true,

@@ -1,9 +1,8 @@
 import test from 'ava';
-import * as c from '../../src/util';
 import step from '../../src/steps/normalize';
-import { BaseState } from '../../src/state';
+import { compare } from '../util';
 
-test('test normalize', t => {
+test('test normalize', async t => {
   const before = `
 const a = 1, b = 2;
 const c = 3;
@@ -98,16 +97,5 @@ const func2 = arg => { return foo(arg); }
   const func2 = arg => { return foo(arg); }
   `;
 
-  const astBefore = c.parse(before);
-
-  const state = new BaseState();
-  state.filename = 'test';
-  state.code = before;
-  state.ast = astBefore;
-
-  step(state);
-
-  const astAfter = c.parse(after);
-
-  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
+  await compare(t, before, after, step);
 });

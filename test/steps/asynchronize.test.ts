@@ -1,43 +1,50 @@
 import test from 'ava';
-import * as c from '../../src/util';
-import step from '../../src/steps/asynchronize';
-import { BaseState } from '../../src/state';
-import { Escapin } from '../../src';
-import { TypeDictionary } from '../../src/types';
+import step1 from '../../src/steps/functionTypes';
+import step2 from '../../src/steps/asynchronize';
+import { compare } from '../util';
 
-test('test asynchronize', t => {
+test.serial('test asynchronize', async t => {
   const before = `
-func(arg, (err, p1, p2) => {
-  if (err) {
-    handleError(err);
-    return;
-  }
-  doSomething(p1,p2);
+function func() {
+  asyncFunc();
+  const data = errorFirstCallbackFunc(arg);
+}
+generalCallbackFunc(arg => {
+  const data = asyncFunc(arg);
+  doSomething();
 });
+generalFunc();
 `;
 
   const after = `
-  func(arg, (err, p1, p2) => {
-    if (err) {
-      handleError(err);
-      return;
-    }
-    doSomething(p1,p2);
+async function func() {
+  await asyncFunc();
+  await new Promise((resolve, reject) => {
+    errorFirstCallbackFunc(arg, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
   });
+}
+generalCallbackFunc(arg => {
+  const data = (() => {
+    let _temp;
+
+    let _done = false;
+    asyncFunc(arg).then(_data2 => {
+      _temp = _data2;
+      _done = true;
+    });
+    deasync.loopWhile(_ => !_done);
+    return _temp;
+  })();
+  doSomething();
+});
+generalFunc();
 `;
 
-  const astBefore = c.parse(before);
-
-  const state = new BaseState();
-  state.filename = 'test';
-  state.code = before;
-  state.ast = astBefore;
-  state.escapin = new Escapin('test');
-  state.escapin.types = new TypeDictionary();
-
-  step(state);
-
-  const astAfter = c.parse(after);
-
-  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
+  await compare(t, before, after, step1, step2);
 });

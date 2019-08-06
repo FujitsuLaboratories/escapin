@@ -1,11 +1,8 @@
-// import { transform } from '@babel/core';
-// import fs from 'fs';
 import test from 'ava';
-import * as c from '../../src/util';
 import step from '../../src/steps/uncallbackify';
-import { BaseState } from '../../src/state';
+import { compare } from '../util';
 
-test('test uncallbackify', t => {
+test('test uncallbackify', async t => {
   const before = `
 func(arg, (err, p1, p2) => {
   if (err) {
@@ -25,16 +22,5 @@ try {
 }
 `;
 
-  const astBefore = c.parse(before);
-
-  const state = new BaseState();
-  state.filename = 'test';
-  state.code = before;
-  state.ast = astBefore;
-
-  step(state);
-
-  const astAfter = c.parse(after);
-
-  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
+  await compare(t, before, after, step);
 });

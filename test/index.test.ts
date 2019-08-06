@@ -28,7 +28,7 @@ test.after(t => {
   }
 });
 
-test('test index', async t => {
+test.serial('test index', async t => {
   const names = fs.readdirSync(TEMP_DIR, 'utf8');
   for (const name of names) {
     const cwd = path.join(TEMP_DIR, name);

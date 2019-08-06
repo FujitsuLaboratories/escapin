@@ -1,32 +1,8 @@
-import test, { ExecutionContext } from 'ava';
-import * as c from '../../src/util';
+import test from 'ava';
 import step from '../../src/steps/openApiV2';
-import { BaseState } from '../../src/state';
-import { Escapin } from '../../src';
+import { compare } from '../util';
 
-function compare(t: ExecutionContext, before: string, after: string) {
-  const astBefore = c.parse(before);
-
-  const state = new BaseState();
-  state.filename = 'dummy';
-  state.code = before;
-  state.ast = astBefore;
-  state.escapin = new Escapin(process.cwd());
-  state.escapin.config = {
-    name: 'test',
-    platform: 'aws',
-    // eslint-disable-next-line no-undef
-    output_dir: __dirname,
-  };
-
-  step(state);
-
-  const astAfter = c.parse(after);
-
-  t.deepEqual(c.purify(astBefore), c.purify(astAfter));
-}
-
-test('nominal case of openApiV2', t => {
+test('nominal case of openApiV2', async t => {
   const before = `
 import petstore from 'https://petstore.swagger.io/v2/swagger.json';
 
@@ -189,10 +165,10 @@ let _post3 = _body22;
 const orderId = _post3;
   `;
 
-  compare(t, before, after);
+  await compare(t, before, after, step);
 });
 
-test('ignore conventional import declarations', t => {
+test('ignore conventional import declarations', async t => {
   const before = `
 import fs from 'fs';
 import { Escapin } from 'src/index';
@@ -203,5 +179,5 @@ import fs from 'fs';
 import { Escapin } from 'src/index';
 `;
 
-  compare(t, before, after);
+  await compare(t, before, after, step);
 });

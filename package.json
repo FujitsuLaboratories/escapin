@@ -27,7 +27,7 @@
   "repository": {
     "url": "https://github.com/FujitsuLaboratories/escapin.git"
   },
-  "author": "Kimura, Kosaku <kimura.kosaku@jp.fujitsu.com>",
+  "author": "Kimura, Kosaku <kimura.kosaku@fujitsu.com>",
   "license": "MIT",
   "dependencies": {
     "@babel/code-frame": "^7.5.5",

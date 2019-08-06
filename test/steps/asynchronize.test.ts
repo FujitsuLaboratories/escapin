@@ -3,7 +3,7 @@ import step1 from '../../src/steps/functionTypes';
 import step2 from '../../src/steps/asynchronize';
 import { compare } from '../util';
 
-test.serial('test asynchronize', async t => {
+test('test asynchronize', async t => {
   const before = `
 function func() {
   asyncFunc();

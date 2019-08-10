@@ -1,5 +1,4 @@
 import { ExecutionContext } from 'ava';
-import fs from 'fs';
 import _mkdirp from 'mkdirp';
 import { sync as rimraf } from 'rimraf';
 import { promisify } from 'util';
@@ -78,8 +77,6 @@ export async function compare(
     }
 
     const astAfter = c.parse(after);
-
-    fs.writeFileSync('foo.js', c.generate(astBefore), 'utf8');
 
     t.deepEqual(c.purify(astBefore), c.purify(astAfter));
   } catch (err) {

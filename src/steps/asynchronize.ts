@@ -44,7 +44,9 @@ const visitor: Visitor<AsynchronizationState> = {
     }
   },
   CallExpression(path, state) {
-    fetchErrorFirstCallback(path, state) || fetchGeneralCallback(path, state) || fetchAsynchronous(path, state);
+    fetchErrorFirstCallback(path, state) ||
+      fetchGeneralCallback(path, state) ||
+      fetchAsynchronous(path, state);
   },
   For(path, state) {
     if (!u.test(path, path => u.isSimpleAwaitStatement(path.node))) {
@@ -321,7 +323,11 @@ function fetchErrorFirstCallback(
   }
   const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
   if (callbackPath === undefined || !callbackPath.isFunction()) {
-    throw new SyntaxError('This call expression does not have error-first callback.', path.node, state);
+    throw new SyntaxError(
+      'This call expression does not have error-first callback.',
+      path.node,
+      state,
+    );
   }
   const callback = callbackPath.node;
 
@@ -410,7 +416,10 @@ function fetchErrorFirstCallback(
   return true;
 }
 
-function fetchGeneralCallback(path: u.NodePath<u.CallExpression>, state: AsynchronizationState): boolean {
+function fetchGeneralCallback(
+  path: u.NodePath<u.CallExpression>,
+  state: AsynchronizationState,
+): boolean {
   const names = t.getNames(path.get('callee') as u.NodePath);
   const entry = state.escapin.types.get(...names);
   if (!t.isGeneralCallback(entry) || state.asynchronized.includes(path.node)) {

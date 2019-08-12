@@ -77,11 +77,12 @@ export function snippetFor(
   specifier: string,
   vars?: { [x: string]: OneOrMore<t.Node> },
 ): t.Statement[] {
-  const tpl = fs.readFileSync(
-    // eslint-disable-next-line no-undef
-    Path.resolve(__dirname, `../templates/${specifier.replace(/\./g, '/')}.js`),
-    'utf8',
-  );
+  // eslint-disable-next-line no-undef
+  const file = Path.resolve(__dirname, `../templates/${specifier.replace(/\./g, '/')}.js`);
+  if (!fs.existsSync(file)) {
+    throw new Error(`${file} not found`);
+  }
+  const tpl = fs.readFileSync(file, 'utf8');
   if (vars === undefined) {
     return parse(tpl).program.body;
   }

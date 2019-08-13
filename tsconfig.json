@@ -2,9 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2018",
-    "lib": [
-      "es2018"
-    ],
+    "lib": ["es2018"],
     "rootDir": "src",
     "sourceMap": true,
     "moduleResolution": "Node",
@@ -17,20 +15,10 @@
     "noUnusedLocals": true,
     "noEmitHelpers": true,
     "importHelpers": true,
-    "types": [
-      "node"
-    ],
-    "typeRoots": [
-      "@types"
-    ],
+    "types": ["node"],
+    "typeRoots": ["@types"],
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "exclude": [
-    "node_modules",
-    "bin",
-    "test",
-    ".*.js",
-    "*.config.js"
-  ]
+  "exclude": ["node_modules", "bin", "test", ".*.js", "*.config.js"]
 }

@@ -22,7 +22,7 @@ function main() {
     .description('Transpile source code')
     .option('-d, --dir <dir>', 'Working directory', dir, process.cwd())
     .action(doTranspileProcess)
-    .on('--help', function () {
+    .on('--help', function() {
       console.log('escapin [-d <dir>]');
     });
 

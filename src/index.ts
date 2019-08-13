@@ -13,6 +13,7 @@ import * as u from './util';
 import { BaseState } from './state';
 import { steps } from './steps';
 import { TypeDictionary } from './types';
+import packageJson from '../package.json';
 
 const explorer = cosmiconfig('escapin');
 const mkdirp = promisify(_mkdirp);
@@ -114,13 +115,7 @@ export class Escapin {
   }
 
   private loadPackageJson() {
-    const packageJson = Path.join(this.basePath, 'package.json');
-    if (!fs.existsSync(packageJson)) {
-      throw new Error('The project does not contain package.json.');
-    }
-    this.packageJson = JSON.parse(fs.readFileSync(packageJson).toString());
-    this.packageJson.dependencies = this.packageJson.dependencies || {};
-    this.packageJson.devDependencies = this.packageJson.devDependencies || {};
+    this.packageJson = packageJson;
   }
 
   private savePackageJson() {

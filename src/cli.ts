@@ -1,27 +1,28 @@
 #!/usr/bin/env node
 
 import program from 'commander';
-import fs from 'fs';
 import path from 'path';
+import updateNotifier from 'update-notifier';
 import { Escapin } from '.';
+import pkg from '../package.json';
 
 function dir(val: string): string {
   return path.resolve(val);
 }
 
 function main() {
-  const packageJson = JSON.parse(
-    // eslint-disable-next-line no-undef
-    fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'),
-  );
+  const notifier = updateNotifier({ pkg });
+  if (notifier.update && notifier.update.latest !== pkg.version) {
+    notifier.notify({ defer: false });
+  }
 
-  program.version(packageJson.version);
+  program.version(pkg.version);
 
   program
     .description('Transpile source code')
     .option('-d, --dir <dir>', 'Working directory', dir, process.cwd())
     .action(doTranspileProcess)
-    .on('--help', function() {
+    .on('--help', function () {
       console.log('escapin [-d <dir>]');
     });
 

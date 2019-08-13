@@ -4,6 +4,8 @@
     "target": "es2018",
     "lib": ["es2018"],
     "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "allowJs": true,
     "moduleResolution": "Node",
@@ -18,7 +20,8 @@
     "importHelpers": true,
     "types": ["node"],
     "typeRoots": ["@types"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "bin", "test"]
 }

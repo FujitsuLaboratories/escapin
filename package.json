@@ -24,7 +24,7 @@
     "prettier-check-updated": "pipe-git-updated --ext=ts --ext=js --ext=json --ext=yaml --ext=yml --ext=md -- prettier -c",
     "test": "ava",
     "coverage": "nyc ava",
-    "report": "nyc report --reporter=lcov --reporter=text-lcov",
+    "report": "nyc report --reporter=lcov --reporter=text-lcov | coveralls && codecov",
     "start": "ts-node src/cli.ts"
   },
   "repository": {

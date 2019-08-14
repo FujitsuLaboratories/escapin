@@ -20,7 +20,6 @@ export function initializeState() {
   state.escapin.config = {
     name: 'test',
     platform: 'aws',
-    // eslint-disable-next-line no-undef
     output_dir: `${__dirname}/${uuid()}`,
   };
   state.escapin.apiSpec = {

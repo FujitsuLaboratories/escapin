@@ -2,6 +2,7 @@
 
 **the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs**
 
+[![npm version](https://badge.fury.io/js/escapin.svg)](https://badge.fury.io/js/escapin)
 [![Build Status](https://travis-ci.org/FujitsuLaboratories/escapin.svg?branch=master)](https://travis-ci.org/FujitsuLaboratories/escapin)
 [![dependencies Status](https://david-dm.org/FujitsuLaboratories/escapin/status.svg)](https://david-dm.org/FujitsuLaboratories/escapin)
 [![devDependencies Status](https://david-dm.org/FujitsuLaboratories/escapin/dev-status.svg)](https://david-dm.org/FujitsuLaboratories/escapin?type=dev)

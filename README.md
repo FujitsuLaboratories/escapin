@@ -26,7 +26,7 @@ Using Yarn is preferred because Escapin internally uses Yarn to install TypeScri
 
 ## Usage
 
-Escapin provides CLI `escapin` that is working on Node.js project directories containing `./package.json`.
+Escapin provides CLI `escapin` that works on Node.js project directories containing `./package.json`.
 
 ```sh
 cd examples/sendmail
@@ -43,9 +43,9 @@ escapin -d examples/sendmail
 - CLI options are:
 
 ```sh
-  -V, --version    Output the version number
-  -d, --dir <dir>  Working directory
-  -h, --help       Output usage information
+  -V, --version    output the version number
+  -d, --dir <dir>  working directory (default: .)
+  -h, --help       output usage information
 ```
 
 ## Documentation

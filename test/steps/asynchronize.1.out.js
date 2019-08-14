@@ -1,22 +1,5 @@
-import test from 'ava';
-import step1 from '../../src/steps/functionTypes';
-import step2 from '../../src/steps/asynchronize';
-import { compare } from '../util';
+import deasync from 'deasync';
 
-test('test asynchronize', async t => {
-  const before = `
-function func() {
-  asyncFunc();
-  const data = errorFirstCallbackFunc(arg);
-}
-generalCallbackFunc(arg => {
-  const data = asyncFunc(arg);
-  doSomething();
-});
-generalFunc();
-`;
-
-  const after = `
 async function func() {
   await asyncFunc();
   await new Promise((resolve, reject) => {
@@ -44,7 +27,3 @@ generalCallbackFunc(arg => {
   doSomething();
 });
 generalFunc();
-`;
-
-  await compare(t, before, after, step1, step2);
-});

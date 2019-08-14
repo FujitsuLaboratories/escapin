@@ -1,5 +1,7 @@
 import { ExecutionContext } from 'ava';
+import fs from 'fs';
 import _mkdirp from 'mkdirp';
+import path from 'path';
 import { sync as rimraf } from 'rimraf';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
@@ -12,13 +14,11 @@ const mkdirp = promisify(_mkdirp);
 
 export async function compare(
   t: ExecutionContext,
-  before: string,
-  after: string,
+  testName: string,
   ...steps: Array<(state: BaseState) => void>
 ) {
   const state = new BaseState();
   state.filename = 'test';
-  state.dependencies = {};
   state.escapin = new Escapin(process.cwd());
   state.escapin.id = 'test';
   state.escapin.config = {
@@ -66,6 +66,9 @@ export async function compare(
   state.escapin.types.put(types.general('generalFunc'));
 
   await mkdirp(state.escapin.config.output_dir);
+
+  const before = fs.readFileSync(path.join(__dirname, `steps/${testName}.in.js`), 'utf8');
+  const after = fs.readFileSync(path.join(__dirname, `steps/${testName}.out.js`), 'utf8');
 
   try {
     const astBefore = c.parse(before);

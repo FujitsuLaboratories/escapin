@@ -10,7 +10,7 @@ export default function(baseState: BaseState) {
   u.traverse(visitor, new ObjectState(baseState));
 }
 
-export class ObjectState extends BaseState {
+class ObjectState extends BaseState {
   constructor(base?: BaseState) {
     super(base);
     this.objects = [];

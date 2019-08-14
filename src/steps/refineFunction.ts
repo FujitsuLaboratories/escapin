@@ -11,7 +11,7 @@ export default function(baseState: BaseState) {
   u.traverse(visitor, new FunctionState(baseState));
 }
 
-export class FunctionState extends BaseState {
+class FunctionState extends BaseState {
   constructor(base?: BaseState) {
     super(base);
     this.functions = [];

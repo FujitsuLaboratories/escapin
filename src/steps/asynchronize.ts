@@ -10,7 +10,7 @@ export default function(baseState: BaseState) {
   u.traverse(visitor, new AsynchronizationState(baseState));
 }
 
-export class AsynchronizationState extends BaseState {
+class AsynchronizationState extends BaseState {
   public asynchronized: u.Node[];
   constructor(base?: BaseState) {
     super(base);
@@ -488,7 +488,7 @@ function fetchGeneralCallback(
           $TEMP: temp,
         },
       );
-      state.addDependency('deasync', 'deasync');
+      state.addDependency('deasync');
       path.skip();
     },
     ExpressionStatement(path) {
@@ -513,7 +513,8 @@ function fetchGeneralCallback(
           },
         ),
       );
-      state.addDependency('deasync', 'deasync');
+      state.unshiftProgramBody(u.snippetFor('misc.import.deasync'));
+      state.addDependency('deasync');
       path.skip();
     },
   });

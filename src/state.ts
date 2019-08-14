@@ -21,7 +21,6 @@ export interface IPathInfo {
 export class BaseState {
   public escapin: Escapin;
   public replacements: Array<{ original: u.Node; replaced: u.Node; scope: Scope }>;
-  public dependencies: { [variable: string]: string };
   public filename: string;
   public code: string;
   public ast: t.File;
@@ -34,8 +33,6 @@ export class BaseState {
       return;
     }
     this.replacements = [];
-    // this.finalize = false;
-    this.dependencies = {};
   }
 
   public getPathInfo(functionName: string): IPathInfo | undefined {
@@ -64,11 +61,19 @@ export class BaseState {
     return undefined;
   }
 
-  public insert(snippet: u.OneOrMore<u.Statement>) {
+  public pushProgramBody(snippet: u.OneOrMore<u.Statement>) {
     if (Array.isArray(snippet)) {
       this.ast.program.body.push(...snippet);
     } else {
       this.ast.program.body.push(snippet);
+    }
+  }
+
+  public unshiftProgramBody(snippet: u.OneOrMore<u.Statement>) {
+    if (Array.isArray(snippet)) {
+      this.ast.program.body.unshift(...snippet);
+    } else {
+      this.ast.program.body.unshift(snippet);
     }
   }
 
@@ -87,14 +92,9 @@ export class BaseState {
     return undefined;
   }
 
-  public addDependency(variable: string, moduleName: string) {
-    this.dependencies[variable] = moduleName;
-    if (
-      this.escapin.packageJson !== undefined &&
-      this.escapin.packageJson.dependencies !== undefined
-    ) {
-      this.escapin.packageJson.dependencies[moduleName] = 'latest';
-    }
+  public addDependency(moduleName: string) {
+    this.escapin.packageJson.dependencies[moduleName] = 'latest';
+    this.unshiftProgramBody(u.snippetFor(moduleName));
   }
 
   public hasDependency(moduleName: string): boolean {
@@ -122,15 +122,5 @@ export class BaseState {
         bundledDependencies,
       )
     );
-  }
-
-  public addImportDeclaration() {
-    for (const variable in this.dependencies) {
-      const moduleName = this.dependencies[variable];
-      const decl = `import ${variable} from '${moduleName}';`;
-      this.ast.program.body.unshift(...u.parse(decl).program.body);
-    }
-    this.code = u.generate(this.ast);
-    this.dependencies = {};
   }
 }

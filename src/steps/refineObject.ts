@@ -1,5 +1,6 @@
 import { Visitor } from '@babel/traverse';
 import { cloneDeep } from 'lodash';
+import Path from 'path';
 import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
@@ -59,44 +60,11 @@ const visitor: Visitor<ObjectState> = {
 
     state.objects.push({ id, service });
 
-    const rc = state.escapin.serverlessConfig.resources[id.name];
-    if (service.startsWith('aws.dynamodb')) {
-      state.addDependency('{ DynamoDB }', 'aws-sdk');
-      const Type = 'AWS::DynamoDB::Table';
-      const Properties = {
-        TableName: `${id.name}-${state.escapin.id}`,
-        KeySchema: [{ AttributeName: 'key', KeyType: 'HASH' }],
-        AttributeDefinitions: [{ AttributeName: 'key', AttributeType: 'S' }],
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 5,
-          WriteCapacityUnits: 5,
-        },
-      };
-      if (rc) {
-        rc.Type = Type;
-        rc.Properties = Properties;
-      } else {
-        state.escapin.serverlessConfig.resources[id.name] = {
-          Type,
-          Properties,
-        };
-      }
-    } else if (service.startsWith('aws.s3')) {
-      state.addDependency('{ S3 }', 'aws-sdk');
-      const Type = 'AWS::S3::Bucket';
-      const Properties = {
-        BucketName: `${id.name}-${state.escapin.id}`,
-      };
-      if (rc) {
-        rc.Type = Type;
-        rc.Properties = Properties;
-      } else {
-        state.escapin.serverlessConfig.resources[id.name] = {
-          Type,
-          Properties,
-        };
-      }
-    }
+    state.unshiftProgramBody(u.snippetFor(service));
+
+    state.escapin.addServerlessConfig(service, {
+      name: `${id.name}-${state.escapin.id}`,
+    });
 
     path.remove();
   },
@@ -216,12 +184,16 @@ const visitor: Visitor<ObjectState> = {
     path.skip();
   },
   VariableDeclaration(path, state) {
-    const assignment = state.assignments.find(that => u.equals(path.node, that.snippet));
+    const assignment = state.assignments.find(that => u.includes(path, that.snippet));
     if (assignment === undefined) {
       return;
     }
     const { left, right, variable, service } = assignment;
     const parentPath = path.parentPath;
+    if (!u.isIdentifier(left.object)) {
+      return;
+    }
+    const name = `${left.object.name}-${state.escapin.id}`;
 
     u.remove(state.assignments, assignment);
 
@@ -255,17 +227,31 @@ const visitor: Visitor<ObjectState> = {
       scope: path.scope,
     });
 
-    state.insert(
-      u.snippetFor(`${service}.lambda`, {
+    state.pushProgramBody(
+      u.snippetFor(`${service}.function`, {
         $VAR: variable,
+        $NAME: u.stringLiteral(name),
         $BODY: movedStmts,
       }),
     );
 
+    const { platform } = state.escapin.config;
+    const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${
+      variable.name
+    }`;
+
+    state.escapin.addServerlessConfig(`${platform}.function`, {
+      name: variable.name,
+      handler,
+    });
+    state.escapin.addServerlessConfig(`${service}.function`, {
+      name: variable.name,
+      resource: name,
+    });
+
     path.skip();
   },
   UnaryExpression(path, state) {
-    // DELETE
     const { argument, operator } = path.node;
     if (!u.isMemberExpression(argument)) {
       return;

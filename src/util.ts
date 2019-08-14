@@ -78,7 +78,7 @@ export function snippetFor(
   vars?: { [x: string]: OneOrMore<t.Node> },
 ): t.Statement[] {
   // eslint-disable-next-line no-undef
-  const file = Path.resolve(__dirname, `../templates/${specifier.replace(/\./g, '/')}.js`);
+  const file = Path.resolve(__dirname, `../templates/snippet/${specifier.replace(/\./g, '/')}.js`);
   if (!fs.existsSync(file)) {
     throw new Error(`${file} not found`);
   }

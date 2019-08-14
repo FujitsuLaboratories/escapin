@@ -1,0 +1,6 @@
+functions:
+  ${name}:
+    handler: ${handler}
+    memorySize: 512
+    runtime: nodejs10.x
+    role: arn:aws:iam::XXXXXX:role/role

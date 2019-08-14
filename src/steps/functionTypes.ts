@@ -16,7 +16,6 @@ export default function(baseState: BaseState) {
 
   console.log('flush changes');
 
-  baseState.addImportDeclaration();
   baseState.escapin.save();
 
   console.log(`install types at ${output_dir}`);
@@ -127,24 +126,26 @@ function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_di
         if (ts.isFunctionTypeNode(paramTypeNode)) {
           const firstParam = paramTypeNode.parameters[0];
           const firstParamSymbol = checker.getSymbolAtLocation(firstParam.name);
-          if (firstParamSymbol) {
-            const str = checker.symbolToString(firstParamSymbol);
-            if (str.match(u.ERROR_PATTERN)) {
-              types.put(t.errorFirstCallback(...names));
-            } else {
-              types.put(t.generalCallback(...names));
-            }
+          if (firstParamSymbol === undefined) {
+            return;
+          }
+          const str = checker.symbolToString(firstParamSymbol);
+          if (str.match(u.ERROR_PATTERN)) {
+            types.put(t.errorFirstCallback(...names));
+          } else {
+            types.put(t.generalCallback(...names));
           }
         } else {
           const returnType = signature.getReturnType();
           const returnSymbol = returnType.getSymbol();
-          if (returnSymbol) {
-            const returnName = checker.symbolToString(returnSymbol);
-            if (returnName === 'Promise') {
-              types.put(t.asynchronous(...names));
-            } else {
-              types.put(t.general(...names));
-            }
+          if (returnSymbol === undefined) {
+            return;
+          }
+          const returnName = checker.symbolToString(returnSymbol);
+          if (returnName === 'Promise') {
+            types.put(t.asynchronous(...names));
+          } else {
+            types.put(t.general(...names));
           }
         }
       }

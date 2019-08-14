@@ -1,0 +1,7 @@
+functions:
+  ${name}:
+    events:
+      - http:
+          path: ${path}
+          method: ${method}
+          cors: true

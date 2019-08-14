@@ -2,6 +2,7 @@ import cosmiconfig from 'cosmiconfig';
 import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
 import { safeLoad as loadYaml, dump as dumpYaml } from 'js-yaml';
+import { mergeWith } from 'lodash';
 import _mkdirp from 'mkdirp';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
@@ -9,11 +10,11 @@ import { sync as rimraf } from 'rimraf';
 import { dereference } from 'swagger-parser';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
+import vm from 'vm';
 import * as u from './util';
 import { BaseState } from './state';
 import { steps } from './steps';
 import { TypeDictionary } from './types';
-import packageJson from '../package.json';
 
 const explorer = cosmiconfig('escapin');
 const mkdirp = promisify(_mkdirp);
@@ -45,10 +46,10 @@ export interface IPackageJson {
 }
 
 export interface IServerlessConfig {
-  service: string;
-  provider: any;
-  functions: { [name: string]: any };
-  resources: { [name: string]: any };
+  service?: string;
+  provider?: any;
+  functions?: { [name: string]: any };
+  resources?: { [name: string]: any };
 }
 
 const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
@@ -115,7 +116,22 @@ export class Escapin {
   }
 
   private loadPackageJson() {
-    this.packageJson = packageJson;
+    const packageJson = Path.join(this.basePath, 'package.json');
+    if (!fs.existsSync(packageJson)) {
+      throw new Error('The project does not contain package.json.');
+    }
+    this.packageJson = JSON.parse(fs.readFileSync(packageJson).toString());
+    this.packageJson.dependencies = this.packageJson.dependencies || {};
+    this.packageJson.devDependencies = this.packageJson.devDependencies || {};
+    switch (this.config.platform) {
+      case 'aws':
+        if (!('aws-sdk' in this.packageJson.dependencies)) {
+          this.packageJson.dependencies['aws-sdk'] = 'latest';
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   private savePackageJson() {
@@ -126,7 +142,7 @@ export class Escapin {
   private async loadAPISpec() {
     if (this.config.api_spec) {
       const filename = Path.join(this.basePath, this.config.api_spec);
-      console.log(`loading api spec ${filename}`);
+      console.log(`load api spec ${filename}`);
       const data = await dereference(filename);
       if (data === null) {
         throw new Error(`dereferencing ${filename} results 'undefined'.`);
@@ -166,7 +182,6 @@ export class Escapin {
       );
       this.config.api_spec = API_SPEC_FILENAME;
       this.apiSpec = { file: API_SPEC_FILENAME, data };
-      console.log(this.apiSpec.file);
     }
   }
 
@@ -227,18 +242,36 @@ export class Escapin {
     if (fs.existsSync(serverlessFile)) {
       this.serverlessConfig = loadYaml(fs.readFileSync(serverlessFile, 'utf8'));
     } else {
-      this.serverlessConfig = {
-        service: this.config.name,
-        provider: {
-          name: this.config.platform,
-          runtime: 'nodejs10.x',
-          stage: 'dev',
-          apiKeys: {},
-        },
-        functions: {},
-        resources: {},
-      };
+      this.serverlessConfig = {};
+      const { name, platform } = this.config;
+      this.addServerlessConfig(platform, {
+        name,
+        platform,
+        runtime: 'nodejs10.x',
+        stage: 'dev',
+        apiKeys: [],
+      });
     }
+  }
+
+  public addServerlessConfig(specifier: string, vars: { [key: string]: any }) {
+    const file = Path.resolve(
+      __dirname,
+      `../templates/serverless/${specifier.replace(/\./g, '/')}.yml`,
+    );
+    if (!fs.existsSync(file)) {
+      throw new Error(`${file} not found`);
+    }
+    const tpl = fs.readFileSync(file, 'utf8');
+    const context = vm.createContext(vars);
+    const yaml = vm.runInContext(`String.raw\`${tpl}\``, context);
+    const configPart = loadYaml(yaml);
+
+    mergeWith(this.serverlessConfig, configPart, (lhs: any, rhs: any): any => {
+      if (Array.isArray(lhs)) {
+        return lhs.concat(rhs);
+      }
+    });
   }
 
   private saveServerlessConfig() {

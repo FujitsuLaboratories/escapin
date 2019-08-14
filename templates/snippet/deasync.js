@@ -1,0 +1,1 @@
+import deasync from 'deasync';

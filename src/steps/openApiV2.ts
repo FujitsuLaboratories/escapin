@@ -109,7 +109,7 @@ const visitor: Visitor<OpenApiV2State> = {
       }
       if (variable) {
         state.apis.push({ key: variable, spec });
-        state.addDependency('request', 'request');
+        state.addDependency('request');
       }
       path.remove();
       return;
@@ -149,7 +149,7 @@ const visitor: Visitor<OpenApiV2State> = {
     if (u.isSpreadElement(arg0)) {
       options.properties.unshift(arg0);
     } else {
-      options.properties.unshift(u.objectProperty(u.stringLiteral(attrName), arg0));
+      options.properties.unshift(u.objectProperty(u.identifier(attrName), arg0));
     }
 
     modifySnippets('post', path, path, options);
@@ -170,7 +170,7 @@ const visitor: Visitor<OpenApiV2State> = {
 
     options.properties.unshift(
       u.objectProperty(
-        u.stringLiteral(attrName),
+        u.identifier(attrName),
         u.expression('JSON.stringify($BODY)', {
           $BODY: path.node.right,
         }),
@@ -359,12 +359,12 @@ function createRequestOptions(
   let headers = u.objectExpression([]);
   let qs = u.objectExpression([]);
   let options = u.objectExpression([
-    u.objectProperty(u.stringLiteral('uri'), u.parseExpression(`\`${uri}\``)),
-    u.objectProperty(u.stringLiteral('method'), u.stringLiteral(method)),
+    u.objectProperty(u.identifier('uri'), u.parseExpression(`\`${uri}\``)),
+    u.objectProperty(u.identifier('method'), u.stringLiteral(method)),
   ]);
   if (contentType) {
     options.properties.push(
-      u.objectProperty(u.stringLiteral('contentType'), u.stringLiteral(contentType)),
+      u.objectProperty(u.identifier('contentType'), u.stringLiteral(contentType)),
     );
   }
 
@@ -419,7 +419,7 @@ function createRequestOptions(
             case 'query':
               qs.properties.push(
                 u.objectProperty(
-                  u.stringLiteral(key),
+                  u.identifier(key),
                   u.memberExpression(paramsId, u.identifier(key)),
                 ),
               );
@@ -427,7 +427,7 @@ function createRequestOptions(
             case 'header':
               headers.properties.push(
                 u.objectProperty(
-                  u.stringLiteral(key),
+                  u.identifier(key),
                   u.memberExpression(paramsId, u.identifier(key)),
                 ),
               );
@@ -461,10 +461,10 @@ function createRequestOptions(
           isBase64Encoded(value) ? value : Buffer.from(value).toString('base64')
         }`;
         headers.properties.push(
-          u.objectProperty(u.stringLiteral('authorization'), u.stringLiteral(basicCred)),
+          u.objectProperty(u.identifier('authorization'), u.stringLiteral(basicCred)),
         );
       } else if (isSecuritySchemeApiKey(security)) {
-        const apiKeyProp = u.objectProperty(u.stringLiteral(security.name), u.stringLiteral(value));
+        const apiKeyProp = u.objectProperty(u.identifier(security.name), u.stringLiteral(value));
         if (security.in === 'header') {
           headers.properties.push(apiKeyProp);
         } else {
@@ -476,13 +476,13 @@ function createRequestOptions(
     }
   }
   if (attrName === 'body') {
-    options.properties.push(u.objectProperty(u.stringLiteral('json'), u.booleanLiteral(true)));
+    options.properties.push(u.objectProperty(u.identifier('json'), u.booleanLiteral(true)));
   }
   if (headers.properties.length > 0) {
-    options.properties.push(u.objectProperty(u.stringLiteral('headers'), headers));
+    options.properties.push(u.objectProperty(u.identifier('headers'), headers));
   }
   if (qs.properties.length > 0) {
-    options.properties.push(u.objectProperty(u.stringLiteral('qs'), qs));
+    options.properties.push(u.objectProperty(u.identifier('qs'), qs));
   }
   return { options, attrName, actualTarget };
 }

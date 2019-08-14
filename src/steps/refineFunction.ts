@@ -27,42 +27,32 @@ const visitor: Visitor<FunctionState> = {
     if (id === undefined) {
       return;
     }
-    const functionName = id.name;
+    const name = id.name;
 
     const { params } = func;
     const req = params[0];
     if (state.functions.includes(path.node)) {
       return;
     }
-    const info = state.getPathInfo(functionName);
+    const info = state.getPathInfo(name);
     if (info === undefined) {
       return;
     }
 
-    const handler = `${Path.basename(
-      state.filename,
-      Path.extname(state.filename),
-    )}.${functionName}`;
+    const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${name}`;
 
     const { parameters } = info;
-    const events = [
-      {
-        http: {
-          path: info.path.substring(1),
-          method: info.method,
-          cors: true,
-        },
-      },
-    ];
-    const functionInfo = state.escapin.serverlessConfig.functions[functionName];
-    if (functionInfo) {
-      functionInfo.events = events;
-    } else {
-      state.escapin.serverlessConfig.functions[functionName] = {
-        handler,
-        events,
-      };
-    }
+    const { platform } = state.escapin.config;
+
+    state.escapin.addServerlessConfig(`${platform}.function`, {
+      name,
+      handler,
+    });
+    state.escapin.addServerlessConfig(`${platform}.function.http`, {
+      name,
+      path: info.path.substring(1),
+      method: info.method,
+    });
 
     const firstParam = params[0];
     params.push(u.identifier('context'));
@@ -168,8 +158,7 @@ const visitor: Visitor<FunctionState> = {
 
     if (info.consumes && info.consumes.some(consumes => consumes === 'multipart/form-data')) {
       body.body.unshift(u.statement('$PARAM = parseMultipart($PARAM);', { $PARAM: firstParam }));
-      const snippet = u.snippetFor('misc.multipart');
-      stmtPath.insertBefore(snippet);
+      stmtPath.insertBefore(u.snippetFor('misc.multipart'));
     }
   },
 };

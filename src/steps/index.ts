@@ -7,7 +7,7 @@ import functionTypes from './functionTypes';
 import asynchronize from './asynchronize';
 import finalize from './finalize';
 
-export const steps = [
+const steps = [
   normalize,
   uncallbackify,
   openApiV2,
@@ -17,3 +17,15 @@ export const steps = [
   asynchronize,
   finalize,
 ];
+
+export {
+  normalize,
+  uncallbackify,
+  openApiV2,
+  refineObject,
+  refineFunction,
+  functionTypes,
+  asynchronize,
+  finalize,
+  steps,
+};

@@ -1,0 +1,6 @@
+service: ${name}
+provider:
+  name: ${platform}
+  runtime: ${runtime}
+  stage: ${stage}
+  apiKeys: ${apiKeys}

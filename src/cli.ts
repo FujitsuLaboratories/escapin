@@ -20,7 +20,7 @@ function main() {
 
   program
     .description('Transpile source code')
-    .option('-d, --dir <dir>', 'Working directory', dir, process.cwd())
+    .option('-d, --dir <dir>', 'working directory (default: .)', dir, process.cwd())
     .action(doTranspileProcess)
     .on('--help', function() {
       console.log('escapin [-d <dir>]');
@@ -34,8 +34,14 @@ main();
 async function doTranspileProcess(options: { dir: string }) {
   const { dir } = options;
 
-  console.log(`dir: ${dir}`);
+  console.log(`working directory is ${dir}`);
 
   const escapin = new Escapin(dir);
-  await escapin.transpile();
+
+  try {
+    await escapin.transpile();
+  } catch (err) {
+    console.error(err);
+    process.exit(-1);
+  }
 }

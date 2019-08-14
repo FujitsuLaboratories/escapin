@@ -101,8 +101,7 @@ export class BaseState {
     if (module.builtinModules.includes(moduleName)) {
       return true;
     }
-    const { packageJson } = this.escapin;
-    if (packageJson === undefined) {
+    if (this.escapin === undefined || this.escapin.packageJson === undefined) {
       return false;
     }
     const {
@@ -111,7 +110,7 @@ export class BaseState {
       peerDependencies,
       optionalDependencies,
       bundledDependencies,
-    } = packageJson;
+    } = this.escapin.packageJson;
     return (
       moduleName in
       Object.assign(

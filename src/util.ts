@@ -106,12 +106,9 @@ export function purify(node: t.Node): t.Node {
     'typeAnnotation',
     'typeArguments',
     'optional',
+    'async',
+    'generator',
   ].forEach(key => delete _node[key]);
-  ['async', 'generator'].forEach(key => {
-    if (!_node[key]) {
-      delete _node[key];
-    }
-  });
   for (const key in _node) {
     if (_node[key] === null) {
       continue;
@@ -139,45 +136,6 @@ export function equals(lhs: any, rhs: any) {
 
 export function remove<T>(array: T[], item: T) {
   _remove(array, that => equals(that, item));
-}
-
-export function objectToNode(object: object): t.Node {
-  const ast = parse(`var dummy = ${JSON.stringify(object)};`);
-  _traverse(ast, {
-    StringLiteral(path) {
-      const str = path.node.value;
-      if (str.indexOf('${') === -1) {
-        return;
-      }
-      let substr;
-      let index = 0;
-      let lastIndex = 0;
-      const expressions = [];
-      const quasis = [];
-      index = str.indexOf('${', lastIndex);
-      while (index !== -1) {
-        substr = str.substring(lastIndex, index);
-        quasis.push(t.templateElement({ raw: substr, cooked: substr }, false));
-        lastIndex = index + 2;
-        index = str.indexOf('}', lastIndex);
-        substr = str.substring(lastIndex, index);
-        expressions.push(t.identifier(substr));
-        lastIndex = index + 1;
-        index = str.indexOf('${', lastIndex);
-      }
-      substr = str.substring(lastIndex);
-      quasis.push(t.templateElement({ raw: substr, cooked: substr }, true));
-      path.replaceWith(t.templateLiteral(quasis, expressions));
-    },
-  });
-  const decl = ast.program.body[0];
-  if (!t.isVariableDeclaration(decl)) {
-    throw new Error('ast.program.body[0] is not a VariableDeclaration');
-  }
-  if (decl.declarations[0].init === null) {
-    throw new Error('decl.declarations[0].init is null');
-  }
-  return decl.declarations[0].init;
 }
 
 export function find(

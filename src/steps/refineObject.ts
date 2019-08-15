@@ -1,13 +1,16 @@
 import { Visitor } from '@babel/traverse';
 import { cloneDeep } from 'lodash';
 import Path from 'path';
+import { Escapin } from '..';
 import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('refineObject');
-  u.traverse(visitor, new ObjectState(baseState));
+  for (const filename in escapin.states) {
+    u.traverse(visitor, new ObjectState(escapin.states[filename]));
+  }
 }
 
 class ObjectState extends BaseState {
@@ -63,7 +66,8 @@ const visitor: Visitor<ObjectState> = {
     state.unshiftProgramBody(u.snippetFor(service));
 
     state.escapin.addServerlessConfig(service, {
-      name: `${id.name}-${state.escapin.id}`,
+      name: id.name,
+      id: state.escapin.id,
     });
 
     path.remove();
@@ -193,7 +197,6 @@ const visitor: Visitor<ObjectState> = {
     if (!u.isIdentifier(left.object)) {
       return;
     }
-    const name = `${left.object.name}-${state.escapin.id}`;
 
     u.remove(state.assignments, assignment);
 
@@ -227,27 +230,30 @@ const visitor: Visitor<ObjectState> = {
       scope: path.scope,
     });
 
-    state.pushProgramBody(
-      u.snippetFor(`${service}.function`, {
-        $VAR: variable,
-        $NAME: u.stringLiteral(name),
-        $BODY: movedStmts,
-      }),
-    );
-
     const { platform } = state.escapin.config;
+
+    const name = variable.name.replace(/[^A-Za-z0-9]/g, '');
     const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${
       variable.name
     }`;
+    const resource = `${left.object.name}-${state.escapin.id}`;
 
     state.escapin.addServerlessConfig(`${platform}.function`, {
-      name: variable.name,
+      name,
       handler,
     });
     state.escapin.addServerlessConfig(`${service}.function`, {
-      name: variable.name,
-      resource: name,
+      name,
+      resource,
     });
+
+    state.pushProgramBody(
+      u.snippetFor(`${service}.function`, {
+        $VAR: variable,
+        $NAME: u.stringLiteral(resource),
+        $BODY: movedStmts,
+      }),
+    );
 
     path.skip();
   },

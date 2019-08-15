@@ -12,17 +12,21 @@ import * as types from '../src/types';
 
 const mkdirp = promisify(_mkdirp);
 
-export function initializeState() {
+export function initialize() {
   const state = new BaseState();
   state.filename = 'test.js';
-  state.escapin = new Escapin(process.cwd());
-  state.escapin.id = 'test';
-  state.escapin.config = {
+  const escapin = new Escapin(process.cwd());
+  escapin.states = {
+    'test.js': state,
+  };
+  state.escapin = escapin;
+  escapin.id = 'test';
+  escapin.config = {
     name: 'test',
     platform: 'aws',
     output_dir: `${__dirname}/${uuid()}`,
   };
-  state.escapin.apiSpec = {
+  escapin.apiSpec = {
     file: 'test.json',
     data: {
       swagger: '2.0',
@@ -40,10 +44,10 @@ export function initializeState() {
       },
     },
   };
-  state.escapin.serverlessConfig = {
-    service: state.escapin.config.name,
+  escapin.serverlessConfig = {
+    service: escapin.config.name,
     provider: {
-      name: state.escapin.config.platform,
+      name: escapin.config.platform,
       runtime: 'nodejs10.x',
       stage: 'dev',
       apiKeys: {},
@@ -51,36 +55,36 @@ export function initializeState() {
     functions: {},
     resources: {},
   };
-  state.escapin.packageJson = {
+  escapin.packageJson = {
     dependencies: {},
     devDependencies: {},
   };
-  state.escapin.types = new types.TypeDictionary();
-  state.escapin.types.put(types.asynchronous('asyncFunc'));
-  state.escapin.types.put(types.errorFirstCallback('errorFirstCallbackFunc'));
-  state.escapin.types.put(types.generalCallback('generalCallbackFunc'));
-  state.escapin.types.put(types.general('generalFunc'));
-  return state;
+  escapin.types = new types.TypeDictionary();
+  escapin.types.put(types.asynchronous('asyncFunc'));
+  escapin.types.put(types.errorFirstCallback('errorFirstCallbackFunc'));
+  escapin.types.put(types.generalCallback('generalCallbackFunc'));
+  escapin.types.put(types.general('generalFunc'));
+  return escapin;
 }
 
 export async function compare(
   t: ExecutionContext,
   testName: string,
-  ...steps: Array<(state: BaseState) => void>
+  ...steps: Array<(escapin: Escapin) => void>
 ) {
-  const state = initializeState();
-  await mkdirp(state.escapin.config.output_dir);
+  const escapin = initialize();
+  await mkdirp(escapin.config.output_dir);
 
   const before = fs.readFileSync(path.join(__dirname, `steps/${testName}.in.js`), 'utf8');
   const after = fs.readFileSync(path.join(__dirname, `steps/${testName}.out.js`), 'utf8');
 
   try {
     const astBefore = u.parse(before);
-    state.code = before;
-    state.ast = astBefore;
+    escapin.states['test.js'].code = before;
+    escapin.states['test.js'].ast = astBefore;
 
     for (const step of steps) {
-      step(state);
+      step(escapin);
     }
 
     const astAfter = u.parse(after);
@@ -90,6 +94,6 @@ export async function compare(
     console.error(err);
     t.fail();
   } finally {
-    rimraf(state.escapin.config.output_dir);
+    rimraf(escapin.config.output_dir);
   }
 }

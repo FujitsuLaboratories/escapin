@@ -1,10 +1,12 @@
 import { Visitor } from '@babel/traverse';
+import { Escapin } from '..';
 import * as u from '../util';
-import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('normalize');
-  u.traverse(visitor, baseState);
+  for (const filename in escapin.states) {
+    u.traverse(visitor, escapin.states[filename]);
+  }
 }
 
 const visitor: Visitor = {

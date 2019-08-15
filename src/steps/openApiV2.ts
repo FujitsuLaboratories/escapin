@@ -9,15 +9,18 @@ import { dereference } from 'swagger-parser';
 import { promisify } from 'util';
 import { sync as rimraf } from 'rimraf';
 import { isURL } from 'validator';
+import { Escapin } from '..';
 import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
 const request = promisify(requestOrg);
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('openApiV2');
-  u.traverse(visitor, new OpenApiV2State(baseState));
+  for (const filename in escapin.states) {
+    u.traverse(visitor, new OpenApiV2State(escapin.states[filename]));
+  }
 }
 
 class OpenApiV2State extends BaseState {

@@ -1,12 +1,15 @@
 import { Visitor } from '@babel/traverse';
 import { last } from 'lodash';
+import { Escapin } from '..';
 import * as u from '../util';
-import { BaseState } from '../state';
 import { SyntaxError } from '../error';
+import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('uncallbackify');
-  u.traverse(visitor, baseState);
+  for (const filename in escapin.states) {
+    u.traverse(visitor, escapin.states[filename]);
+  }
 }
 
 const visitor: Visitor<BaseState> = {

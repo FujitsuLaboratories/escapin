@@ -1,10 +1,13 @@
 import { Visitor } from '@babel/traverse';
+import { Escapin } from '..';
 import * as u from '../util';
 import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('finalize');
-  u.traverse(visitor, new FinalizationState(baseState));
+  for (const filename in escapin.states) {
+    u.traverse(visitor, new FinalizationState(escapin.states[filename]));
+  }
 }
 
 class FinalizationState extends BaseState {

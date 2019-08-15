@@ -2,13 +2,16 @@ import { Visitor } from '@babel/traverse';
 import { isEqual } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
+import { Escapin } from '..';
 import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('refineFunction');
-  u.traverse(visitor, new FunctionState(baseState));
+  for (const filename in escapin.states) {
+    u.traverse(visitor, new FunctionState(escapin.states[filename]));
+  }
 }
 
 class FunctionState extends BaseState {

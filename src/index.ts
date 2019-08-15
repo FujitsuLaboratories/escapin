@@ -80,9 +80,7 @@ export class Escapin {
     await this.load();
 
     for (const step of steps) {
-      for (const filename in this.states) {
-        step(this.states[filename]);
-      }
+      step(this);
     }
 
     this.save();
@@ -204,7 +202,6 @@ export class Escapin {
       const path = Path.join(current, name);
       const relPath = Path.relative(this.basePath, path);
       if (ig.ignores(relPath)) {
-        console.log(`ignores ${relPath}`);
         continue;
       }
       const stat = fs.lstatSync(path);
@@ -246,14 +243,14 @@ export class Escapin {
       this.serverlessConfig = loadYaml(fs.readFileSync(serverlessFile, 'utf8'));
     } else {
       this.serverlessConfig = {};
-      const { name, platform } = this.config;
-      this.addServerlessConfig(platform, {
-        name,
-        platform,
-        runtime: 'nodejs10.x',
-        stage: 'dev',
-      });
     }
+    const { name, platform } = this.config;
+    this.addServerlessConfig(platform, {
+      name,
+      platform,
+      runtime: 'nodejs10.x',
+      stage: 'dev',
+    });
   }
 
   public addServerlessConfig(specifier: string, vars: { [key: string]: any }) {

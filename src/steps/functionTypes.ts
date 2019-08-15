@@ -5,22 +5,22 @@ import { uniq } from 'lodash';
 import path from 'path';
 import * as ts from 'typescript';
 import { installTypes } from 'types-installer';
+import { Escapin } from '..';
 import * as t from '../types';
 import * as u from '../util';
-import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('functionType');
 
-  const { output_dir } = baseState.escapin.config;
+  const { output_dir } = escapin.config;
 
   console.log('flush changes');
 
-  baseState.escapin.save();
+  escapin.save();
 
   console.log(`install types at ${output_dir}`);
 
-  const { dependencies, devDependencies } = baseState.escapin.packageJson;
+  const { dependencies, devDependencies } = escapin.packageJson;
   installTypesInDependencies(dependencies, devDependencies, output_dir);
 
   console.log('yarn');
@@ -35,11 +35,17 @@ export default function(baseState: BaseState) {
   console.log('reload package.json');
 
   const packageJson = JSON.parse(fs.readFileSync(path.join(output_dir, 'package.json'), 'utf8'));
-  baseState.escapin.packageJson = packageJson;
+  escapin.packageJson = packageJson;
 
   console.log('check function types');
 
-  checkFunctionTypes(baseState.escapin.types, baseState.filename, output_dir);
+  for (const filename in escapin.states) {
+    checkFunctionTypes(escapin.types, filename, output_dir);
+  }
+
+  for (const entry of escapin.types.getAll()) {
+    console.log(entry);
+  }
 }
 
 function installTypesInDependencies(
@@ -84,10 +90,6 @@ function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_di
 
   // TODO: find out the below types from the AST
   types.put(t.errorFirstCallback('request'));
-
-  for (const entry of types.getAll()) {
-    console.log(entry);
-  }
 
   function visit(node: ts.Node) {
     try {

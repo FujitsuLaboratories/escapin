@@ -1,13 +1,16 @@
 import { Visitor } from '@babel/traverse';
 import { clone, last } from 'lodash';
+import { Escapin } from '..';
 import * as u from '../util';
 import * as t from '../types';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(baseState: BaseState) {
+export default function(escapin: Escapin) {
   console.log('asynchronize');
-  u.traverse(visitor, new AsynchronizationState(baseState));
+  for (const filename in escapin.states) {
+    u.traverse(visitor, new AsynchronizationState(escapin.states[filename]));
+  }
 }
 
 class AsynchronizationState extends BaseState {

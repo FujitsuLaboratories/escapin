@@ -17,14 +17,14 @@ resources:
       Policies:
         - PolicyName: ${name}-FullAccess
           PolicyDocument:
-            Version: '2017'
+            Version: "2017"
             Statement:
               - Effect: Allow
                 Action:
-                  - 'dynamodb:ListGlobalTables'
-                  - 'dynamodb:ListTables'
-                Resource: '*'
+                  - "dynamodb:ListGlobalTables"
+                  - "dynamodb:ListTables"
+                Resource: "*"
               - Effect: Allow
-                Action: 'dynamodb:*'
+                Action: "dynamodb:*"
                 Resource:
-                  - 'Fn::GetAtt: [${name}, Arn]'
+                  - "Fn::GetAtt: [${name}, Arn]"

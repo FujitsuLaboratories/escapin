@@ -12,11 +12,10 @@ resources:
         Path: /escapin/
         RoleName: ${name}EscapinFunctionRole
         AssumeRolePolicyDocument:
-          Version: '2017'
+          Version: "2017"
           Statement:
             - Effect: Allow
               Principal:
                 Service:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
-

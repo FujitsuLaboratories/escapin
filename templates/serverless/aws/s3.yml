@@ -8,14 +8,14 @@ resources:
       Policies:
         - PolicyName: ${name}-FullAccess
           PolicyDocument:
-            Version: '2017'
+            Version: "2017"
             Statement:
               - Effect: Allow
                 Action:
-                  - 's3:ListAllMyBuckets'
-                  - 's3:GetBucketLocation'
-                Resource: '*'
+                  - "s3:ListAllMyBuckets"
+                  - "s3:GetBucketLocation"
+                Resource: "*"
               - Effect: Allow
-                Action: 's3:*'
+                Action: "s3:*"
                 Resource:
-                  - 'Fn::GetAtt: [${name}, Arn]'
+                  - "Fn::GetAtt: [${name}, Arn]"

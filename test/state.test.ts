@@ -8,7 +8,7 @@ test('test getPathInfo', t => {
   t.is(new BaseState().getPathInfo('incomplete'), undefined);
 
   const state = initializeState();
-  t.deepEqual(state.getPathInfo('csvGET'),  {
+  t.deepEqual(state.getPathInfo('csvGET'), {
     name: 'test-test',
     path: '/csv',
     method: 'get',
@@ -24,20 +24,20 @@ test('test pushProgramBody', t => {
   const state = initializeState();
   state.ast = u.parse('');
   state.pushProgramBody(u.parse('hoge();').program.body[0]);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse("hoge();")));
+  t.deepEqual(u.purify(state.ast), u.purify(u.parse('hoge();')));
 
-  state.pushProgramBody(u.parse("piyo(); fuga();").program.body);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse("hoge(); piyo(); fuga();")));
+  state.pushProgramBody(u.parse('piyo(); fuga();').program.body);
+  t.deepEqual(u.purify(state.ast), u.purify(u.parse('hoge(); piyo(); fuga();')));
 });
 
 test('test unshiftProgramBody', t => {
   const state = initializeState();
   state.ast = u.parse('');
   state.unshiftProgramBody(u.parse('hoge();').program.body[0]);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse("hoge();")));
+  t.deepEqual(u.purify(state.ast), u.purify(u.parse('hoge();')));
 
-  state.unshiftProgramBody(u.parse("piyo(); fuga();").program.body);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse("piyo(); fuga(); hoge();")));
+  state.unshiftProgramBody(u.parse('piyo(); fuga();').program.body);
+  t.deepEqual(u.purify(state.ast), u.purify(u.parse('piyo(); fuga(); hoge();')));
 });
 
 test('test resolvePath', t => {

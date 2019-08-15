@@ -25,12 +25,10 @@ export default function(escapin: Escapin) {
 
   console.log('yarn');
 
-  const { stdout } = commandSync(`yarn`, {
+  commandSync(`yarn`, {
     cwd: output_dir,
     stdout: process.stdout,
   });
-
-  console.log(stdout);
 
   console.log('reload package.json');
 

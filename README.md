@@ -10,6 +10,22 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/8ecf79ac7b2447edf8e0/maintainability)](https://api.codeclimate.com/v1/badges/8ecf79ac7b2447edf8e0/maintainability)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
+## Prerequisites
+
+1. [Node.js](https://nodejs.org/)
+2. [Yarn](https://yarnpkg.com/)
+3. [Serverless Framework](https://serverless.com/)
+
+```sh
+yarn global add serverless
+```
+
+4. The install location is added to your `PATH`
+
+```sh
+export PATH="$(yarn global bin):$PATH"
+```
+
 ## Installation
 
 ```sh

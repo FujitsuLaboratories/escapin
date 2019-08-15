@@ -2,5 +2,5 @@ functions:
   ${name}Function:
     events:
       - s3:
-          bucket: ${resource}
+          bucket: ${resource}-${id}
           event: s3:ObjectCreated:*

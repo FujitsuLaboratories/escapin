@@ -3,4 +3,7 @@ functions:
     events:
       - stream:
           type: dynamodb
-          arn: "Fn::GetAtt: [${resource}, StreamArn]"
+          arn:
+            "Fn::GetAtt":
+              - ${name}Table
+              - StreamArn

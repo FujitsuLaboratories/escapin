@@ -236,7 +236,8 @@ const visitor: Visitor<ObjectState> = {
     const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${
       variable.name
     }`;
-    const resource = `${left.object.name}-${state.escapin.id}`;
+    const resource = left.object.name;
+    const { id } = state.escapin;
 
     state.escapin.addServerlessConfig(`${platform}.function`, {
       name,
@@ -245,6 +246,7 @@ const visitor: Visitor<ObjectState> = {
     state.escapin.addServerlessConfig(`${service}.function`, {
       name,
       resource,
+      id,
     });
 
     state.pushProgramBody(

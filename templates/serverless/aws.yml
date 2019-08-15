@@ -12,7 +12,7 @@ resources:
         Path: /escapin/
         RoleName: ${name}EscapinFunctionRole
         AssumeRolePolicyDocument:
-          Version: "2017"
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Principal:

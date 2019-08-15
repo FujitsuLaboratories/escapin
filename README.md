@@ -34,13 +34,15 @@ cd examples/sendmail
 escapin
 ```
 
-or
+Then, run `serverless deploy` on `./build` folder containing Escapin artifacts.
 
 ```sh
-escapin -d examples/sendmail
+cd build
+
+serverless deploy
 ```
 
-- CLI options are:
+### CLI options
 
 ```sh
   -V, --version         output the version number

@@ -18,7 +18,7 @@ resources:
         Policies:
           - PolicyName: ${name}-${id}-FullAccess
             PolicyDocument:
-              Version: "2017"
+              Version: "2012-10-17"
               Statement:
                 - Effect: Allow
                   Action:
@@ -28,4 +28,6 @@ resources:
                 - Effect: Allow
                   Action: "dynamodb:*"
                   Resource:
-                    - "Fn::GetAtt: [${name}-${id}, Arn]"
+                    "Fn::GetAtt":
+                      - ${name}Table
+                      - Arn

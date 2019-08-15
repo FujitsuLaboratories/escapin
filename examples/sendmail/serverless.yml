@@ -1,0 +1,11 @@
+service: sendmail
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: dev
+plugins:
+  - serverless-webpack
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true

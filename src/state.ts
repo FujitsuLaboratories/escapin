@@ -93,7 +93,7 @@ export class BaseState {
   }
 
   public addDependency(moduleName: string) {
-    this.escapin.packageJson.dependencies[moduleName] = 'latest';
+    this.escapin.addDependency(moduleName);
     this.unshiftProgramBody(u.snippetFor(moduleName));
   }
 

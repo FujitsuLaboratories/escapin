@@ -53,7 +53,6 @@ export interface IServerlessConfig {
 }
 
 const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
-const ESCAPIN_IGNORE_FILE = '.escapinignore';
 const OUTPUT_DIR = 'build';
 const SERVERLESS_YML = 'serverless.yml';
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
@@ -61,6 +60,7 @@ export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 export class Escapin {
   public id: string;
   public basePath: string;
+  public ignorePath: string;
   public states: { [file: string]: BaseState };
   public apiSpec: { file: string; data: OpenAPIV2.Document };
   public config: IConfig;
@@ -68,9 +68,10 @@ export class Escapin {
   public types: TypeDictionary;
   public serverlessConfig: IServerlessConfig;
 
-  constructor(basePath: string) {
+  constructor(basePath: string, ignorePath: string = '.gitignore') {
     this.id = uuid();
-    this.basePath = basePath;
+    this.basePath = Path.resolve(basePath);
+    this.ignorePath = ignorePath;
     this.states = {};
     this.types = new TypeDictionary();
   }
@@ -125,13 +126,15 @@ export class Escapin {
     this.packageJson.devDependencies = this.packageJson.devDependencies || {};
     switch (this.config.platform) {
       case 'aws':
-        if (!('aws-sdk' in this.packageJson.dependencies)) {
-          this.packageJson.dependencies['aws-sdk'] = 'latest';
-        }
+        this.addDependency('aws-sdk');
         break;
       default:
         break;
     }
+  }
+
+  public addDependency(moduleName: string) {
+    this.packageJson.dependencies[moduleName] = `^${u.getLatestVersion(moduleName)}`;
   }
 
   private savePackageJson() {
@@ -221,7 +224,7 @@ export class Escapin {
   }
 
   private loadJSFiles() {
-    const ignoreFile = Path.join(this.basePath, ESCAPIN_IGNORE_FILE);
+    const ignoreFile = Path.join(this.basePath, this.ignorePath);
     const ig = ignore();
     if (fs.existsSync(ignoreFile)) {
       ig.add(fs.readFileSync(ignoreFile, 'utf8'));
@@ -249,7 +252,6 @@ export class Escapin {
         platform,
         runtime: 'nodejs10.x',
         stage: 'dev',
-        apiKeys: [],
       });
     }
   }

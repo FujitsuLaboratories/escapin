@@ -3,9 +3,12 @@ import * as parser from '@babel/parser';
 import template from '@babel/template';
 import _traverse, { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
+import { loopWhile } from 'deasync';
 import fs from 'fs';
+import HttpsProxyAgent from 'https-proxy-agent';
 import { isEqual, last, remove as _remove } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
+import packageJson from 'package-json';
 import Path from 'path';
 import vm from 'vm';
 import { BaseState } from './state';
@@ -17,6 +20,30 @@ export const ERROR_PATTERN = /(^e$|^e(r|x)+.*)/;
 const PLACEHOLDER_PATTERN = /^\$[_$A-Z0-9]+$/;
 
 export type OneOrMore<T> = T | T[];
+
+export function getLatestVersion(moduleName: string) {
+  let latest = 'latest';
+  let done = false;
+  (async () => {
+    try {
+      const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
+      const options =
+        httpsProxy !== undefined
+          ? {
+              agent: new HttpsProxyAgent(httpsProxy),
+            }
+          : {};
+      const pkg = await packageJson(moduleName, options);
+      latest = `${pkg.version}`;
+    } catch (err) {
+      throw err;
+    } finally {
+      done = true;
+    }
+  })();
+  loopWhile(() => !done);
+  return latest;
+}
 
 export function isOpenAPIV2Document(data: any): data is OpenAPIV2.Document {
   return typeof data.swagger === 'string' && data.swagger.startsWith('2');

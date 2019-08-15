@@ -43,9 +43,10 @@ escapin -d examples/sendmail
 - CLI options are:
 
 ```sh
-  -V, --version    output the version number
-  -d, --dir <dir>  working directory (default: .)
-  -h, --help       output usage information
+  -V, --version         output the version number
+  -d, --dir <dir>       working directory (default: ".")
+  --ignore-path <path>  specify path of ignore file (default: ".gitignore")
+  -h, --help            output usage information
 ```
 
 ## Documentation

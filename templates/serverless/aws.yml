@@ -3,4 +3,20 @@ provider:
   name: ${platform}
   runtime: ${runtime}
   stage: ${stage}
-  apiKeys: ${apiKeys}
+functions:
+resources:
+  Resources:
+    escapinFunctionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        Path: /escapin/
+        RoleName: ${name}EscapinFunctionRole
+        AssumeRolePolicyDocument:
+          Version: '2017'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+

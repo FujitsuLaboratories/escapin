@@ -1,14 +1,30 @@
 resources:
   Resources:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ${name}
-      KeySchema:
-        - AttributeName: key
-          KeyType: HASH
-      AttributeDefinitions:
-        - AttributeName: key
-          AttributeType: S
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+    ${name}:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${name}
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    escapinFunctionRole:
+      Policies:
+        - PolicyName: ${name}-FullAccess
+          PolicyDocument:
+            Version: '2017'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:ListGlobalTables'
+                  - 'dynamodb:ListTables'
+                Resource: '*'
+              - Effect: Allow
+                Action: 'dynamodb:*'
+                Resource:
+                  - 'Fn::GetAtt: [${name}, Arn]'

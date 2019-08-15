@@ -1,0 +1,7 @@
+functions:
+  ${name}:
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            'Fn::GetAtt: [${resource}, StreamArn]'

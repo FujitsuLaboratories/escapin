@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import boxen from 'boxen';
 import chalk from 'chalk';
 import program from 'commander';
 import path from 'path';
@@ -14,11 +15,13 @@ function dir(val: string): string {
 function main() {
   const latestVersion = getLatestVersion('escapin');
   if (pkg.version !== latestVersion) {
-    const message = `
-Update available
+    const message = boxen(`Update available
 Current: ${chalk.dim(pkg.version)}
-Latest:  ${chalk.green(latestVersion)}
-`;
+Latest:  ${chalk.green(latestVersion)}`, {
+  padding: 1,
+  margin: 1,
+  align: 'center',
+});
     console.error(message);
   }
 

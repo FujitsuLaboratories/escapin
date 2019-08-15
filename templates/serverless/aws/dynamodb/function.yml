@@ -1,5 +1,5 @@
 functions:
-  ${name}:
+  ${name}Function:
     events:
       - stream:
           type: dynamodb

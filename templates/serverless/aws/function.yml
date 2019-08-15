@@ -1,5 +1,5 @@
 functions:
-  ${name}:
+  ${name}Function:
     handler: ${handler}
     runtime: nodejs10.x
     role: escapinFunctionRole

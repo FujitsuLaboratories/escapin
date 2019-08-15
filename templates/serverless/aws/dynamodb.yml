@@ -1,9 +1,9 @@
 resources:
   Resources:
-    ${name}:
+    ${name}Table:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${name}
+        TableName: ${name}-${id}
         KeySchema:
           - AttributeName: key
             KeyType: HASH
@@ -14,17 +14,18 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
     escapinFunctionRole:
-      Policies:
-        - PolicyName: ${name}-FullAccess
-          PolicyDocument:
-            Version: "2017"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "dynamodb:ListGlobalTables"
-                  - "dynamodb:ListTables"
-                Resource: "*"
-              - Effect: Allow
-                Action: "dynamodb:*"
-                Resource:
-                  - "Fn::GetAtt: [${name}, Arn]"
+      Properties:
+        Policies:
+          - PolicyName: ${name}-${id}-FullAccess
+            PolicyDocument:
+              Version: "2017"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:ListGlobalTables"
+                    - "dynamodb:ListTables"
+                  Resource: "*"
+                - Effect: Allow
+                  Action: "dynamodb:*"
+                  Resource:
+                    - "Fn::GetAtt: [${name}-${id}, Arn]"

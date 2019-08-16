@@ -42,7 +42,11 @@ Using Yarn is preferred because Escapin internally uses Yarn to install TypeScri
 
 ## Usage
 
+- The following example uses a project in [our GitHub repository](https://github.com/FujitsuLaboratories/escapin)
+
 Escapin provides CLI `escapin` that works on Node.js project directories containing `./package.json`.
+
+First, run `escapin` on the project folder:
 
 ```sh
 cd examples/sendmail
@@ -50,7 +54,9 @@ cd examples/sendmail
 escapin
 ```
 
-Then, run `serverless deploy` on `./build` folder containing Escapin artifacts.
+Escapin transpiles your source code into executable one as a serverless application, and generates `serverless.yml` that can be used for deploying the programs to cloud services by [Serverless Framework](https://serverless.com/).
+
+Then, run `serverless deploy` on `./build` folder containing Escapin artifacts:
 
 ```sh
 cd build

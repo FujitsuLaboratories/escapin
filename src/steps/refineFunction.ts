@@ -69,65 +69,61 @@ const visitor: Visitor<FunctionState> = {
       VariableDeclarator(path) {
         const { node } = path;
         const { id, init } = node;
-        if (u.isObjectPattern(id) && u.isMemberExpression(init)) {
-          const { object, property } = init;
-          if (isEqual(object, req) && u.isIdentifier(property)) {
-            for (const prop of id.properties) {
-              if (!u.isObjectProperty(prop)) {
-                continue;
-              }
-              const param = parametersWithoutRefs.find(param => param.name === prop.key.name);
-              if (param === undefined) {
-                throw new Error(`Parameter "${prop.key.name}" does not exist.`);
-              }
-              if (param.in !== property.name) {
-                throw new SyntaxError(
-                  `Wrong parameter access "${u.generate(init)}.${
-                    param.name
-                  }". The correct parameter access is "${u.generate(req)}.${param.in}.${
-                    param.name
-                  }"`,
-                  init,
-                  state,
-                );
-              }
-            }
+        if (!u.isObjectPattern(id) || !u.isMemberExpression(init)) {
+          return;
+        }
+        const { object, property } = init;
+        if (!isEqual(object, req) || !u.isIdentifier(property)) {
+          return;
+        }
+        for (const prop of id.properties) {
+          if (!u.isObjectProperty(prop)) {
+            continue;
+          }
+          const param = parametersWithoutRefs.find(param => param.name === prop.key.name);
+          if (param === undefined) {
+            throw new Error(`Parameter "${prop.key.name}" does not exist.`);
+          }
+          if (param.in !== property.name) {
+            throw new SyntaxError(
+              `Wrong parameter access "${u.generate(init)}.${
+                param.name
+              }". The correct parameter access is "${u.generate(req)}.${param.in}.${param.name}"`,
+              init,
+              state,
+            );
           }
         }
       },
       MemberExpression(path) {
         const { node } = path;
         const { object, property } = node;
-        if (u.isMemberExpression(object)) {
-          const { object: object2, property: property2 } = object;
-          if (isEqual(object2, req) && u.isIdentifier(property)) {
-            if (!['query', 'path', 'header', 'body', 'formData'].includes(property2.name)) {
-              throw new SyntaxError(
-                `Invalid request parameter access. Property names of "req" should be either "query", "path", "header", "body" or "formData"`,
-                property2,
-                state,
-              );
-            }
-            const param = parametersWithoutRefs.find(param => param.name === property.name);
-            if (param === undefined) {
-              throw new SyntaxError(
-                `Parameter "${property.name}" does not exist.`,
-                property,
-                state,
-              );
-            }
-            if (param.in !== property.name) {
-              throw new SyntaxError(
-                `Wrong parameter access "${u.generate(
-                  node,
-                )}". The correct parameter access is "${u.generate(req)}.${param.in}.${
-                  param.name
-                }"`,
-                node,
-                state,
-              );
-            }
-          }
+        if (!u.isMemberExpression(object)) {
+          return;
+        }
+        const { object: object2, property: property2 } = object;
+        if (!isEqual(object2, req) || !u.isIdentifier(property)) {
+          return;
+        }
+        if (!['query', 'path', 'header', 'body', 'formData'].includes(property2.name)) {
+          throw new SyntaxError(
+            `Invalid request parameter access. Property names of "req" should be either "query", "path", "header", "body" or "formData"`,
+            property2,
+            state,
+          );
+        }
+        const param = parametersWithoutRefs.find(param => param.name === property.name);
+        if (param === undefined) {
+          throw new SyntaxError(`Parameter "${property.name}" does not exist.`, property, state);
+        }
+        if (param.in !== property.name) {
+          throw new SyntaxError(
+            `Wrong parameter access "${u.generate(
+              node,
+            )}". The correct parameter access is "${u.generate(req)}.${param.in}.${param.name}"`,
+            node,
+            state,
+          );
         }
       },
       ReturnStatement(path) {

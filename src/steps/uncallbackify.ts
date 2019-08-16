@@ -68,19 +68,23 @@ const visitor: Visitor<BaseState> = {
         $CONSEQUENT: consequent,
         $ERROR: errorParam.node,
         $FUNC: path.node,
-        $OBJ: u.objectPattern(
-          params.map(param => {
-            const { node } = param;
-            if (u.isRestElement(node)) {
-              return node;
-            } else if (u.isExpression(node) || u.isPatternLike(node)) {
-              return u.objectProperty(node, node, false, true);
-            } else {
-              throw new SyntaxError('Unsupported parameter type', node, state);
-            }
-          }),
-        ),
+        $OBJ: getObjectPattern(params, state),
       }),
     );
   },
 };
+
+function getObjectPattern(params: u.NodePath[], state: BaseState): u.ObjectPattern {
+  return u.objectPattern(
+    params.map(param => {
+      const { node } = param;
+      if (u.isRestElement(node)) {
+        return node;
+      } else if (u.isExpression(node) || u.isPatternLike(node)) {
+        return u.objectProperty(node, node, false, true);
+      } else {
+        throw new SyntaxError('Unsupported parameter type', node, state);
+      }
+    }),
+  );
+}

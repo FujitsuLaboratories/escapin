@@ -50,74 +50,28 @@ const visitor: Visitor<OpenApiV2State> = {
     if (!u.isImportDefaultSpecifier(firstSpecifier)) {
       return;
     }
-    const variable = firstSpecifier.local;
 
-    let originalUri = path.node.source.value;
-    let uri = originalUri;
-    let resolved;
-    let spec = null;
-    let done = false;
-    let cleanupNeeded = false;
-    (async () => {
-      try {
-        if (isURL(uri)) {
-          const response = await request({
-            headers: {},
-            method: 'GET',
-            uri,
-          });
-          resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
-          fs.writeFileSync(resolved, response.body);
-          cleanupNeeded = true;
-        } else {
-          resolved = state.resolvePath(uri);
-          if (resolved === undefined) {
-            throw new SyntaxError(`${originalUri} not found.`, path.node, state);
-          } else if (!fs.existsSync(resolved)) {
-            throw new SyntaxError(`${resolved} not found.`, path.node, state);
-          }
-        }
-        spec = await dereference(resolved);
-        if (cleanupNeeded) {
-          rimraf(resolved);
-        }
-      } catch (err) {
-        if (state.hasDependency(originalUri)) {
-          console.log(`${originalUri} is a module.`);
-        }
-        const index = originalUri.lastIndexOf('/');
-        const actualUri =
-          index > 0 ? originalUri.substring(0, originalUri.lastIndexOf('/')) : originalUri;
-        if (state.hasDependency(actualUri)) {
-          console.log(`${actualUri} is a module.`);
-        } else if (fs.existsSync(actualUri)) {
-          console.log(`${actualUri} is a local module.`);
-        } else {
-          throw err;
-        }
-      } finally {
-        done = true;
+    try {
+      const uri = path.node.source.value;
+      const spec = getApiSpec(uri, state);
+      if (spec === null) {
+        path.skip();
+        return;
       }
-    })();
 
-    loopWhile(() => !done);
-
-    if (spec != null) {
       if (!u.isOpenAPIV2Document(spec)) {
-        throw new SyntaxError(
-          'This API specification does not conform to OAS V2',
-          path.node,
-          state,
-        );
+        throw new Error('This API specification does not conform to OAS V2');
       }
+
+      const variable = firstSpecifier.local;
       if (variable) {
         state.apis.push({ key: variable, spec });
         state.addDependency('request');
       }
       path.remove();
-      return;
+    } catch (err) {
+      throw new SyntaxError(err, path.node, state);
     }
-    path.skip();
   },
   MemberExpression(path, state) {
     // GET
@@ -126,13 +80,9 @@ const visitor: Visitor<OpenApiV2State> = {
       return;
     }
 
-    const { options, actualTarget } = createRequestOptions('GET', key, path, state);
+    const { options, target } = createRequestOptions('GET', key, path, state);
 
-    if (actualTarget === undefined) {
-      throw new Error('actualTarget is undefined');
-    }
-
-    modifySnippets('get', path, actualTarget, options);
+    modifySnippets('get', path, target, options);
     path.skip();
   },
   CallExpression(path, state) {
@@ -143,16 +93,12 @@ const visitor: Visitor<OpenApiV2State> = {
     if (key === undefined || u.isArgumentPlaceholder(arg0) || u.isJSXNamespacedName(arg0)) {
       return;
     }
-    const { options, attrName } = createRequestOptions('POST', key, callee, state);
-
-    if (attrName === undefined) {
-      throw new Error('attrName is null.');
-    }
+    const { options, bodyParameter } = createRequestOptions('POST', key, callee, state);
 
     if (u.isSpreadElement(arg0)) {
       options.properties.unshift(arg0);
     } else {
-      options.properties.unshift(u.objectProperty(u.identifier(attrName), arg0));
+      options.properties.unshift(u.objectProperty(u.identifier(bodyParameter), arg0));
     }
 
     modifySnippets('post', path, path, options);
@@ -165,15 +111,11 @@ const visitor: Visitor<OpenApiV2State> = {
     if (key === undefined) {
       return;
     }
-    const { options, attrName } = createRequestOptions('PUT', key, left, state);
-
-    if (attrName === undefined) {
-      throw new Error('attrName is null.');
-    }
+    const { options, bodyParameter } = createRequestOptions('PUT', key, left, state);
 
     options.properties.unshift(
       u.objectProperty(
-        u.identifier(attrName),
+        u.identifier(bodyParameter),
         u.expression('JSON.stringify($BODY)', {
           $BODY: path.node.right,
         }),
@@ -203,6 +145,57 @@ const visitor: Visitor<OpenApiV2State> = {
     path.skip();
   },
 };
+
+function getApiSpec(uri: string, state: OpenApiV2State) {
+  let spec = null;
+  let done = false;
+  let cleanupNeeded = false;
+  (async () => {
+    try {
+      let resolved;
+      if (isURL(uri)) {
+        const response = await request({
+          headers: {},
+          method: 'GET',
+          uri,
+        });
+        resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
+        fs.writeFileSync(resolved, response.body);
+        cleanupNeeded = true;
+      } else {
+        resolved = state.resolvePath(uri);
+        if (resolved === undefined) {
+          throw new Error(`${uri} not found.`);
+        } else if (!fs.existsSync(resolved)) {
+          throw new Error(`${resolved} not found.`);
+        }
+      }
+      spec = await dereference(resolved);
+      if (cleanupNeeded) {
+        rimraf(resolved);
+      }
+    } catch (err) {
+      if (state.hasDependency(uri)) {
+        console.log(`${uri} is a module.`);
+      }
+      const index = uri.lastIndexOf('/');
+      const actualUri = index > 0 ? uri.substring(0, uri.lastIndexOf('/')) : uri;
+      if (state.hasDependency(actualUri)) {
+        console.log(`${actualUri} is a module.`);
+      } else if (fs.existsSync(actualUri)) {
+        console.log(`${actualUri} is a local module.`);
+      } else {
+        throw err;
+      }
+    } finally {
+      done = true;
+    }
+  })();
+
+  loopWhile(() => !done);
+
+  return spec;
+}
 
 function isSecuritySchemeApiKey(
   security: OpenAPIV2.SecuritySchemeObject,
@@ -249,7 +242,7 @@ function getContentType(
   return 'application/json';
 }
 
-function getBodyParameterName(contentType: string): string {
+function getBodyParameter(contentType: string): string {
   switch (contentType) {
     case 'multipart/form-data':
       return 'formData';
@@ -268,24 +261,185 @@ function createRequestOptions(
   state: OpenApiV2State,
 ): {
   options: u.ObjectExpression;
-  attrName?: string;
-  actualTarget?: u.NodePath;
+  bodyParameter: string;
+  target: u.NodePath;
 } {
-  const api = state.apis.find(_api => u.equals(key, _api.key));
-  if (api === undefined) {
-    throw new SyntaxError(`api ${key} not found.`, nodePath.node, state);
+  try {
+    const api = state.apis.find(_api => u.equals(key, _api.key));
+    if (api === undefined) {
+      throw new Error(`api ${key} not found.`);
+    }
+    const apiSpec = api.spec;
+
+    method = method.toLowerCase();
+
+    const {
+      uri,
+      contentType,
+      bodyParameter,
+      params,
+      target: targetCandidate,
+      pathSpec,
+    } = identifyTargetExpression(apiSpec, nodePath, method, key);
+
+    const target = params !== undefined ? nodePath : targetCandidate;
+
+    let options = u.objectExpression([
+      u.objectProperty(u.identifier('uri'), u.parseExpression(`\`${uri}\``)),
+      u.objectProperty(u.identifier('method'), u.stringLiteral(method)),
+    ]);
+    if (contentType) {
+      options.properties.push(
+        u.objectProperty(u.identifier('contentType'), u.stringLiteral(contentType)),
+      );
+    }
+
+    let headers = u.objectExpression([]);
+    let qs = u.objectExpression([]);
+
+    if (params) {
+      if (
+        u.isObjectExpression(params) &&
+        params.properties.every(prop => u.isObjectProperty(prop))
+      ) {
+        for (const property of params.properties) {
+          if (!u.isObjectProperty(property)) {
+            throw new Error('property is not an ObjectProperty.');
+          }
+          if (pathSpec.parameters === undefined) {
+            throw new Error('pathSpec.parameters is not an array.');
+          }
+          const key = (property.key as u.Identifier).name;
+          const param = pathSpec.parameters.find(
+            param => !isReferenceObject(param) && param.name === key,
+          );
+          if (param && !isReferenceObject(param)) {
+            switch (param.in) {
+              case 'query':
+                qs.properties.push(property);
+                break;
+              case 'header':
+                headers.properties.push(property);
+                break;
+              case 'path':
+              default:
+                break;
+            }
+          }
+        }
+      } else {
+        let paramsId;
+        if (u.isIdentifier(params)) {
+          paramsId = params;
+        } else {
+          paramsId = nodePath.scope.generateUidIdentifier('param');
+          nodePath.insertBefore(
+            u.statement('const $PARAM = $ORG;', {
+              $ORG: params,
+              $PARAM: paramsId,
+            }),
+          );
+        }
+        if (pathSpec.parameters) {
+          for (const param of pathSpec.parameters) {
+            if (isReferenceObject(param)) {
+              continue;
+            }
+            const key = param.name;
+            switch (param.in) {
+              case 'query':
+                qs.properties.push(
+                  u.objectProperty(
+                    u.identifier(key),
+                    u.memberExpression(paramsId, u.identifier(key)),
+                  ),
+                );
+                break;
+              case 'header':
+                headers.properties.push(
+                  u.objectProperty(
+                    u.identifier(key),
+                    u.memberExpression(paramsId, u.identifier(key)),
+                  ),
+                );
+                break;
+              case 'path':
+              default:
+                break;
+            }
+          }
+        }
+      }
+    }
+
+    if (apiSpec.security && apiSpec.securityDefinitions) {
+      for (const entry of apiSpec.security) {
+        const key = Object.keys(entry)[0];
+        if (state.escapin.config.credentials === undefined) {
+          break;
+        }
+        const cred = state.escapin.config.credentials.find(that => that.api === apiSpec.info.title);
+        if (cred === undefined) {
+          break;
+        }
+        if (!(key in apiSpec.securityDefinitions)) {
+          continue;
+        }
+        const value = cred[key];
+        const security = apiSpec.securityDefinitions[key];
+        if (security.type === 'basic') {
+          const basicCred = `Basic ${
+            isBase64Encoded(value) ? value : Buffer.from(value).toString('base64')
+          }`;
+          headers.properties.push(
+            u.objectProperty(u.identifier('authorization'), u.stringLiteral(basicCred)),
+          );
+        } else if (isSecuritySchemeApiKey(security)) {
+          const apiKeyProp = u.objectProperty(u.identifier(security.name), u.stringLiteral(value));
+          if (security.in === 'header') {
+            headers.properties.push(apiKeyProp);
+          } else {
+            qs.properties.push(apiKeyProp);
+          }
+        } else if (isSecurityOAuth2(security)) {
+          // do nothing
+        }
+      }
+    }
+    if (bodyParameter === 'body') {
+      options.properties.push(u.objectProperty(u.identifier('json'), u.booleanLiteral(true)));
+    }
+    if (headers.properties.length > 0) {
+      options.properties.push(u.objectProperty(u.identifier('headers'), headers));
+    }
+    if (qs.properties.length > 0) {
+      options.properties.push(u.objectProperty(u.identifier('qs'), qs));
+    }
+    return { options, bodyParameter, target };
+  } catch (err) {
+    throw new SyntaxError(err, nodePath.node, state);
   }
-  const apiSpec = api.spec;
+}
 
-  method = method.toLowerCase();
-
-  // let node = path;
+function identifyTargetExpression(
+  apiSpec: OpenAPIV2.Document,
+  nodePath: u.NodePath,
+  method: string,
+  key: u.Identifier,
+): {
+  uri: string;
+  contentType: string | undefined;
+  bodyParameter: string;
+  params: u.Node | undefined;
+  target: u.NodePath;
+  pathSpec: OpenAPIV2.OperationObject;
+} {
   let maxMatches = 0;
   let uri: string | undefined;
   let contentType: string | undefined;
-  let attrName: string | undefined;
+  let bodyParameter: string | undefined;
   let params: u.Node | undefined;
-  let actualTarget: u.NodePath | undefined;
+  let target: u.NodePath | undefined;
   let pathSpec: OpenAPIV2.OperationObject | undefined;
   const pathParamPattern = /^\{.*\}$/;
 
@@ -342,152 +496,28 @@ function createRequestOptions(
       pathSpec = apiSpec.paths[path][method];
       uri = createURI(apiSpec, newPath);
       contentType = getContentType(apiSpec, pathSpec);
-      attrName = getBodyParameterName(contentType);
-      actualTarget = tempTarget;
+      bodyParameter = getBodyParameter(contentType);
+      target = tempTarget;
       maxMatches = matches;
     }
   }
   if (
     pathSpec === undefined ||
     uri === undefined ||
-    attrName === undefined ||
-    actualTarget === undefined
+    bodyParameter === undefined ||
+    target === undefined
   ) {
-    throw new SyntaxError(
-      `This cannot be recognized as an API request: ${u.generate(nodePath.node)}`,
-      nodePath.node,
-      state,
-    );
-  }
-  let headers = u.objectExpression([]);
-  let qs = u.objectExpression([]);
-  let options = u.objectExpression([
-    u.objectProperty(u.identifier('uri'), u.parseExpression(`\`${uri}\``)),
-    u.objectProperty(u.identifier('method'), u.stringLiteral(method)),
-  ]);
-  if (contentType) {
-    options.properties.push(
-      u.objectProperty(u.identifier('contentType'), u.stringLiteral(contentType)),
-    );
+    throw new Error('This cannot be recognized as an API request');
   }
 
-  if (params) {
-    actualTarget = nodePath;
-    if (u.isObjectExpression(params) && params.properties.every(prop => u.isObjectProperty(prop))) {
-      for (const property of params.properties) {
-        if (!u.isObjectProperty(property)) {
-          throw new SyntaxError('property is not an ObjectProperty.', nodePath.node, state);
-        }
-        if (pathSpec.parameters === undefined) {
-          throw new SyntaxError('pathSpec.parameters is not an array.', nodePath.node, state);
-        }
-        const key = (property.key as u.Identifier).name;
-        const param = pathSpec.parameters.find(
-          param => !isReferenceObject(param) && param.name === key,
-        );
-        if (param && !isReferenceObject(param)) {
-          switch (param.in) {
-            case 'query':
-              qs.properties.push(property);
-              break;
-            case 'header':
-              headers.properties.push(property);
-              break;
-            case 'path':
-            default:
-              break;
-          }
-        }
-      }
-    } else {
-      let paramsId;
-      if (u.isIdentifier(params)) {
-        paramsId = params;
-      } else {
-        paramsId = nodePath.scope.generateUidIdentifier('param');
-        nodePath.insertBefore(
-          u.statement('const $PARAM = $ORG;', {
-            $ORG: params,
-            $PARAM: paramsId,
-          }),
-        );
-      }
-      if (pathSpec.parameters) {
-        for (const param of pathSpec.parameters) {
-          if (isReferenceObject(param)) {
-            continue;
-          }
-          const key = param.name;
-          switch (param.in) {
-            case 'query':
-              qs.properties.push(
-                u.objectProperty(
-                  u.identifier(key),
-                  u.memberExpression(paramsId, u.identifier(key)),
-                ),
-              );
-              break;
-            case 'header':
-              headers.properties.push(
-                u.objectProperty(
-                  u.identifier(key),
-                  u.memberExpression(paramsId, u.identifier(key)),
-                ),
-              );
-              break;
-            case 'path':
-            default:
-              break;
-          }
-        }
-      }
-    }
-  }
-
-  if (apiSpec.security && apiSpec.securityDefinitions) {
-    for (const entry of apiSpec.security) {
-      const key = Object.keys(entry)[0];
-      if (state.escapin.config.credentials === undefined) {
-        break;
-      }
-      const cred = state.escapin.config.credentials.find(that => that.api === apiSpec.info.title);
-      if (cred === undefined) {
-        break;
-      }
-      if (!(key in apiSpec.securityDefinitions)) {
-        continue;
-      }
-      const value = cred[key];
-      const security = apiSpec.securityDefinitions[key];
-      if (security.type === 'basic') {
-        const basicCred = `Basic ${
-          isBase64Encoded(value) ? value : Buffer.from(value).toString('base64')
-        }`;
-        headers.properties.push(
-          u.objectProperty(u.identifier('authorization'), u.stringLiteral(basicCred)),
-        );
-      } else if (isSecuritySchemeApiKey(security)) {
-        const apiKeyProp = u.objectProperty(u.identifier(security.name), u.stringLiteral(value));
-        if (security.in === 'header') {
-          headers.properties.push(apiKeyProp);
-        } else {
-          qs.properties.push(apiKeyProp);
-        }
-      } else if (isSecurityOAuth2(security)) {
-        // do nothing
-      }
-    }
-  }
-  if (attrName === 'body') {
-    options.properties.push(u.objectProperty(u.identifier('json'), u.booleanLiteral(true)));
-  }
-  if (headers.properties.length > 0) {
-    options.properties.push(u.objectProperty(u.identifier('headers'), headers));
-  }
-  if (qs.properties.length > 0) {
-    options.properties.push(u.objectProperty(u.identifier('qs'), qs));
-  }
-  return { options, attrName, actualTarget };
+  return {
+    uri,
+    contentType,
+    bodyParameter,
+    params,
+    target,
+    pathSpec,
+  };
 }
 
 function modifySnippets(

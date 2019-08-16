@@ -10,7 +10,10 @@
   "bin": {
     "escapin": "bin/cli.js"
   },
-  "files": ["/bin", "/templates"],
+  "files": [
+    "/bin",
+    "/templates"
+  ],
   "scripts": {
     "prebuild": "rimraf bin",
     "build": "tsc",
@@ -22,7 +25,7 @@
     "prettier-check-updated": "pipe-git-updated --ext=ts --ext=js --ext=json --ext=yaml --ext=yml --ext=md -- prettier -c",
     "test": "ava",
     "coverage": "nyc ava",
-    "report": "nyc report --reporter=lcov --reporter=text-lcov | coveralls && codecov",
+    "report": "nyc report --reporter=lcov --reporter=text-lcov",
     "start": "ts-node src/cli.ts"
   },
   "repository": {
@@ -95,8 +98,6 @@
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
     "ava": "^2.2.0",
-    "codecov": "^3.5.0",
-    "coveralls": "^3.0.6",
     "eslint": "^6.1.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-import": "^2.18.2",

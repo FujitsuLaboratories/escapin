@@ -28,10 +28,14 @@ jobs:
         - yarn lint
         - yarn test
     - name: Coverage
+      before_script:
+        - yarn global add coveralls codecov
       script:
         - yarn coverage
-      after_success:
         - yarn report
+      after_success:
+        - coveralls
+        - codecov
     - stage: Deploy
       if: tag IS present
       script:

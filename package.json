@@ -1,6 +1,6 @@
 {
   "name": "escapin",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Escapin the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs",
   "main": "bin/index.js",
   "type": "module",
@@ -28,6 +28,13 @@
   "repository": {
     "url": "https://github.com/FujitsuLaboratories/escapin.git"
   },
+  "keywords": [
+    "serverless",
+    "serverless framework",
+    "typescript",
+    "babel",
+    "transpiler"
+  ],
   "author": "Kimura, Kosaku <kimura.kosaku@fujitsu.com>",
   "license": "MIT",
   "dependencies": {
@@ -42,7 +49,7 @@
     "commander": "^3.0.0",
     "cosmiconfig": "^5.2.1",
     "deasync": "^0.1.15",
-    "execa": "^2.0.3",
+    "execa": "^2.0.4",
     "https-proxy-agent": "^2.2.2",
     "ignore": "^5.1.4",
     "js-yaml": "^3.13.1",
@@ -75,7 +82,7 @@
     "@types/mkdirp": "^0.5.2",
     "@types/mustache": "^0.8.32",
     "@types/ncp": "^2.0.1",
-    "@types/node": "^12.7.1",
+    "@types/node": "^12.7.2",
     "@types/package-json": "^5.0.1",
     "@types/prettier": "^1.18.2",
     "@types/request": "^2.48.2",

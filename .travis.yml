@@ -32,9 +32,8 @@ jobs:
         - yarn global add coveralls codecov
       script:
         - yarn coverage
-        - yarn report
       after_success:
-        - coveralls
+        - yarn report | coveralls
         - codecov
     - stage: Deploy
       if: tag IS present

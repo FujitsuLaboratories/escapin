@@ -27,14 +27,11 @@ export function getLatestVersion(moduleName: string) {
   (async () => {
     try {
       const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
-      const options =
-        httpsProxy !== undefined
-          ? {
-              agent: new HttpsProxyAgent(httpsProxy),
-            }
-          : {};
+      const options = {
+        agent: httpsProxy !== undefined ? new HttpsProxyAgent(httpsProxy) : undefined,
+      };
       const pkg = await packageJson(moduleName, options);
-      latest = `${pkg.version}`;
+      latest = pkg.version as string;
     } catch (err) {
       throw err;
     } finally {

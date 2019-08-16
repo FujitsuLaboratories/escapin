@@ -1,9 +1,19 @@
 import deasync from 'deasync';
 
 async function func() {
-  await asyncFunc();
+  await asyncFunc(1);
   await new Promise((resolve, reject) => {
-    errorFirstCallbackFunc(arg, (err, data) => {
+    errorFirstCallbackFunc(2, (err, unused) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(unused);
+      }
+    });
+  });
+
+  const _data2 = await new Promise((resolve, reject) => {
+    errorFirstCallbackFunc(3, (err, data) => {
       if (err) {
         reject(err);
       } else {
@@ -11,19 +21,35 @@ async function func() {
       }
     });
   });
+
+  generalFunc(4, _data2);
+  let _promise = [];
+
+  for (const _item of items) {
+    _promise.push(
+      (async () => {
+        await asyncFunc(5, _item);
+        generalFunc(6);
+      })(),
+    );
+  }
+
+  await Promise.all(_promise);
 }
-generalCallbackFunc(arg => {
+
+generalCallbackFunc(7, arg => {
   const data = (() => {
     let _temp;
 
     let _done = false;
-    asyncFunc(arg).then(_data2 => {
-      _temp = _data2;
+    asyncFunc(8, arg).then(_data3 => {
+      _temp = _data3;
       _done = true;
     });
     deasync.loopWhile(_ => !_done);
     return _temp;
   })();
-  doSomething();
+
+  generalFunc(9);
 });
-generalFunc();
+generalFunc(10);

@@ -1,9 +1,15 @@
 function func() {
-  asyncFunc();
-  const data = errorFirstCallbackFunc(arg);
+  asyncFunc(1);
+  const unused = errorFirstCallbackFunc(2);
+  const data = errorFirstCallbackFunc(3);
+  generalFunc(4, data);
+  for (const item of items) {
+    asyncFunc(5, item);
+    generalFunc(6);
+  }
 }
-generalCallbackFunc(arg => {
-  const data = asyncFunc(arg);
-  doSomething();
+generalCallbackFunc(7, arg => {
+  const data = asyncFunc(8, arg);
+  generalFunc(9);
 });
-generalFunc();
+generalFunc(10);

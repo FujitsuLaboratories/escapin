@@ -10,10 +10,7 @@
   "bin": {
     "escapin": "bin/cli.js"
   },
-  "files": [
-    "/bin",
-    "/templates"
-  ],
+  "files": ["/bin", "/templates"],
   "scripts": {
     "prebuild": "rimraf bin",
     "build": "tsc",
@@ -65,7 +62,7 @@
     "swagger-parser": "^8.0.0",
     "types-installer": "^1.6.3",
     "typescript": "^3.5.3",
-    "uuid": "^3.3.2",
+    "uuid": "^3.3.3",
     "validator": "^11.1.0"
   },
   "devDependencies": {
@@ -77,11 +74,11 @@
     "@types/commander": "^2.12.2",
     "@types/cosmiconfig": "^5.0.3",
     "@types/deasync": "^0.1.0",
-    "@types/eslint": "^4.16.8",
+    "@types/eslint": "^6.1.0",
     "@types/eslint-plugin-prettier": "^2.2.0",
     "@types/execa": "^2.0.0",
     "@types/js-yaml": "^3.12.1",
-    "@types/lodash": "^4.14.136",
+    "@types/lodash": "^4.14.137",
     "@types/mkdirp": "^0.5.2",
     "@types/mustache": "^0.8.32",
     "@types/ncp": "^2.0.1",
@@ -94,12 +91,12 @@
     "@types/swagger-parser": "^7.0.1",
     "@types/typescript": "^2.0.0",
     "@types/uuid": "^3.4.5",
-    "@types/validator": "^10.11.2",
+    "@types/validator": "^10.11.3",
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
-    "ava": "^2.2.0",
-    "eslint": "^6.1.0",
-    "eslint-config-prettier": "^6.0.0",
+    "ava": "^2.3.0",
+    "eslint": "^6.2.1",
+    "eslint-config-prettier": "^6.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-prettier": "^3.1.0",

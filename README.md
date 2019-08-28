@@ -78,6 +78,6 @@ serverless deploy
 
 [Users Guide](docs/users_guide.md)
 
-
 ## License
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin?ref=badge_large)

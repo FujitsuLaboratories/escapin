@@ -9,6 +9,7 @@
 [![codecov](https://codecov.io/gh/FujitsuLaboratories/escapin/branch/master/graph/badge.svg)](https://codecov.io/gh/FujitsuLaboratories/escapin)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8ecf79ac7b2447edf8e0/maintainability)](https://api.codeclimate.com/v1/badges/8ecf79ac7b2447edf8e0/maintainability)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin?ref=badge_shield)
 
 ## Prerequisites
 
@@ -76,3 +77,7 @@ serverless deploy
 ## Documentation
 
 [Users Guide](docs/users_guide.md)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin?ref=badge_large)

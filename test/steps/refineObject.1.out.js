@@ -1,5 +1,4 @@
 import { DynamoDB } from 'aws-sdk';
-
 const _store = {
   foo,
   bar,
@@ -43,7 +42,7 @@ if (_temp2 === null || _temp2.Item === undefined) {
       : _temp2.Item.value.S;
 }
 
-const foo = _store2[id2];
+const foo = _store2;
 
 const _temp4 = new DynamoDB().deleteItem({
   TableName: 'store-test',
@@ -54,15 +53,23 @@ const _temp4 = new DynamoDB().deleteItem({
   },
 });
 
-const _temp5 = new DynamoDB().scan({
-  TableName: 'store-test',
-  ExpressionAttributeNames: {
-    '#ky': 'key',
-  },
-  ProjectionExpression: '#ky',
-});
+const _store3 = [];
 
-const _store3 = _temp5.Items.map(item => item.key.S);
+while (true) {
+  const _temp5 = new DynamoDB().scan({
+    TableName: 'store-test',
+    ExpressionAttributeNames: {
+      '#ky': 'key',
+    },
+    ProjectionExpression: '#ky',
+  });
+
+  _store3.push(..._temp5.Items.map(item => item.key.S));
+
+  if (_temp5.LastEvaluatedKey !== undefined) {
+    break;
+  }
+}
 
 for (const key of _store3) {
   const _temp6 = new DynamoDB().getItem({
@@ -85,5 +92,5 @@ for (const key of _store3) {
         : _temp6.Item.value.S;
   }
 
-  const bar = _store4[key];
+  const bar = _store4;
 }

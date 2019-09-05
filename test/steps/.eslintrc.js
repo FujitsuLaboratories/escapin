@@ -1,6 +1,7 @@
 module.exports = {
   extends: ['eslint:recommended', 'plugin:prettier/recommended', 'plugin:node/recommended'],
   rules: {
+    'no-constant-condition': 'off',
     'no-unused-vars': 'off',
     'no-undef': 'off',
     'node/no-extraneous-import': 'off',

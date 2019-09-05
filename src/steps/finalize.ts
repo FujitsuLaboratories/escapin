@@ -4,7 +4,6 @@ import * as u from '../util';
 import { BaseState } from '../state';
 
 export default function(escapin: Escapin) {
-  console.log('finalize');
   for (const filename in escapin.states) {
     u.traverse(visitor, new FinalizationState(escapin.states[filename]));
   }

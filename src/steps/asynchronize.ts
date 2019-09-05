@@ -213,13 +213,13 @@ function fetchGeneralCallback(
     return false;
   }
 
-  const { node } = path;
-  state.asynchronized.push(node);
-
   const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
   if (callbackPath === undefined || !callbackPath.isFunction()) {
-    throw new SyntaxError('This call expression does not have general callback.', path.node, state);
+    return false;
   }
+
+  const { node } = path;
+  state.asynchronized.push(node);
 
   const callback = callbackPath.node;
   const { callee } = node;

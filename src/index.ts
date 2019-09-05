@@ -13,7 +13,7 @@ import { v4 as uuid } from 'uuid';
 import vm from 'vm';
 import * as u from './util';
 import { BaseState } from './state';
-import { steps } from './steps';
+import { finalize, steps } from './steps';
 import { TypeDictionary } from './types';
 
 const explorer = cosmiconfig('escapin');
@@ -81,6 +81,7 @@ export class Escapin {
 
     for (const step of steps) {
       step(this);
+      this.updateJSFiles();
     }
 
     this.save();
@@ -234,6 +235,14 @@ export class Escapin {
       this.states[filename].code = u.generate(this.states[filename].ast);
       const path = Path.join(this.config.output_dir, filename);
       fs.writeFileSync(path, this.states[filename].code, 'utf8');
+    }
+  }
+
+  private updateJSFiles() {
+    finalize(this);
+    for (const filename in this.states) {
+      this.states[filename].code = u.generate(this.states[filename].ast);
+      this.states[filename].ast = u.parse(this.states[filename].code);
     }
   }
 

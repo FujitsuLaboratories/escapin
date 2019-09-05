@@ -132,10 +132,10 @@ const visitor: Visitor<ObjectState> = {
     } else {
       stmtPath.insertBefore(letSnippet);
     }
-    u.replace(stmtPath, id, variable);
+    u.replace(stmtPath, node, variable);
 
     state.replacements.push({
-      original: id,
+      original: node,
       replaced: variable,
       scope: path.scope,
     });

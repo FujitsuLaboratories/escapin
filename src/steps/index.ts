@@ -15,7 +15,6 @@ const steps = [
   refineFunction,
   functionTypes,
   asynchronize,
-  finalize,
 ];
 
 export {

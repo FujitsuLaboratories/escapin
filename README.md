@@ -39,8 +39,6 @@ or
 npm install -g escapin
 ```
 
-Using Yarn is preferred because Escapin internally uses Yarn to install TypeScript type declarations (@types) for your project.
-
 ## Usage
 
 - The following example uses a project in [our GitHub repository](https://github.com/FujitsuLaboratories/escapin)

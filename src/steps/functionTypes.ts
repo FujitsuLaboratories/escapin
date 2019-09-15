@@ -23,9 +23,9 @@ export default function(escapin: Escapin) {
   const { dependencies, devDependencies } = escapin.packageJson;
   installTypesInDependencies(dependencies, devDependencies, output_dir);
 
-  console.log('yarn');
+  console.log('npm install');
 
-  commandSync(`yarn`, {
+  commandSync('npm install', {
     cwd: output_dir,
     stdout: process.stdout,
   });
@@ -63,7 +63,7 @@ function installTypesInDependencies(
         selection: 'all',
         pwd,
         toDev: true,
-        packageManager: 'yarn',
+        packageManager: 'npm',
       });
     } catch (err) {
       console.error(err);

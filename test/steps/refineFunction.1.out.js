@@ -3,6 +3,6 @@ export const csvGET = (req, context, callback) => {
     callback(null, 'hello');
     return;
   } catch (err) {
-    callback(new Error(`500: ${err}`));
+    callback(new Error(`[500] ${err.toString()}`));
   }
 };

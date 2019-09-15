@@ -150,7 +150,7 @@ const visitor: Visitor<FunctionState> = {
     const body = func.body as u.BlockStatement;
 
     body.body = [
-      u.statement('try { $BODY } catch (err) { callback(new Error(`500: ${err}`)); }', {
+      u.statement('try { $BODY } catch (err) { callback(new Error(`[500] ${err.toString()}`)); }', {
         $BODY: body.body,
       }),
     ];

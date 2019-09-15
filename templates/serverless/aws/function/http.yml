@@ -5,3 +5,4 @@ functions:
           path: ${path}
           method: ${method}
           cors: true
+          integration: lambda

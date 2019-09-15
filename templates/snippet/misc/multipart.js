@@ -17,12 +17,9 @@ function parseMultipart(event) {
     event.formData = {};
   }
   const multipart = Buffer.from(event.binaryBody.toString(), 'base64').toString();
-  console.log(`multipart: ${multipart}`);
   const boundary = getBoundary(event.header['content-type']);
   for (const part of multipart.split(boundary).filter(str => !str.startsWith('--'))) {
-    console.log(`part: ${part}`);
     const partLines = part.split(/\r\n/);
-    console.log(JSON.stringify(partLines));
     let name;
     for (const item of partLines[1].split(';')) {
       const tuple = item.split('=');
@@ -40,7 +37,6 @@ function parseMultipart(event) {
         value = `${value}\r\n`;
       }
     }
-    console.log(`name: ${name}, value: ${value}`);
     if (event.formData[name] === undefined) {
       event.formData[name] = value;
     } else if (Array.isArray(event.formData[name])) {
@@ -49,6 +45,5 @@ function parseMultipart(event) {
       event.formData[name] = [event.formData[name], value];
     }
   }
-  console.log(`event: ${JSON.stringify(event)}`);
   return event;
 }

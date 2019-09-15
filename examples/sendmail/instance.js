@@ -10,7 +10,7 @@ export function csvGET(_) {
 export function csvIdDELETE(req) {
   const id = req.path.id;
   if (csv[id] === undefined) {
-    throw new Error(`404: ${id} not found.`);
+    throw new Error(`[404] ${id} not found.`);
   }
   delete csv[id];
   return `${id} deleted`;
@@ -19,7 +19,7 @@ export function csvIdDELETE(req) {
 export function csvIdGET(req) {
   const id = req.path.id;
   if (csv[id] === undefined) {
-    throw new Error(`404: ${id} not found.`);
+    throw new Error(`[404] ${id} not found.`);
   }
   return csv[id];
 }
@@ -41,6 +41,6 @@ export function csvPOST(req) {
     return { id };
   } catch (err) {
     console.log(err);
-    throw new Error(`500: ${err}`);
+    throw new Error(`[500] ${err}`);
   }
 }

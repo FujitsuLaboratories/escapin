@@ -27,20 +27,15 @@ export function csvIdGET(req) {
 export function csvPOST(req) {
   let id = uuid();
   csv[id] = req.formData.csv;
-  try {
-    for (const record of csv[id].toString().split(/\r\n|\r|\n/)) {
-      const fields = record.split(',');
-      if (fields[1] === undefined) continue;
-      mailgun.domain['example.com'].messages({
-        from: 'hello@example.com',
-        to: fields[1],
-        subject: 'Test',
-        text: 'This is a test.',
-      });
-    }
-    return { id };
-  } catch (err) {
-    console.log(err);
-    throw new Error(`[500] ${err}`);
+  for (const record of csv[id].toString().split(/\r\n|\r|\n/)) {
+    const fields = record.split(',');
+    if (fields[1] === undefined) continue;
+    mailgun.domain['example.com'].messages({
+      from: 'hello@example.com',
+      to: fields[1],
+      subject: 'Test',
+      text: 'This is a test.',
+    });
   }
+  return { id };
 }

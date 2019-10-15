@@ -24,7 +24,7 @@ export function initialize() {
   escapin.config = {
     name: 'test',
     platform: 'aws',
-    default_storage: 'dynamodb',
+    default_storage: 'table',
     output_dir: `${__dirname}/${uuid()}`,
   };
   escapin.apiSpec = {

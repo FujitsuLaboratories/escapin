@@ -1,7 +1,7 @@
 import { resize } from 'imagemagick';
 
-export const images: s3 = {};
-export const thumbnails: s3 = {};
+export const images: bucket = {};
+export const thumbnails: bucket = {};
 
 export const imagesGET = _ => {
   return Object.keys(images);

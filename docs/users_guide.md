@@ -21,8 +21,8 @@ Escapin は[Serverless Framework](https://github.com/serverless/serverless)と�
 ##### <a name="dynamodb-s3"></a> DynamoDB, S3
 
 ```javascript
-export const foo: dynamodb = {};
-export const bar: s3 = {};
+export const foo: table = {};
+export const bar: bucket = {};
 ```
 
 上記のようなエクスポートされた空のオブジェクト変数が宣言されている場合，型アノテーションで指定された通りに

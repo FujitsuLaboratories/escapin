@@ -1,7 +1,7 @@
 import mailgun from 'apis/mailgun.yaml';
 import { v4 as uuid } from 'uuid';
 
-export const csv: s3 = {};
+export const csv: table = {};
 
 export function csvGET(_) {
   return Object.keys(csv);

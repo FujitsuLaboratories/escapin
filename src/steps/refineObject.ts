@@ -46,19 +46,18 @@ const visitor: Visitor<ObjectState> = {
       return;
     }
 
-    let service = 'dynamodb';
+    const { default_storage, platform } = state.escapin.config;
+    let service = default_storage;
     if (
       u.isTSTypeAnnotation(id.typeAnnotation) &&
       u.isTSTypeReference(id.typeAnnotation.typeAnnotation)
     ) {
       const { typeName } = id.typeAnnotation.typeAnnotation;
       service = u.getTypeName(typeName);
-    } else {
-      throw new SyntaxError('Invalid type annotation', id, state);
     }
 
-    if (!service.startsWith(`${state.escapin.config.platform}.`)) {
-      service = `${state.escapin.config.platform}.${service}`;
+    if (!service.startsWith(`${platform}.`)) {
+      service = `${platform}.${service}`;
     }
 
     state.objects.push({ id, service });

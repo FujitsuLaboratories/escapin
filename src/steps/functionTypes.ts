@@ -1,4 +1,3 @@
-import { loopWhile } from 'deasync';
 import { commandSync } from 'execa';
 import fs from 'fs';
 import { uniq } from 'lodash';
@@ -51,27 +50,19 @@ function installTypesInDependencies(
   devDependencies: { [moduleName: string]: string },
   pwd: string,
 ) {
-  let done = false;
-  (async () => {
-    try {
-      await installTypes(Object.keys(dependencies), {
-        selections: {
-          dependencies,
-          devDependencies,
-          all: Object.assign(dependencies, devDependencies),
-        },
-        selection: 'all',
-        pwd,
-        toDev: true,
-        packageManager: 'npm',
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      done = true;
-    }
-  })();
-  loopWhile(() => !done);
+  u.deasyncPromise(
+    installTypes(Object.keys(dependencies), {
+      selections: {
+        dependencies,
+        devDependencies,
+        all: Object.assign(dependencies, devDependencies),
+      },
+      selection: 'all',
+      pwd,
+      toDev: true,
+      packageManager: 'npm',
+    }),
+  );
 }
 
 function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_dir: string) {

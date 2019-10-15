@@ -19,11 +19,11 @@ export interface IPathInfo {
 }
 
 export class BaseState {
-  public escapin: Escapin;
-  public replacements: Array<{ original: u.Node; replaced: u.Node; scope: Scope }>;
-  public filename: string;
-  public code: string;
-  public ast: t.File;
+  public escapin!: Escapin;
+  public replacements!: Array<{ original: u.Node; replaced: u.Node; scope: Scope }>;
+  public filename!: string;
+  public code!: string;
+  public ast!: t.File;
 
   constructor(base?: BaseState) {
     if (base) {

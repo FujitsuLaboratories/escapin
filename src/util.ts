@@ -50,7 +50,32 @@ export function isNode(node: any): node is t.Node {
   return 'type' in node;
 }
 
-export function traverse(visitor: Visitor, state: BaseState) {
+export function deasyncPromise<T>(promise: Promise<T>): T {
+  let done = false;
+  let ret!: T;
+  let err!: Error;
+
+  (async () => {
+    try {
+      ret = await promise;
+    } catch (e) {
+      console.error(e);
+      err = e;
+    } finally {
+      done = true;
+    }
+  })();
+
+  loopWhile(() => !done);
+
+  if (err) {
+    throw err;
+  }
+
+  return ret;
+}
+
+export function traverse<S extends BaseState>(visitor: Visitor<S>, state: S) {
   _traverse(state.ast, {
     Program(path) {
       path.traverse(visitor, state);
@@ -102,9 +127,12 @@ export function snippetFor(
   vars?: { [x: string]: OneOrMore<t.Node> },
 ): t.Statement[] {
   // eslint-disable-next-line no-undef
-  const file = Path.resolve(__dirname, `../templates/snippet/${specifier.replace(/\./g, '/')}.js`);
+  const file = Path.resolve(
+    __dirname,
+    `../templates/snippet/${specifier.replace(/\./g, '/').toLowerCase()}.js`,
+  );
   if (!fs.existsSync(file)) {
-    throw new Error(`${file} not found`);
+    throw new Error(`Invalid type annotation: ${specifier}`);
   }
   const tpl = fs.readFileSync(file, 'utf8');
   if (vars === undefined) {
@@ -190,7 +218,7 @@ export function findAll(
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): NodePath[] {
-  let ret = [];
+  const ret = [];
   if (positive(path)) {
     ret.push(path);
   } else if (!(negative && negative(path))) {

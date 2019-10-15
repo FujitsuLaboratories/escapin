@@ -44,7 +44,7 @@ Latest:  ${chalk.green(latestVersion)}`,
 
 main();
 
-async function doTranspileProcess(options: { dir: string; ignorePath: string }) {
+function doTranspileProcess(options: { dir: string; ignorePath: string }) {
   const { dir, ignorePath } = options;
 
   console.log(`working directory: ${dir}`);
@@ -53,7 +53,7 @@ async function doTranspileProcess(options: { dir: string; ignorePath: string }) 
   const escapin = new Escapin(dir, ignorePath);
 
   try {
-    await escapin.transpile();
+    escapin.transpile();
   } catch (err) {
     console.error(err);
     process.exit(-1);

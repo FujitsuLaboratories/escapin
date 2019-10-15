@@ -1,4 +1,5 @@
 import cosmiconfig from 'cosmiconfig';
+import deasync from 'deasync';
 import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
 import { safeLoad as loadYaml, dump as dumpYaml } from 'js-yaml';
@@ -8,7 +9,6 @@ import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
 import { sync as rimraf } from 'rimraf';
 import { dereference } from 'swagger-parser';
-import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 import vm from 'vm';
 import * as u from './util';
@@ -16,12 +16,12 @@ import { BaseState } from './state';
 import { finalize, steps } from './steps';
 import { TypeDictionary } from './types';
 
-const explorer = cosmiconfig('escapin');
-const mkdirp = promisify(_mkdirp);
+const mkdirp = deasync(_mkdirp);
 
 export interface IConfig {
   name: string;
   platform: string;
+  default_storage: string;
   output_dir: string;
   api_spec?: string;
   credentials?: ICredential[];
@@ -39,7 +39,7 @@ export interface IPackageJson {
   devDependencies: { [moduleName: string]: string };
   peerDependencies?: { [moduleName: string]: string };
   optionalDependencies?: { [moduleName: string]: string };
-  bundledDependencies?: { [moduleName: string]: string };
+  bundledDependencies?: string[];
   types?: string;
   typings?: string;
   [key: string]: any;
@@ -62,11 +62,14 @@ export class Escapin {
   public basePath: string;
   public ignorePath: string;
   public states: { [file: string]: BaseState };
-  public apiSpec: { file: string; data: OpenAPIV2.Document };
-  public config: IConfig;
-  public packageJson: IPackageJson;
+  public apiSpec!: {
+    file: string;
+    data: OpenAPIV2.Document;
+  };
+  public config!: IConfig;
+  public packageJson!: IPackageJson;
   public types: TypeDictionary;
-  public serverlessConfig: IServerlessConfig;
+  public serverlessConfig!: IServerlessConfig;
 
   constructor(basePath: string, ignorePath: string = '.gitignore') {
     this.id = uuid();
@@ -76,8 +79,8 @@ export class Escapin {
     this.types = new TypeDictionary();
   }
 
-  public async transpile() {
-    await this.load();
+  public transpile() {
+    this.load();
 
     for (const step of steps) {
       step(this);
@@ -87,10 +90,10 @@ export class Escapin {
     this.save();
   }
 
-  public async load() {
-    await this.loadConfig();
+  public load() {
+    this.loadConfig();
     this.loadPackageJson();
-    await this.loadAPISpec();
+    this.loadAPISpec();
     this.loadServerlessConfig();
     this.loadJSFiles();
   }
@@ -102,8 +105,8 @@ export class Escapin {
     this.saveJSFiles();
   }
 
-  private async loadConfig() {
-    const result = explorer.searchSync(this.basePath);
+  private loadConfig() {
+    const result = cosmiconfig('escapin').searchSync(this.basePath);
     if (result === null) {
       throw new Error('config file not found.');
     }
@@ -111,29 +114,36 @@ export class Escapin {
     if (fs.existsSync(result.config.output_dir)) {
       rimraf(result.config.output_dir);
     }
-    await mkdirp(result.config.output_dir);
+    mkdirp(result.config.output_dir);
+
+    result.config.platform = result.config.platform || 'aws';
+    result.config.default_storage = result.config.default_storage || 'table';
+
     this.config = result.config as IConfig;
   }
 
   private loadPackageJson() {
-    const packageJson = Path.join(this.basePath, 'package.json');
-    if (!fs.existsSync(packageJson)) {
+    const packageJsonPath = Path.join(this.basePath, 'package.json');
+    if (!fs.existsSync(packageJsonPath)) {
       throw new Error('The project does not contain package.json.');
     }
-    this.packageJson = JSON.parse(fs.readFileSync(packageJson).toString());
+    this.packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
     this.packageJson.dependencies = this.packageJson.dependencies || {};
     this.packageJson.devDependencies = this.packageJson.devDependencies || {};
     switch (this.config.platform) {
       case 'aws':
-        this.addDependency('aws-sdk');
+        this.addDependency('aws-sdk', 'devDependencies');
         break;
       default:
         break;
     }
   }
 
-  public addDependency(moduleName: string) {
-    this.packageJson.dependencies[moduleName] = `^${u.getLatestVersion(moduleName)}`;
+  public addDependency(
+    moduleName: string,
+    location: 'dependencies' | 'devDependencies' = 'dependencies',
+  ) {
+    this.packageJson[location][moduleName] = `^${u.getLatestVersion(moduleName)}`;
   }
 
   private savePackageJson() {
@@ -141,28 +151,25 @@ export class Escapin {
     fs.writeFileSync(filePath, JSON.stringify(this.packageJson, null, 2));
   }
 
-  private async loadAPISpec() {
+  private loadAPISpec() {
     if (this.config.api_spec) {
       const filename = Path.join(this.basePath, this.config.api_spec);
       console.log(`load api spec ${filename}`);
-      const data = await dereference(filename);
-      if (data === null) {
+      const data = u.deasyncPromise(dereference(filename));
+      if (data === null || data === undefined) {
         throw new Error(`dereferencing ${filename} results 'undefined'.`);
       }
       if (!u.isOpenAPIV2Document(data)) {
         throw new Error('Escapin does not support OpenAPI v3 api spec.');
       }
-      let commonParamsOnPaths = [];
-      if ('parameters' in data.paths) {
-        commonParamsOnPaths = data.paths.parameters;
-      }
+      const commonParamsOnPaths = data.paths.parameters || [];
       for (const path in data.paths) {
-        let commonParams = commonParamsOnPaths;
+        const commonParams = commonParamsOnPaths;
         if (path === 'parameters') {
           continue;
         }
         if ('parameters' in data.paths[path]) {
-          commonParams = [...commonParams, ...data.paths[path].parameters];
+          commonParams.push(...data.paths[path].parameters);
         }
         for (const method in data.paths[path]) {
           if (method === 'parameters') {
@@ -265,7 +272,7 @@ export class Escapin {
   public addServerlessConfig(specifier: string, vars: { [key: string]: any }) {
     const file = Path.resolve(
       __dirname,
-      `../templates/serverless/${specifier.replace(/\./g, '/')}.yml`,
+      `../templates/serverless/${specifier.replace(/\./g, '/').toLowerCase()}.yml`,
     );
     if (!fs.existsSync(file)) {
       throw new Error(`${file} not found`);

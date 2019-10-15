@@ -4,7 +4,7 @@ import fs from 'fs';
 import { last } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
-import requestOrg from 'request';
+import requestOrg, { Response } from 'request';
 import { dereference } from 'swagger-parser';
 import { promisify } from 'util';
 import { sync as rimraf } from 'rimraf';
@@ -149,16 +149,18 @@ const visitor: Visitor<OpenApiV2State> = {
 function getApiSpec(uri: string, state: OpenApiV2State) {
   let spec = null;
   let done = false;
-  let cleanupNeeded = false;
   (async () => {
     try {
       let resolved;
+      let cleanupNeeded = false;
       if (isURL(uri)) {
-        const response = await request({
-          headers: {},
-          method: 'GET',
-          uri,
-        });
+        const response = (await request(
+          {
+            headers: {},
+            uri,
+          },
+          undefined,
+        )) as Response;
         resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
         fs.writeFileSync(resolved, response.body);
         cleanupNeeded = true;

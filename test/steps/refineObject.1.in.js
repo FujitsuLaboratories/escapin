@@ -1,4 +1,4 @@
-export const store: aws.dynamodb = {};
+export const store = {};
 store[id] = {
   foo,
   bar,

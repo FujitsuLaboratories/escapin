@@ -408,7 +408,7 @@ for (const item of api.call(arg)) {
 
 ```javascript
 const _data = await new Promise((resolve, reject) => {
-  apis.call(arg, (err, data) => {
+  api.call(arg, (err, data) => {
     if (err) reject(err);
     else resolve(data);
   });
@@ -422,7 +422,7 @@ for (const item of _data) {
 
 ```javascript
 for (const arg of args) {
-  apis.call(arg);
+  api.call(arg);
 }
 ```
 
@@ -434,7 +434,7 @@ for (const arg of args) {
   _promises.push(
     (async () => {
       await new Promise((resolve, reject) => {
-        apis.call(arg, (err, data) => {
+        api.call(arg, (err, data) => {
           if (err) reject(err);
           else resolve(data);
         });
@@ -450,7 +450,7 @@ await Promise.all(_promises);
 ```javascript
 let sum = 0;
 for (const arg of args) {
-  sum += apis.call(arg);
+  sum += api.call(arg);
 }
 ```
 
@@ -460,7 +460,7 @@ for (const arg of args) {
 let sum = 0;
 for (const arg of args) {
   const _data = await new Promise((resolve, reject) => {
-    apis.call(arg, (err, data) => {
+    api.call(arg, (err, data) => {
       if (err) reject(err);
       else resolve(data);
     });
@@ -481,7 +481,7 @@ while ((data = api.call(arg)) === null) {
 
 ```javascript
 let _data = await new Promise((resolve, reject) => {
-  apis.call(arg, (err, data) => {
+  api.call(arg, (err, data) => {
     if (err) reject(err);
     else resolve(data);
   });
@@ -489,7 +489,7 @@ let _data = await new Promise((resolve, reject) => {
 while ((data = _data) === null) {
   doSomething(data);
   _data = await new Promise((resolve, reject) => {
-    apis.call(arg, (err, data) => {
+    api.call(arg, (err, data) => {
       if (err) reject(err);
       else resolve(data);
     });
@@ -511,7 +511,7 @@ if (api.call(arg)) {
 
 ```javascript
 const _data = await new Promise((resolve, reject) => {
-  apis.call(arg, (err, data) => {
+  api.call(arg, (err, data) => {
     if (err) reject(err);
     else resolve(data);
   });
@@ -520,7 +520,7 @@ if (_data) {
   doSomething();
 } else {
   let _data2 = await new Promise((resolve, reject) => {
-    apis.call2(arg, (err, data) => {
+    api.call2(arg, (err, data) => {
       if (err) reject(err);
       else resolve(data);
     });
@@ -551,7 +551,7 @@ switch (api.call(arg)) {
 ```javascript
 let _promise;
 const _data = await new Promise((resolve, reject) => {
-  apis.call(arg, (err, data) => {
+  api.call(arg, (err, data) => {
     if (err) reject(err);
     else resolve(data);
   });
@@ -559,7 +559,7 @@ const _data = await new Promise((resolve, reject) => {
 switch (_data) {
   case "foo":
     await new Promise((resolve, reject) => {
-      apis.call2(arg, (err, data) => {
+      api.call2(arg, (err, data) => {
         if (err) reject(err);
         else resolve(data);
       });
@@ -567,7 +567,7 @@ switch (_data) {
     break;
   case "bar":
     await new Promise((resolve, reject) => {
-      apis.call3(arg, (err, data) => {
+      api.call3(arg, (err, data) => {
         if (err) reject(err);
         else resolve(data);
       });
@@ -607,7 +607,7 @@ args.some(arg => {
   let _data;
   let done = false;
   new Promise((resolve, reject) => {
-    apis.call(arg, (err, data) => {
+    api.call(arg, (err, data) => {
       if (err) reject(err);
       else resolve(data);
     });

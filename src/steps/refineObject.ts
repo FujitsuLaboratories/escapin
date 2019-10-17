@@ -62,7 +62,11 @@ const visitor: Visitor<ObjectState> = {
 
     state.objects.push({ id, service });
 
-    state.unshiftProgramBody(u.snippetFor(service));
+    try {
+      state.unshiftProgramBody(u.snippetFor(service));
+    } catch (err) {
+      throw new SyntaxError(err.message, id, state);
+    }
 
     state.escapin.addServerlessConfig(service, {
       name: id.name,

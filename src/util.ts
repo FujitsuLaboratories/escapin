@@ -132,7 +132,9 @@ export function snippetFor(
     `../templates/snippet/${specifier.replace(/\./g, '/').toLowerCase()}.js`,
   );
   if (!fs.existsSync(file)) {
-    throw new Error(`Template file '${file}' not found. The type annotation may be invalid or renamed due to an update.`);
+    throw new Error(
+      `Template file '${file}' not found. The type may be invalid or renamed due to an update.`,
+    );
   }
   const tpl = fs.readFileSync(file, 'utf8');
   if (vars === undefined) {

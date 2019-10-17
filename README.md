@@ -141,6 +141,10 @@ module.exports = {
 
 #### Usage
 
+Only `bucket` and `table` is available as a storage type.
+Storage type `bucket` represents a bucket in object storage.
+Storage type `table` represents a table in NoSQL datastore service.
+
 ```javascript
 export const foo: bucket = {}; // AWS S3 Bucket
 export const bar: table = {}; // AWS DynamoDB Table
@@ -380,7 +384,7 @@ import api from "http://path/to/swagger.yaml";
 | `GET`    | `/items/:id/props`   |            |                     | `props = api.items[id].props;`                                                               |
 | `GET`    | `/items/:id?foo=bar` |            |                     | `item = api.items[id]` **[** `{ foo: 'bar' }` **]** `;`                                      |
 | `GET`    | `/items/:id?foo=bar` | `baz: qux` |                     | `item = api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** `;`                          |
-| `POST`   | `/:domain/messages`  |            | `{ quux: 'corge' }` | `api.`**domain**`[domain].messages` **(** `{ quux: 'corge' }` **)** `;` ※                    |
+| `POST`   | `/:domain/messages`  |            | `{ quux: 'corge' }` | `api.`**domain**`[domain].messages` **(** `{ quux: 'corge' }` **)** `;`                    |
 | `POST`   | `/items`             |            | `{ quux: 'corge' }` | `api.items` **(** `{ quux: 'corge' }` **)** `;`                                              |
 | `POST`   | `/items/:id?foo=bar` | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** **(** `{ quux: 'corge' }` **)** `;` |
 | `PUT`    | `/items/:id`         | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ baz: 'qux' }` **]** `= { quux: 'corge' };`                          |

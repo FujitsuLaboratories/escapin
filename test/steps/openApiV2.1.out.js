@@ -8,14 +8,12 @@ const { _res, _body } = request({
 });
 let _get = _body;
 const pet = _get;
-const _param = 1234;
 const { _res3, _body3 } = request({
   uri: 'https://petstore.swagger.io/v2/pet/1234',
   method: 'get',
   contentType: 'application/json',
   json: true,
 });
-const _param2 = 'abcd';
 const { _res5, _body5 } = request({
   uri: 'https://petstore.swagger.io/v2/pet/abcd',
   method: 'get',
@@ -69,9 +67,6 @@ const { _res19, _body19 } = request({
   method: 'delete',
   contentType: 'application/json',
   json: true,
-  headers: {
-    api_key: id.api_key,
-  },
 });
 const { _res20, _body20 } = request({
   uri: 'https://petstore.swagger.io/v2/pet/findByStatus',

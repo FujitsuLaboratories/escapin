@@ -157,6 +157,7 @@ function getApiSpec(uri: string, state: OpenApiV2State) {
         const response = (await request(
           {
             headers: {},
+            method: 'GET',
             uri,
           },
           undefined,
@@ -462,6 +463,12 @@ function identifyTargetExpression(
       while (true) {
         const { node } = iter;
         if (u.isMemberExpression(node)) {
+          if (node.computed && iter === nodePath && u.isObjectExpression(node.property)) {
+            params = node.property;
+            iter = iter.get('object') as u.NodePath;
+            continue;
+          }
+
           if (node.computed && token.match(pathParamPattern)) {
             if (u.isStringLiteral(node.property)) {
               newPath = newPath.replace(token, node.property.value);
@@ -474,19 +481,21 @@ function identifyTargetExpression(
             matches += 1;
             iter = iter.get('object') as u.NodePath;
             break;
-          } else if (!node.computed && token === node.property.name) {
+          }
+
+          if (!node.computed && token === node.property.name) {
             if (tempTarget === undefined) {
               tempTarget = iter;
             }
             matches += 1;
             iter = iter.get('object') as u.NodePath;
             break;
-          } else if (iter === nodePath && node.computed) {
-            params = node.property;
           }
+
           iter = iter.get('object') as u.NodePath;
           continue;
         }
+
         failed = true;
         break TOKEN_LOOP;
       }

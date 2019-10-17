@@ -933,12 +933,12 @@ await Promise.all(args.map(async arg => await promisifiedFunc(arg)));
 
 ## <a name="publications"></a>Publications
 
-- K. Kimura, A. Sekiguchi, S. Choudhary and T. Uehara, ["A JavaScript Transpiler for Escaping from Complicated Usage of Cloud Services and APIs,"](https://doi.org/10.1109/APSEC.2018.00021) 2018 25th Asia-Pacific Software Engineering Conference (APSEC), Nara, Japan, 2018, pp. 69-78.
+- Kosaku Kimura, Atsuji Sekiguchi, Shridhar Choudhary and Tadahiro Uehara, ["A JavaScript Transpiler for Escaping from Complicated Usage of Cloud Services and APIs,"](https://doi.org/10.1109/APSEC.2018.00021) [2018 25th Asia-Pacific Software Engineering Conference (APSEC)](http://www.apsec2018.org/), Nara, Japan, 2018, pp. 69-78.
   - [Preprint](https://www.researchgate.net/publication/330533667_A_JavaScript_Transpiler_for_Escaping_from_Complicated_Usage_of_Cloud_Services_and_APIs)
 
-- [An Introduction of a Technology for Simplifying Serverless Application Programming in AWS with Node.js](https://speakerdeck.com/kimusaku/node-dot-jsdefalseawssabaresuapuripuroguraminguwo-jian-dan-nisuruji-shu-falseyan-jiu-shao-jie-an-introduction-of-a-technology-for-simplifying-serverless-application-programming-in-aws-with-node-dot-js), JAWS DAYS 2019
+- [An Introduction of a Technology for Simplifying Serverless Application Programming in AWS with Node.js](https://speakerdeck.com/kimusaku/node-dot-jsdefalseawssabaresuapuripuroguraminguwo-jian-dan-nisuruji-shu-falseyan-jiu-shao-jie-an-introduction-of-a-technology-for-simplifying-serverless-application-programming-in-aws-with-node-dot-js), [JAWS DAYS 2019](https://jawsdays2019.jaws-ug.jp/)
 
-- [FaaS上のコードをもっとシンプルに書くためのトランスパイラ](https://speakerdeck.com/kimusaku/serverless-meetup-tokyo-number-13) in Serverless Meetup Tokyo #13
+- [FaaS上のコードをもっとシンプルに書くためのトランスパイラ](https://speakerdeck.com/kimusaku/serverless-meetup-tokyo-number-13), [Serverless Meetup Tokyo #13](https://serverless.connpass.com/event/138983/)
 
 ## <a name="license"></a>License
 

@@ -140,7 +140,9 @@ module.exports = {
 
 #### Usage
 
-Only `bucket` and `table` is available as a storage type.
+You can use several kinds of storage services just like a first-class object in JavaScript.
+By declaring an empty object placing a special type annotation (e.g., `bucket`) you can create a resource in that type of storage services.
+In v0.2.x, `bucket` and `table` is available as a storage type.
 Storage type `bucket` represents a bucket in object storage.
 Storage type `table` represents a table in NoSQL datastore service.
 

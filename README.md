@@ -26,7 +26,6 @@
   - [Auto-completing asynchronous features](#async)
 - [Publications](#publications)
 - [License](#license)
-
 - [日本語ドキュメント](docs/users_guide.md)
 
 ## <a name="prerequisites"></a>Prerequisites

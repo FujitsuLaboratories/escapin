@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/FujitsuLaboratories/escapin/tree/HEAD)
-
-[Full Changelog](https://github.com/FujitsuLaboratories/escapin/compare/v0.2.2...HEAD)
+## [v0.2.3](https://github.com/FujitsuLaboratories/escapin/tree/v0.2.3) (2019-10-18)
+[Full Changelog](https://github.com/FujitsuLaboratories/escapin/compare/v0.2.2...v0.2.3)
 
 **Closed issues:**
 

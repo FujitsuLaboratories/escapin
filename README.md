@@ -53,7 +53,7 @@ npm install -g escapin
 
 ## <a name="usage"></a>Usage
 
-- The following example uses [a project in the GitHub repository](https://github.com/FujitsuLaboratories/escapin/examples/sendmail)
+The following example uses [a project in the GitHub repository](examples/sendmail)
 
 Escapin provides CLI `escapin` that works on Node.js project directories containing `./package.json`.
 
@@ -74,6 +74,8 @@ cd build
 
 serverless deploy
 ```
+
+To learn more about the sendmail example, please read [example/sendmail/README.md](example/sendmail/README.md)
 
 ### <a name="cli-options"></a>CLI options
 

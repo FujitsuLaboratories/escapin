@@ -141,14 +141,16 @@ module.exports = {
 You can use several kinds of storage services just like a first-class object in JavaScript.
 By declaring an empty object placing a special type annotation (e.g., `bucket`) you can create a resource in that type of storage services.
 
-You can use both canonical type `platform.storageType` (e.g., `aws.bucket`) and shorthand type `storageType` (e.g., `bucket`) for storage objects; `platform` in the configuration file is selected when using shorthand types.
-In v0.2.x, `bucket` and `table` is available for `storageType`; `bucket` represents a bucket in object storage, and `table` represents a table in NoSQL datastore service.
+You can use both canonical type `platform.storageType` (e.g., `aws.bucket`) and shorthand type `storageType` (e.g., `bucket`) for storage objects; `platform` in the configuration file is used in shorthand types.
+If you omit a type annotation, `default_storage` is used as that type by default.
+In v0.2.x, `bucket` and `table` is available for storage types; `bucket` represents a bucket in object storage, and `table` represents a table in NoSQL datastore service.
 
 
 ```javascript
 export const foo: aws.bucket = {}; // AWS S3 Bucket
 export const bar: bucket = {}; // AWS S3 Bucket
 export const baz: table = {}; // AWS DynamoDB Table
+export const qux = {}; // AWS DyanmoDB Table
 ```
 
 Here are the usage example of storage objects:
@@ -156,13 +158,10 @@ Here are the usage example of storage objects:
 ```javascript
 export const foo: bucket = {};
 
-foo[id] = bar; // uploading data
-
-baz = foo[id]; // downloading data
-
+foo[id] = bar;          // uploading data
+baz = foo[id];          // downloading data
 qux = Object.keys(foo); // obtaining keys of data
-
-delete foo[id]; // deleting existing data
+delete foo[id];         // deleting existing data
 ```
 
 ---

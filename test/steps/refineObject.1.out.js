@@ -56,19 +56,22 @@ const _temp4 = new DynamoDB().deleteItem({
 const _store3 = [];
 
 while (true) {
-  const _temp5 = new DynamoDB().scan({
+  const params = {
     TableName: 'store-test',
     ExpressionAttributeNames: {
       '#ky': 'key',
     },
     ProjectionExpression: '#ky',
-  });
+  };
+  const _temp5 = new DynamoDB().scan(params);
 
   _store3.push(..._temp5.Items.map(item => item.key.S));
 
-  if (_temp5.LastEvaluatedKey !== undefined) {
+  if (_temp5.LastEvaluatedKey === undefined) {
     break;
   }
+
+  params.ExclusiveStartKey = _temp5.LastEvaluatedKey;
 }
 
 for (const key of _store3) {

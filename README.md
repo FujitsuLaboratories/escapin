@@ -75,7 +75,7 @@ cd build
 serverless deploy
 ```
 
-To learn more about the sendmail example, please read [example/sendmail/README.md](example/sendmail/README.md)
+To learn more about the sendmail example, please read [examples/sendmail/README.md](examples/sendmail/README.md)
 
 ### <a name="cli-options"></a>CLI options
 

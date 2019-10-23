@@ -2,14 +2,12 @@
 
 **the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs**
 
-[![npm version](https://badge.fury.io/js/escapin.svg)](https://badge.fury.io/js/escapin)
-[![Build Status](https://travis-ci.org/FujitsuLaboratories/escapin.svg?branch=master)](https://travis-ci.org/FujitsuLaboratories/escapin)
-[![dependencies Status](https://david-dm.org/FujitsuLaboratories/escapin/status.svg)](https://david-dm.org/FujitsuLaboratories/escapin)
-[![codecov](https://codecov.io/gh/FujitsuLaboratories/escapin/branch/master/graph/badge.svg)](https://codecov.io/gh/FujitsuLaboratories/escapin)
-[![Maintainability](https://api.codeclimate.com/v1/badges/8ecf79ac7b2447edf8e0/maintainability)](https://api.codeclimate.com/v1/badges/8ecf79ac7b2447edf8e0/maintainability)
+[![npm version](https://img.shields.io/npm/v/escapin.svg?style=flat-square)](https://www.npmjs.com/package/escapin)
+[![Build Status](https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat-square)](https://travis-ci.org/FujitsuLaboratories/escapin)
+[![dependencies Status](https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat-square)](https://libraries.io/npm/escapin)
+[![codecov](https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat-square)](https://codecov.io/gh/FujitsuLaboratories/escapin)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FFujitsuLaboratories%2Fescapin?ref=badge_shield)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
 ## Table of Contents
 

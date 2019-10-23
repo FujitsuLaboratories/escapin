@@ -27,7 +27,6 @@ paths:
       description: "Upload CSV file for sending emails"
       x-escapin-handler: "instance.csvPOST"
       consumes:
-        - "multipart/form-data"
         - "application/x-www-form-urlencoded"
       parameters:
         - name: "csv"

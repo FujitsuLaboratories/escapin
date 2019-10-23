@@ -26,7 +26,7 @@ export function csvIdGET(req) {
 
 export function csvPOST(req) {
   let id = uuid();
-  csv[id] = req.formData.csv;
+  csv[id] = req.body.csv;
   for (const record of csv[id].toString().split(/\r\n|\r|\n/)) {
     const fields = record.split(',');
     if (fields[1] === undefined) continue;

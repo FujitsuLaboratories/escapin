@@ -8,8 +8,8 @@ export const imagesGET = _ => {
 };
 
 export const imagesPOST = req => {
-  const id = req.formData.name;
-  images[id] = req.formData.image;
+  const id = req.body.name;
+  images[id] = req.body.image;
   resize(
     {
       srcData: Buffer.from(images[id], 'binary'),

@@ -53,7 +53,9 @@ export interface IServerlessConfig {
 }
 
 const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
+const PLATFORM = 'aws';
 const OUTPUT_DIR = 'build';
+const DEFAULT_STORAGE = 'table';
 const SERVERLESS_YML = 'serverless.yml';
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
@@ -116,8 +118,8 @@ export class Escapin {
     }
     mkdirp(result.config.output_dir);
 
-    result.config.platform = result.config.platform || 'aws';
-    result.config.default_storage = result.config.default_storage || 'table';
+    result.config.platform = result.config.platform || PLATFORM;
+    result.config.default_storage = result.config.default_storage || DEFAULT_STORAGE;
 
     this.config = result.config as IConfig;
   }

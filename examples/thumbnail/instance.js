@@ -10,6 +10,8 @@ export const imagesGET = _ => {
 export const imagesPOST = req => {
   const id = req.body.name;
   images[id] = req.body.image;
+
+  // You can still use error-first callback style for legacy modules
   resize(
     {
       srcData: Buffer.from(images[id], 'binary'),
@@ -24,6 +26,15 @@ export const imagesPOST = req => {
       return { id };
     },
   );
+
+  // The below code is equivalent to the foloowing code
+  // const { stdout, stderr } = resize({
+  //   srcData: Buffer.from(images[id], 'binary'),
+  //   format: 'jpeg',
+  //   width: 100,
+  // });
+  // thumbnails[id] = Buffer.from(stdout, 'binary');
+  // return { id };
 };
 
 export const imagesIdDELETE = req => {

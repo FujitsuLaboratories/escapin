@@ -125,14 +125,14 @@ module.exports = {
 };
 ```
 
-| Name              | Description                                                            |
+|       Name        | Description                                                            |
 | :---------------: | ---------------------------------------------------------------------- |
-| `name`            | name of the application                                                |
-| `api_spec`        | path of the specification file of the API published by the application |
-| `credentials`     | credentials required in calling external APIs                          |
-| `platform`        | cloud platform where the application is being deployed                 |
+|      `name`       | name of the application                                                |
+|    `api_spec`     | path of the specification file of the API published by the application |
+|   `credentials`   | credentials required in calling external APIs                          |
+|    `platform`     | cloud platform where the application is being deployed                 |
 | `default_storage` | the storage type that are selected by default                          |
-| `output_dir`      | directory where the transpilcation artifacts are being stored          |
+|   `output_dir`    | directory where the transpilcation artifacts are being stored          |
 
 ## <a name="features"></a>Transpilation features
 
@@ -354,20 +354,19 @@ functions:
 resources:
   Resources:
     escapinFunctionRole:
-      Type: 'AWS::IAM::Role'
+      Type: "AWS::IAM::Role"
       Properties:
         Path: /escapin/
         RoleName: myappEscapinFunctionRole
         AssumeRolePolicyDocument:
-          Version: '2012-10-17'
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Principal:
                 Service:
                   - lambda.amazonaws.com
-              Action: 'sts:AssumeRole'
-        Policies:
-          ...
+              Action: "sts:AssumeRole"
+        Policies: ...
 ```
 
 ### <a name="import-api"></a>Importing open APIs
@@ -380,17 +379,17 @@ resources:
 import api from "http://path/to/swagger.yaml";
 ```
 
-| Method | Path                 | Header     | Body              | Example                                                                                       |
-| :--------: | -------------------- | ---------- | ------------------- | -------------------------------------------------------------------------------------------- |
-| `GET`    | `/items`             |            |                     | `items = api.items;`                                                                         |
-| `GET`    | `/items/:id`         |            |                     | `item = api.items[id];`                                                                      |
-| `GET`    | `/items/:id/props`   |            |                     | `props = api.items[id].props;`                                                               |
-| `GET`    | `/items/:id?foo=bar` |            |                     | `item = api.items[id]` **[** `{ foo: 'bar' }` **]** `;`                                      |
-| `GET`    | `/items/:id?foo=bar` | `baz: qux` |                     | `item = api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** `;`                          |
-| `POST`   | `/:domain/messages`  |            | `{ quux: 'corge' }` | `api.`**domain**`[domain].messages` **(** `{ quux: 'corge' }` **)** `;`                    |
-| `POST`   | `/items`             |            | `{ quux: 'corge' }` | `api.items` **(** `{ quux: 'corge' }` **)** `;`                                              |
-| `POST`   | `/items/:id?foo=bar` | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** **(** `{ quux: 'corge' }` **)** `;` |
-| `PUT`    | `/items/:id`         | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ baz: 'qux' }` **]** `= { quux: 'corge' };`                          |
+|  Method  | Path                 | Header     | Body                | Example                                                                                      |
+| :------: | -------------------- | ---------- | ------------------- | -------------------------------------------------------------------------------------------- |
+|  `GET`   | `/items`             |            |                     | `items = api.items;`                                                                         |
+|  `GET`   | `/items/:id`         |            |                     | `item = api.items[id];`                                                                      |
+|  `GET`   | `/items/:id/props`   |            |                     | `props = api.items[id].props;`                                                               |
+|  `GET`   | `/items/:id?foo=bar` |            |                     | `item = api.items[id]` **[** `{ foo: 'bar' }` **]** `;`                                      |
+|  `GET`   | `/items/:id?foo=bar` | `baz: qux` |                     | `item = api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** `;`                          |
+|  `POST`  | `/:domain/messages`  |            | `{ quux: 'corge' }` | `api.`**domain**`[domain].messages` **(** `{ quux: 'corge' }` **)** `;`                      |
+|  `POST`  | `/items`             |            | `{ quux: 'corge' }` | `api.items` **(** `{ quux: 'corge' }` **)** `;`                                              |
+|  `POST`  | `/items/:id?foo=bar` | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ foo: 'bar', baz: 'qux' }` **]** **(** `{ quux: 'corge' }` **)** `;` |
+|  `PUT`   | `/items/:id`         | `baz: qux` | `{ quux: 'corge' }` | `api.items[id]` **[** `{ baz: 'qux' }` **]** `= { quux: 'corge' };`                          |
 | `DELETE` | `/items/:id`         |            |                     | `delete api.items[id];`                                                                      |
 
 ---
@@ -937,11 +936,12 @@ await Promise.all(args.map(async arg => await promisifiedFunc(arg)));
 ## <a name="publications"></a>Publications
 
 - Kosaku Kimura, Atsuji Sekiguchi, Shridhar Choudhary and Tadahiro Uehara, ["A JavaScript Transpiler for Escaping from Complicated Usage of Cloud Services and APIs,"](https://doi.org/10.1109/APSEC.2018.00021) [2018 25th Asia-Pacific Software Engineering Conference (APSEC)](http://www.apsec2018.org/), Nara, Japan, 2018, pp. 69-78.
+
   - [Preprint](https://www.researchgate.net/publication/330533667_A_JavaScript_Transpiler_for_Escaping_from_Complicated_Usage_of_Cloud_Services_and_APIs)
 
 - [An Introduction of a Technology for Simplifying Serverless Application Programming in AWS with Node.js](https://speakerdeck.com/kimusaku/node-dot-jsdefalseawssabaresuapuripuroguraminguwo-jian-dan-nisuruji-shu-falseyan-jiu-shao-jie-an-introduction-of-a-technology-for-simplifying-serverless-application-programming-in-aws-with-node-dot-js), [JAWS DAYS 2019](https://jawsdays2019.jaws-ug.jp/)
 
-- [FaaS上のコードをもっとシンプルに書くためのトランスパイラ](https://speakerdeck.com/kimusaku/serverless-meetup-tokyo-number-13), [Serverless Meetup Tokyo #13](https://serverless.connpass.com/event/138983/)
+- [FaaS 上のコードをもっとシンプルに書くためのトランスパイラ](https://speakerdeck.com/kimusaku/serverless-meetup-tokyo-number-13), [Serverless Meetup Tokyo #13](https://serverless.connpass.com/event/138983/)
 
 ## <a name="license"></a>License
 

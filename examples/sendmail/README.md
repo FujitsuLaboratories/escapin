@@ -75,4 +75,3 @@ $ curl -X DELETE https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/csv/
 ## Notice
 
 The feature of sending email by using the Mailgun API does NOT work by default. In order to enable it, you must [sign up with Mailgun](https://signup.mailgun.com/new/signup) for obtaining an API key, and use your own domain instead of 'example.com' in the [source code](https://github.com/FujitsuLaboratories/escapin/blob/master/examples/sendmail/instance.js#L33).
-

@@ -123,52 +123,55 @@ module.exports = {
 };
 ```
 
-|       Name        | Description                                                            |
-| :---------------: | ---------------------------------------------------------------------- |
-|      `name`       | name of the application                                                |
-|    `api_spec`     | path of the specification file of the API published by the application |
-|   `credentials`   | credentials required in calling external APIs                          |
-|    `platform`     | cloud platform where the application is being deployed                 |
-| `default_storage` | the storage type that are selected by default                          |
-|   `output_dir`    | directory where the transpilcation artifacts are being stored          |
+| Name              | Description                                                            | Default |
+| :---------------: | ---------------------------------------------------------------------- | :-----: |
+| `name`            | name of the application                                                |         |
+| `api_spec`        | path of the specification file of the API published by the application |         |
+| `credentials`     | credentials required in calling external APIs                          |         |
+| `platform`        | cloud platform where the application is being deployed                 | `aws`   |
+| `default_storage` | the storage type that are selected by default                          | `table` |
+| `output_dir`      | directory where the transpilcation artifacts are being stored          | `build` |
 
 ## <a name="features"></a>Transpilation features
 
-### <a name="storage"></a>Storage
-
 ---
 
-#### Usage
+### <a name="storage"></a>Storage
 
 You can use several kinds of storage services just like a first-class object in JavaScript.
 By declaring an empty object placing a special type annotation (e.g., `bucket`) you can create a resource in that type of storage services.
-In v0.2.x, `bucket` and `table` is available as a storage type.
-Storage type `bucket` represents a bucket in object storage.
-Storage type `table` represents a table in NoSQL datastore service.
+
+You can use both canonical type `platform.storageType` (e.g., `aws.bucket`) and shorthand type `storageType` (e.g., `bucket`) for storage objects; `platform` in the configuration file is selected when using shorthand types.
+In v0.2.x, `bucket` and `table` is available for `storageType`; `bucket` represents a bucket in object storage, and `table` represents a table in NoSQL datastore service.
+
 
 ```javascript
-export const foo: bucket = {}; // AWS S3 Bucket
-export const bar: table = {}; // AWS DynamoDB Table
-export const baz: aws.bucket = {}; // AWS S3 Bucket
+export const foo: aws.bucket = {}; // AWS S3 Bucket
+export const bar: bucket = {}; // AWS S3 Bucket
+export const baz: table = {}; // AWS DynamoDB Table
 ```
+
+Here are the usage example of storage objects:
 
 ```javascript
 export const foo: bucket = {};
 
-foo[id] = bar;
+foo[id] = bar; // uploading data
 
-baz = foo[id];
+baz = foo[id]; // downloading data
 
-qux = Object.keys(foo);
+qux = Object.keys(foo); // obtaining keys of data
 
-delete foo[id];
+delete foo[id]; // deleting existing data
 ```
 
 ---
 
 #### Input
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 export const foo: table = {};
@@ -176,7 +179,7 @@ export const foo: table = {};
 foo[id] = bar;
 ```
 
-- `.escapinrc.js`
+##### `.escapinrc.js`
 
 ```javascript
 module.exports = {
@@ -189,7 +192,9 @@ module.exports = {
 
 #### Output
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 import { DynamoDB } from "aws-sdk";
@@ -220,7 +225,7 @@ await new Promise((resolve, reject) => {
 });
 ```
 
-- `serverless.yml`
+##### `serverless.yml`
 
 ```yaml
 resources:
@@ -258,13 +263,17 @@ resources:
                       - Arn
 ```
 
+---
+
 ### <a name="function"></a>Function
 
 ---
 
 #### Input
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 export function handler(req) {
@@ -276,7 +285,7 @@ export function handler(req) {
 }
 ```
 
-- `.escapinrc.js`
+##### `.escapinrc.js`
 
 ```javascript
 module.exports = {
@@ -287,7 +296,7 @@ module.exports = {
 };
 ```
 
-- `swagger.yaml`
+##### `swagger.yaml`
 
 ```yaml
 swagger: "2.0"
@@ -321,7 +330,9 @@ paths:
 
 #### Output
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 export function handler(req, context, callback) {
@@ -335,7 +346,7 @@ export function handler(req, context, callback) {
 }
 ```
 
-- `serverless.yml`
+##### `serverless.yml`
 
 ```yaml
 functions:
@@ -367,6 +378,8 @@ resources:
         Policies: ...
 ```
 
+---
+
 ### <a name="import-api"></a>Importing open APIs
 
 ---
@@ -394,14 +407,16 @@ import api from "http://path/to/swagger.yaml";
 
 #### Input
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 import api from "http://path/to/swagger.yaml";
 api.items[id][{ foo: "bar", baz: "qux" }]({ quux: "corge" });
 ```
 
-- `http://path/to/swagger.yaml`
+##### `http://path/to/swagger.yaml`
 
 ```yaml
 swagger: "2.0"
@@ -461,7 +476,9 @@ definitions:
 
 #### Output
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 import request from "request";
@@ -482,15 +499,17 @@ const { _res, _body } = request({
 });
 ```
 
-### <a name="publish-api"></a>Publishing your API
+---
 
-#### Usage
+### <a name="publish-api"></a>Publishing your API
 
 ---
 
 #### Input
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 export function handleItem(req) {
@@ -507,7 +526,7 @@ export function handleItem(req) {
 }
 ```
 
-- `swagger.yaml`
+##### `swagger.yaml`
 
 ```yaml
 swagger: "2.0"
@@ -565,7 +584,9 @@ definitions:
 
 #### Output
 
-- `index.js`
+---
+
+##### `index.js`
 
 ```javascript
 export function handleItem(req, context, callback) {
@@ -584,7 +605,7 @@ export function handleItem(req, context, callback) {
 }
 ```
 
-- `serverless.yml`
+##### `serverless.yml`
 
 ```yaml
 functions:
@@ -601,7 +622,11 @@ functions:
   ...
 ```
 
+---
+
 ### <a name="async"></a>Auto-completing asynchronous features
+
+---
 
 #### Destructuring nesting callbacks
 
@@ -656,6 +681,8 @@ async function func() {
 }
 ```
 
+---
+
 #### for, for-in, for-of (collection should be obtained asynchronously)
 
 ---
@@ -667,6 +694,8 @@ for (const item of api.call(arg)) {
   doSomething(item);
 }
 ```
+
+---
 
 ##### Output
 
@@ -681,6 +710,8 @@ for (const item of _data) {
   doSomething(item);
 }
 ```
+
+---
 
 #### for, for-in, for-of (executable in parallel)
 
@@ -715,6 +746,8 @@ for (const arg of args) {
 await Promise.all(_promises);
 ```
 
+---
+
 #### for, for-in, for-of (NOT executable in parallel)
 
 ---
@@ -744,6 +777,8 @@ for (const arg of args) {
   sum += _data;
 }
 ```
+
+---
 
 #### while，do-while
 
@@ -778,6 +813,8 @@ while ((data = _data) === null) {
   });
 }
 ```
+
+---
 
 #### if-else
 
@@ -818,6 +855,8 @@ if (_data) {
   }
 }
 ```
+
+---
 
 #### switch-case
 
@@ -872,6 +911,8 @@ switch (_data) {
 }
 ```
 
+---
+
 #### functions that require callback functions as an argument (e.g., Array#forEach)
 
 ---
@@ -913,6 +954,8 @@ args.some(arg => {
 });
 ```
 
+---
+
 #### asynchronous features appearing in input
 
 ---
@@ -930,6 +973,8 @@ args.map(arg => await promisifiedFunc(arg));
 ```javascript
 await Promise.all(args.map(async arg => await promisifiedFunc(arg)));
 ```
+
+---
 
 ## <a name="publications"></a>Publications
 

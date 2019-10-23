@@ -2,12 +2,12 @@
 
 **the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs**
 
-[![npm version](https://img.shields.io/npm/v/escapin.svg?style=flat-square)](https://www.npmjs.com/package/escapin)
-[![Build Status](https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat-square)](https://travis-ci.org/FujitsuLaboratories/escapin)
-[![dependencies Status](https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat-square)](https://libraries.io/npm/escapin)
-[![codecov](https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat-square)](https://codecov.io/gh/FujitsuLaboratories/escapin)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/escapin.svg?style=flat)](https://www.npmjs.com/package/escapin)
+[![Build Status](https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat)](https://travis-ci.org/FujitsuLaboratories/escapin)
+[![dependencies Status](https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat)](https://libraries.io/npm/escapin)
+[![codecov](https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat)](https://codecov.io/gh/FujitsuLaboratories/escapin)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 ## Table of Contents
 

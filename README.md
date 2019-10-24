@@ -1,4 +1,4 @@
-![Escapin](https://raw.githubusercontent.com/FujitsuLaboratories/escapin/master/docs/assets/escapin-1280x640.png)
+![Escapin](https://raw.githubusercontent.com/FujitsuLaboratories/escapin/master/docs/assets/escapin-1280x640-large.png)
 
 <div align='center'>
 

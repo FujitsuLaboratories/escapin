@@ -1,13 +1,12 @@
-# Escapin
+![Escapin](https://raw.githubusercontent.com/FujitsuLaboratories/escapin/master/docs/assets/escapin-1280x640.png)
 
-**the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs**
+<div align='center'>
 
-[![npm version](https://img.shields.io/npm/v/escapin.svg?style=flat)](https://www.npmjs.com/package/escapin)
-[![Build Status](https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat)](https://travis-ci.org/FujitsuLaboratories/escapin)
-[![dependencies Status](https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat)](https://libraries.io/npm/escapin)
-[![codecov](https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat)](https://codecov.io/gh/FujitsuLaboratories/escapin)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+## the transpiler for escaping from complicated usage<br />of cloud services and APIs
+
+[![npm version](https://img.shields.io/npm/v/escapin.svg?style=flat)](https://www.npmjs.com/package/escapin) [![Build Status](https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat)](https://travis-ci.org/FujitsuLaboratories/escapin) [![dependencies Status](https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat)](https://libraries.io/npm/escapin) [![codecov](https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat)](https://codecov.io/gh/FujitsuLaboratories/escapin) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+
+</div>
 
 ## Table of Contents
 
@@ -123,14 +122,14 @@ module.exports = {
 };
 ```
 
-| Name              | Description                                                            | Default |
+|       Name        | Description                                                            | Default |
 | :---------------: | ---------------------------------------------------------------------- | :-----: |
-| `name`            | name of the application                                                |         |
-| `api_spec`        | path of the specification file of the API published by the application |         |
-| `credentials`     | credentials required in calling external APIs                          |         |
-| `platform`        | cloud platform where the application is being deployed                 | `aws`   |
+|      `name`       | name of the application                                                |         |
+|    `api_spec`     | path of the specification file of the API published by the application |         |
+|   `credentials`   | credentials required in calling external APIs                          |         |
+|    `platform`     | cloud platform where the application is being deployed                 |  `aws`  |
 | `default_storage` | the storage type that are selected by default                          | `table` |
-| `output_dir`      | directory where the transpilcation artifacts are being stored          | `build` |
+|   `output_dir`    | directory where the transpilcation artifacts are being stored          | `build` |
 
 ## <a name="features"></a>Transpilation features
 
@@ -145,7 +144,6 @@ You can use both canonical type `platform.storageType` (e.g., `aws.bucket`) and 
 If you omit a type annotation, `default_storage` is used as that type by default.
 In v0.2.x, `bucket` and `table` is available for storage types; `bucket` represents a bucket in object storage, and `table` represents a table in NoSQL datastore service.
 
-
 ```javascript
 export const foo: aws.bucket = {}; // AWS S3 Bucket
 export const bar: bucket = {}; // AWS S3 Bucket
@@ -158,10 +156,10 @@ Here are the usage example of storage objects:
 ```javascript
 export const foo: bucket = {};
 
-foo[id] = bar;          // uploading data
-baz = foo[id];          // downloading data
+foo[id] = bar; // uploading data
+baz = foo[id]; // downloading data
 qux = Object.keys(foo); // obtaining keys of data
-delete foo[id];         // deleting existing data
+delete foo[id]; // deleting existing data
 ```
 
 ---

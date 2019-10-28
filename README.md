@@ -1,11 +1,9 @@
 ![Escapin](https://raw.githubusercontent.com/FujitsuLaboratories/escapin/master/docs/assets/escapin-1280x640-large.png)
 
+<h2 align='center'>the transpiler for escaping from complicated usage<br />of cloud services and APIs</h2>
+
 <p align='center'>
-
-<h2>the transpiler for escaping from complicated usage<br />of cloud services and APIs</h2>
-
-[![npm version](https://img.shields.io/npm/v/escapin.svg?style=flat)](https://www.npmjs.com/package/escapin) [![Build Status](https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat)](https://travis-ci.org/FujitsuLaboratories/escapin) [![dependencies Status](https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat)](https://libraries.io/npm/escapin) [![codecov](https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat)](https://codecov.io/gh/FujitsuLaboratories/escapin) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-
+<a href="https://www.npmjs.com/package/escapin"><img src="https://img.shields.io/npm/v/escapin.svg?style=flat" alt="npm version" /></a> <a href="https://travis-ci.org/FujitsuLaboratories/escapin"><img src="https://img.shields.io/travis/FujitsuLaboratories/escapin.svg?style=flat" alt="Build Status" /></a> <a href="https://libraries.io/npm/escapin"><img src="https://img.shields.io/librariesio/release/npm/escapin.svg?style=flat" alt="dependencies Status" /></a> <a href="https://codecov.io/gh/FujitsuLaboratories/escapin"><img src="https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat" alt="codecov" /></a> <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat" alt="code style: prettier" /></a> <a href="LICENSE"><img src="http://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="MIT License" /></a>
 </p>
 
 ## Table of Contents

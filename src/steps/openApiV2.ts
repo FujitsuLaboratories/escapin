@@ -154,14 +154,11 @@ function getApiSpec(uri: string, state: OpenApiV2State) {
       let resolved;
       let cleanupNeeded = false;
       if (isURL(uri)) {
-        const response = (await request(
-          {
-            headers: {},
-            method: 'GET',
-            uri,
-          },
-          undefined,
-        )) as Response;
+        const response = (await request({
+          headers: {},
+          method: 'GET',
+          uri,
+        })) as Response;
         resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
         fs.writeFileSync(resolved, response.body);
         cleanupNeeded = true;

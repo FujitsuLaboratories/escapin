@@ -108,7 +108,7 @@ const visitor: Visitor<OpenApiV2State> = {
     // PUT
     const left = path.get('left');
     const key = state.key(left);
-    if (key === undefined) {
+    if (key === undefined || !u.isMemberExpression(left.node)) {
       return;
     }
     const { options, bodyParameter } = createRequestOptions('PUT', key, left, state);
@@ -273,16 +273,14 @@ function createRequestOptions(
 
     method = method.toLowerCase();
 
-    const {
-      uri,
-      contentType,
-      bodyParameter,
-      params,
-      target: targetCandidate,
-      pathSpec,
-    } = identifyTargetExpression(apiSpec, nodePath, method, key);
+    const { uri, contentType, bodyParameter, params, rootPath, pathSpec } = identifyRootNode(
+      apiSpec,
+      nodePath,
+      method,
+      key,
+    );
 
-    const target = params !== undefined ? nodePath : targetCandidate;
+    const target = params !== undefined ? nodePath : rootPath;
 
     let options = u.objectExpression([
       u.objectProperty(u.identifier('uri'), u.parseExpression(`\`${uri}\``)),
@@ -421,100 +419,78 @@ function createRequestOptions(
   }
 }
 
-function identifyTargetExpression(
+function identifyRootNode(
   apiSpec: OpenAPIV2.Document,
   nodePath: u.NodePath,
   method: string,
   key: u.Identifier,
 ): {
   uri: string;
-  contentType: string | undefined;
+  contentType: string;
   bodyParameter: string;
-  params: u.Node | undefined;
-  target: u.NodePath;
+  params: u.ObjectExpression | undefined;
+  rootPath: u.NodePath;
   pathSpec: OpenAPIV2.OperationObject;
 } {
   let maxMatches = 0;
-  let uri: string | undefined;
-  let contentType: string | undefined;
-  let bodyParameter: string | undefined;
-  let params: u.Node | undefined;
-  let target: u.NodePath | undefined;
-  let pathSpec: OpenAPIV2.OperationObject | undefined;
+  let uri!: string;
+  let contentType!: string;
+  let bodyParameter!: string;
+  let params: u.ObjectExpression | undefined;
+  let rootPath!: u.NodePath;
+  let pathSpec!: OpenAPIV2.OperationObject;
   const pathParamPattern = /^\{.*\}$/;
 
   for (const path in apiSpec.paths) {
-    let newPath = path;
-    let matches = 0;
-    let tokens = path.split(/\/|\./).reverse();
+    if (apiSpec.paths[path][method] === undefined) {
+      continue;
+    }
+    const tokens = path.split(/\/|\./).reverse();
     tokens.pop();
     const lastToken = last(tokens);
-    if (lastToken && lastToken.match(pathParamPattern)) {
+    if (lastToken?.match(pathParamPattern)) {
       tokens.push(lastToken.substring(1, lastToken.length - 1));
     }
-    let failed = false;
+    let newPath = path;
+    let matches = 0;
+    let rootCandidate!: u.NodePath;
     let iter = nodePath;
-    let tempTarget: u.NodePath | undefined = undefined;
-    TOKEN_LOOP: for (const token of tokens) {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
+    let failed = false;
+    for (const token of tokens) {
+      while (u.isMemberExpression(iter.node)) {
         const { node } = iter;
-        if (u.isMemberExpression(node)) {
-          if (node.computed && iter === nodePath && u.isObjectExpression(node.property)) {
-            params = node.property;
-            iter = iter.get('object') as u.NodePath;
-            continue;
-          }
-
-          if (node.computed && token.match(pathParamPattern)) {
-            if (u.isStringLiteral(node.property)) {
-              newPath = newPath.replace(token, node.property.value);
-            } else {
-              newPath = newPath.replace(token, '${'.concat(u.generate(node.property)).concat('}'));
-            }
-            if (tempTarget === undefined) {
-              tempTarget = iter;
-            }
-            matches += 1;
-            iter = iter.get('object') as u.NodePath;
-            break;
-          }
-
-          if (!node.computed && token === node.property.name) {
-            if (tempTarget === undefined) {
-              tempTarget = iter;
-            }
-            matches += 1;
-            iter = iter.get('object') as u.NodePath;
-            break;
-          }
-
-          iter = iter.get('object') as u.NodePath;
-          continue;
+        const { computed, property } = node;
+        if (computed && u.isObjectExpression(property)) {
+          params = property;
+        } else if (computed && token.match(pathParamPattern)) {
+          newPath = newPath.replace(
+            token,
+            u.isStringLiteral(property) ? property.value : `$\{${u.generate(property)}}`,
+          );
+          break;
+        } else if (!computed && u.isIdentifier(property) && token === property.name) {
+          break;
         }
-
+        iter = iter.get('object') as u.NodePath
+      }
+      if (!u.isMemberExpression(iter.node)) {
         failed = true;
-        break TOKEN_LOOP;
+        break;
       }
+      rootCandidate = rootCandidate || iter;
+      matches += 1;
+      iter = iter.get('object') as u.NodePath
     }
-    if (!failed && !Array.isArray(iter) && u.equals(iter.node, key) && matches > maxMatches) {
-      if (apiSpec.paths[path][method] === undefined) {
-        continue;
-      }
+    if (!failed && u.equals(iter.node, key) && matches > maxMatches) {
       pathSpec = apiSpec.paths[path][method];
       uri = createURI(apiSpec, newPath);
       contentType = getContentType(apiSpec, pathSpec);
       bodyParameter = getBodyParameter(contentType);
-      target = tempTarget;
+      rootPath = rootCandidate;
       maxMatches = matches;
     }
   }
-  if (
-    pathSpec === undefined ||
-    uri === undefined ||
-    bodyParameter === undefined ||
-    target === undefined
-  ) {
+  if (maxMatches === 0) {
     throw new Error('This cannot be recognized as an API request');
   }
 
@@ -523,7 +499,7 @@ function identifyTargetExpression(
     contentType,
     bodyParameter,
     params,
-    target,
+    rootPath,
     pathSpec,
   };
 }

@@ -143,7 +143,7 @@ const visitor: Visitor<AsynchronizationState> = {
 
     const names = t.getNames(path.get('declarations.0.init.callee') as u.NodePath);
     const entry = state.escapin.types.get(...names);
-    if (entry === undefined || !t.isErrorFirstCallback(entry)) {
+    if (!t.isErrorFirstCallback(entry)) {
       return;
     }
 
@@ -151,7 +151,7 @@ const visitor: Visitor<AsynchronizationState> = {
 
     const data = path.scope.generateUidIdentifier('data');
     const args = [u.identifier('err')];
-    let newId: u.Node | undefined;
+    let newId!: u.Node;
     if (u.isObjectPattern(id)) {
       for (const property of id.properties) {
         if (u.isRestElement(property)) {
@@ -214,7 +214,7 @@ function fetchGeneralCallback(
   }
 
   const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
-  if (callbackPath === undefined || !callbackPath.isFunction()) {
+  if (!callbackPath?.isFunction()) {
     return false;
   }
 
@@ -263,7 +263,7 @@ function fetchGeneralCallback(
       if (init.isCallExpression()) {
         const names = t.getNames(init.get('callee') as u.NodePath);
         const entry = state.escapin.types.get(...names);
-        if (entry === undefined || !t.isAsynchronous(entry)) {
+        if (!t.isAsynchronous(entry)) {
           return;
         }
       } else if (!u.isAwaitExpression(init.node) || !u.isNewPromise(init.node.argument)) {
@@ -288,7 +288,7 @@ function fetchGeneralCallback(
       if (expressionPath.isCallExpression()) {
         const names = t.getNames(expressionPath.get('callee') as u.NodePath);
         const entry = state.escapin.types.get(...names);
-        if (entry === undefined || !t.isAsynchronous(entry)) {
+        if (!t.isAsynchronous(entry)) {
           return;
         }
       } else if (!u.isAwaitExpression(expression) || !u.isNewPromise(expression.argument)) {
@@ -317,8 +317,7 @@ function fetchGeneralCallback(
 
 function fetchAsynchronous(path: u.NodePath<u.CallExpression>, state: AsynchronizationState) {
   const { node } = path;
-  const parentFunc = path.findParent(path => u.isFunction(path.node));
-  if (parentFunc === null) {
+  if (null === path.findParent(path => u.isFunction(path.node))) {
     return false;
   }
 

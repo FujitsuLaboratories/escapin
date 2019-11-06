@@ -76,21 +76,21 @@ export async function compare(
   const escapin = initialize();
   await mkdirp(escapin.config.output_dir);
 
-  const before = fs.readFileSync(path.join(__dirname, `steps/${testName}.in.js`), 'utf8');
-  const after = fs.readFileSync(path.join(__dirname, `steps/${testName}.out.js`), 'utf8');
+  const actual = fs.readFileSync(path.join(__dirname, `steps/${testName}.in.js`), 'utf8');
+  const expected = fs.readFileSync(path.join(__dirname, `steps/${testName}.out.js`), 'utf8');
 
   try {
-    const astBefore = u.parse(before);
-    escapin.states['test.js'].code = before;
-    escapin.states['test.js'].ast = astBefore;
+    const astActual = u.parse(actual);
+    escapin.states['test.js'].code = actual;
+    escapin.states['test.js'].ast = astActual;
 
     for (const step of steps) {
       step(escapin);
     }
 
-    const astAfter = u.parse(after);
+    const astExpected = u.parse(expected);
 
-    t.deepEqual(u.purify(astBefore), u.purify(astAfter));
+    t.deepEqual(u.purify(astActual), u.purify(astExpected));
   } catch (err) {
     console.error(err);
     t.fail();

@@ -7,7 +7,7 @@ const { _res, _body } = request({
   json: true,
 });
 let _get = _body;
-const pet = _get;
+const newPet = _get;
 const { _res3, _body3 } = request({
   uri: 'https://petstore.swagger.io/v2/pet/1234',
   method: 'get',

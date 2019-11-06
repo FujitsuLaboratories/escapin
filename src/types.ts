@@ -23,19 +23,19 @@ export interface General extends FunctionType {
 }
 
 export function isAsynchronous(entry: FunctionType | undefined): entry is Asynchronous {
-  return entry !== undefined && entry.type === 'asynchronous';
+  return entry?.type === 'asynchronous';
 }
 
 export function isErrorFirstCallback(entry: FunctionType | undefined): entry is ErrorFirstCallback {
-  return entry !== undefined && entry.type === 'error-first-callback';
+  return entry?.type === 'error-first-callback';
 }
 
 export function isGeneralCallback(entry: FunctionType | undefined): entry is GeneralCallback {
-  return entry !== undefined && entry.type === 'general-callback';
+  return entry?.type === 'general-callback';
 }
 
 export function isGeneral(entry: FunctionType | undefined): entry is General {
-  return entry !== undefined && entry.type === 'general';
+  return entry?.type === 'general';
 }
 
 export function asynchronous(...names: string[]): Asynchronous {

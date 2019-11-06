@@ -36,10 +36,10 @@ export class BaseState {
   }
 
   public getPathInfo(functionName: string): IPathInfo | undefined {
-    if (this.escapin === undefined || this.escapin.apiSpec === undefined) {
+    const apiSpec = this.escapin?.apiSpec?.data;
+    if (apiSpec === undefined) {
       return undefined;
     }
-    const apiSpec = this.escapin.apiSpec.data;
     const name = `${apiSpec.info.title}-${this.escapin.id}`;
     for (const path in apiSpec.paths) {
       const resource = apiSpec.paths[path] as OpenAPIV2.PathItemObject;
@@ -101,7 +101,7 @@ export class BaseState {
     if (module.builtinModules.includes(moduleName)) {
       return true;
     }
-    if (this.escapin === undefined || this.escapin.packageJson === undefined) {
+    if (this.escapin?.packageJson === undefined) {
       return false;
     }
     const {

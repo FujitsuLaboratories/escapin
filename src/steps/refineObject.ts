@@ -37,12 +37,7 @@ const visitor: Visitor<ObjectState> = {
     }
     const firstDeclarator = declaration.declarations[0];
     const { id, init } = firstDeclarator;
-    if (
-      !u.isIdentifier(id) ||
-      init === null ||
-      !u.isObjectExpression(init) ||
-      init.properties.length > 0
-    ) {
+    if (!u.isIdentifier(id) || !u.isObjectExpression(init) || init.properties.length > 0) {
       return;
     }
 

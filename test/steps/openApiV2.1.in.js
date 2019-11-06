@@ -1,6 +1,6 @@
 import petstore from 'https://petstore.swagger.io/v2/swagger.json';
 
-const pet = petstore.pet[id];
+const newPet = petstore.pet[id];
 petstore.pet[1234];
 petstore.pet['abcd'];
 petstore.pet[id].name;

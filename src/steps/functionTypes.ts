@@ -17,17 +17,17 @@ export default function(escapin: Escapin) {
 
   escapin.save();
 
-  console.log(`install types at ${output_dir}`);
-
-  const { dependencies, devDependencies } = escapin.packageJson;
-  installTypesInDependencies(dependencies, devDependencies, output_dir);
-
   console.log('npm install');
 
   commandSync('npm install', {
     cwd: output_dir,
     stdout: process.stdout,
   });
+
+  console.log(`install types at ${output_dir}`);
+
+  const { dependencies, devDependencies } = escapin.packageJson;
+  installTypesInDependencies(dependencies, devDependencies, output_dir);
 
   console.log('reload package.json');
 

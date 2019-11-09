@@ -1,4 +1,3 @@
-import test from 'ava';
 import fs from 'fs';
 import _mkdirp from 'mkdirp';
 import { ncp as _ncp } from 'ncp';
@@ -14,30 +13,40 @@ const EXAMPLES_DIR = path.join(process.cwd(), 'examples');
 // eslint-disable-next-line no-undef
 const TEMP_DIR = path.join(__dirname, 'temp');
 
-test.before(async t => {
-  if (fs.existsSync(TEMP_DIR)) {
-    rimraf(TEMP_DIR);
-  }
-  await mkdirp(TEMP_DIR);
-  await ncp(EXAMPLES_DIR, TEMP_DIR);
-});
-
-test.after(t => {
-  if (fs.existsSync(TEMP_DIR)) {
-    rimraf(TEMP_DIR);
-  }
-});
-
-test('test index', async t => {
-  const names = fs.readdirSync(TEMP_DIR, 'utf8');
-  for (const name of names) {
-    const cwd = path.join(TEMP_DIR, name);
-    const stat = fs.lstatSync(cwd);
-    if (!stat.isDirectory()) {
-      continue;
+test('transpiles all projects in ./examples', async done => {
+  try {
+    if (fs.existsSync(TEMP_DIR)) {
+      rimraf(TEMP_DIR);
     }
-    const escapin = new Escapin(cwd);
-    await escapin.transpile();
+    await mkdirp(TEMP_DIR);
+    await ncp(EXAMPLES_DIR, TEMP_DIR);
+
+    const names = fs.readdirSync(TEMP_DIR, 'utf8');
+    const promises: Promise<void>[] = [];
+    for (const name of names) {
+      const cwd = path.join(TEMP_DIR, name);
+      const stat = fs.lstatSync(cwd);
+      if (!stat.isDirectory()) {
+        continue;
+      }
+      promises.push(new Promise((resolve, reject) => {
+        try {
+          const escapin = new Escapin(cwd);
+          escapin.transpile();
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      }));
+    }
+    await Promise.all(promises);
+  } catch (e) {
+    console.error(e);
+    throw e;
+  } finally {
+    if (fs.existsSync(TEMP_DIR)) {
+      rimraf(TEMP_DIR);
+    }
+    done();
   }
-  t.pass();
-});
+}, 300000);

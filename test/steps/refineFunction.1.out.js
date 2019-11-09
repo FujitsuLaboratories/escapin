@@ -1,4 +1,4 @@
-export const csvGET = (req, context, callback) => {
+export const handle = (req, context, callback) => {
   try {
     callback(null, 'hello');
     return;

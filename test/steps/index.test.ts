@@ -1,4 +1,3 @@
-import test from 'ava';
 import {
   normalize,
   uncallbackify,
@@ -9,36 +8,49 @@ import {
   asynchronize,
   finalize,
 } from '../../src/steps';
-import { compare } from '../util';
+import { transpile } from '../util';
 
-test('[normalize.1] nominal case of normalize', async t => {
-  await compare(t, 'normalize.1', normalize);
+test('[normalize.1] nominal case of normalize', async () => {
+  const { actual, expected } = await transpile('normalize.1', normalize);
+  expect(actual).toEqual(expected);
 });
 
-test('[uncallbackify.1] nominal case of uncallbackify', async t => {
-  await compare(t, 'uncallbackify.1', uncallbackify);
+test('[uncallbackify.1] nominal case of uncallbackify', async () => {
+  const { actual, expected } = await transpile('uncallbackify.1', uncallbackify);
+  expect(actual).toEqual(expected);
 });
 
-test('[openApiV2.1] nominal case of openApiV2', async t => {
-  await compare(t, 'openApiV2.1', openApiV2, finalize);
+test('[openApiV2.1] nominal case of openApiV2', async () => {
+  const { actual, expected } = await transpile('openApiV2.1', openApiV2, finalize);
+  expect(actual).toEqual(expected);
 });
 
-test('[openApiV2.2] ignore conventional import declarations', async t => {
-  await compare(t, 'openApiV2.2', openApiV2, finalize);
+test('[openApiV2.2] ignore conventional import declarations', async () => {
+  const { actual, expected } = await transpile('openApiV2.2', openApiV2, finalize);
+  expect(actual).toEqual(expected);
 });
 
-test('[refineObject.1] nominal case of refineObject', async t => {
-  await compare(t, 'refineObject.1', refineObject, finalize);
+test('[refineObject.1] nominal case of refineObject', async () => {
+  const { actual, expected } = await transpile('refineObject.1', refineObject, finalize);
+  expect(actual).toEqual(expected);
 });
 
-test('[refineFunction.1] nominal case of refineFunction', async t => {
-  await compare(t, 'refineFunction.1', refineFunction, finalize);
+test('[refineFunction.1] nominal case of refineFunction', async () => {
+  const { actual, expected } = await transpile('refineFunction.1', refineFunction, finalize);
+  expect(actual).toEqual(expected);
 });
 
-test('[asynchronize.1] nominal case of asynchronize', async t => {
-  await compare(t, 'asynchronize.1', functionTypes, asynchronize, finalize);
+test('[asynchronize.1] nominal case of asynchronize', async () => {
+  const { actual, expected } = await transpile(
+    'asynchronize.1',
+    functionTypes,
+    asynchronize,
+    finalize,
+  );
+  expect(actual).toEqual(expected);
 });
 
-test('[finalize.1] nominal case of finalize', async t => {
-  await compare(t, 'finalize.1', finalize);
+test('[finalize.1] nominal case of finalize', async () => {
+  const { actual, expected } = await transpile('finalize.1', finalize);
+  expect(actual).toEqual(expected);
 });

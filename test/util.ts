@@ -1,4 +1,3 @@
-import { ExecutionContext } from 'ava';
 import fs from 'fs';
 import _mkdirp from 'mkdirp';
 import path from 'path';
@@ -14,10 +13,10 @@ const mkdirp = promisify(_mkdirp);
 
 export function initialize() {
   const state = new BaseState();
-  state.filename = 'test.js';
+  state.filename = 'dummy.js';
   const escapin = new Escapin(process.cwd());
   escapin.states = {
-    'test.js': state,
+    'dummy.js': state,
   };
   state.escapin = escapin;
   escapin.id = 'test';
@@ -36,9 +35,9 @@ export function initialize() {
         version: 'v1',
       },
       paths: {
-        '/csv': {
+        '/handle': {
           get: {
-            'x-escapin-handler': 'test.csvGET',
+            'x-escapin-handler': 'dummy.handle',
             consumes: ['application/json'],
           },
         },
@@ -68,11 +67,13 @@ export function initialize() {
   return escapin;
 }
 
-export async function compare(
-  t: ExecutionContext,
+export async function transpile(
   testName: string,
   ...steps: Array<(escapin: Escapin) => void>
-) {
+): Promise<{
+  actual: u.Node;
+  expected: u.Node;
+}> {
   const escapin = initialize();
   await mkdirp(escapin.config.output_dir);
 
@@ -81,8 +82,8 @@ export async function compare(
 
   try {
     const astActual = u.parse(actual);
-    escapin.states['test.js'].code = actual;
-    escapin.states['test.js'].ast = astActual;
+    escapin.states['dummy.js'].code = actual;
+    escapin.states['dummy.js'].ast = astActual;
 
     for (const step of steps) {
       step(escapin);
@@ -90,10 +91,7 @@ export async function compare(
 
     const astExpected = u.parse(expected);
 
-    t.deepEqual(u.purify(astActual), u.purify(astExpected));
-  } catch (err) {
-    console.error(err);
-    t.fail();
+    return Promise.resolve({ actual: u.purify(astActual), expected: u.purify(astExpected) });
   } finally {
     rimraf(escapin.config.output_dir);
   }

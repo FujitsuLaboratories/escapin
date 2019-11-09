@@ -1,3 +1,3 @@
-export const csvGET = req => {
+export const handle = req => {
   return 'hello';
 };

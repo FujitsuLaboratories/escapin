@@ -34,7 +34,7 @@ jobs:
       script:
         - yarn coverage
       after_success:
-        - yarn report | coveralls
+        - cat ./coverage/lcov.info | coveralls
         - codecov
     - stage: Deploy
       if: tag IS present

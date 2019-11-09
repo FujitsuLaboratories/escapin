@@ -1,63 +1,62 @@
-import test from 'ava';
 import path from 'path';
 import * as u from '../src/util';
 import { BaseState } from '../src/state';
 import { initialize } from './util';
 
-test('test getPathInfo', t => {
-  t.is(new BaseState().getPathInfo('incomplete'), undefined);
+test('test getPathInfo', () => {
+  expect(new BaseState().getPathInfo('incomplete')).toBeUndefined();
 
   const escapin = initialize();
-  const state = escapin.states['test.js'];
-  t.deepEqual(state.getPathInfo('csvGET'), {
+  const state = escapin.states['dummy.js'];
+  expect(state.getPathInfo('handle')).toEqual({
     name: 'test-test',
-    path: '/csv',
+    path: '/handle',
     method: 'get',
     consumes: ['application/json'],
     produces: [],
     parameters: [],
   });
 
-  t.is(state.getPathInfo('invalid'), undefined);
+  expect(state.getPathInfo('invalid')).toBeUndefined();
 });
 
-test('test pushProgramBody', t => {
+test('test pushProgramBody', () => {
   const escapin = initialize();
-  const state = escapin.states['test.js'];
+  const state = escapin.states['dummy.js'];
   state.ast = u.parse('');
   state.pushProgramBody(u.parse('hoge();').program.body[0]);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse('hoge();')));
+  expect(u.purify(state.ast)).toEqual(u.purify(u.parse('hoge();')));
 
   state.pushProgramBody(u.parse('piyo(); fuga();').program.body);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse('hoge(); piyo(); fuga();')));
+  expect(u.purify(state.ast)).toEqual(u.purify(u.parse('hoge(); piyo(); fuga();')));
 });
 
-test('test unshiftProgramBody', t => {
+test('test unshiftProgramBody', () => {
   const escapin = initialize();
-  const state = escapin.states['test.js'];
+  const state = escapin.states['dummy.js'];
   state.ast = u.parse('');
   state.unshiftProgramBody(u.parse('hoge();').program.body[0]);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse('hoge();')));
+  expect(u.purify(state.ast)).toEqual(u.purify(u.parse('hoge();')));
 
   state.unshiftProgramBody(u.parse('piyo(); fuga();').program.body);
-  t.deepEqual(u.purify(state.ast), u.purify(u.parse('piyo(); fuga(); hoge();')));
+  expect(u.purify(state.ast)).toEqual(u.purify(u.parse('piyo(); fuga(); hoge();')));
 });
 
-test('test resolvePath', t => {
+test('test resolvePath', () => {
   const escapin = initialize();
-  const state = escapin.states['test.js'];
-  t.is(state.resolvePath('src/index.ts'), path.resolve('src/index.ts'));
-  t.is(state.resolvePath('ava.config'), path.resolve('ava.config.js'));
-  t.is(state.resolvePath('invalid'), undefined);
+  const state = escapin.states['dummy.js'];
+  expect(state.resolvePath('src/index.ts')).toBe(path.resolve('src/index.ts'));
+  expect(state.resolvePath('jest.config')).toBe(path.resolve('jest.config.js'));
+  expect(state.resolvePath('invalid')).toBeUndefined();
 });
 
-test('test hasDependency', t => {
-  t.is(new BaseState().hasDependency('hoge'), false);
+test('test hasDependency', () => {
+  expect(new BaseState().hasDependency('hoge')).toBeFalsy();
 
   const escapin = initialize();
-  const state = escapin.states['test.js'];
+  const state = escapin.states['dummy.js'];
   escapin.packageJson.dependencies['hoge'] = 'latest';
-  t.is(state.hasDependency('fs'), true);
-  t.is(state.hasDependency('hoge'), true);
-  t.is(state.hasDependency('piyo'), false);
+  expect(state.hasDependency('fs')).toBeTruthy();
+  expect(state.hasDependency('hoge')).toBeTruthy();
+  expect(state.hasDependency('piyo')).toBeFalsy();
 });

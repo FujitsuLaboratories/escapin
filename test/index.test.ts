@@ -29,15 +29,17 @@ test('transpiles all projects in ./examples', async done => {
       if (!stat.isDirectory()) {
         continue;
       }
-      promises.push(new Promise((resolve, reject) => {
-        try {
-          const escapin = new Escapin(cwd);
-          escapin.transpile();
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      }));
+      promises.push(
+        new Promise((resolve, reject) => {
+          try {
+            const escapin = new Escapin(cwd);
+            escapin.transpile();
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }),
+      );
     }
     await Promise.all(promises);
   } catch (e) {

@@ -193,7 +193,13 @@ const visitor: Visitor<AsynchronizationState> = {
       }),
     );
 
-    if (!u.test(path.parentPath, path => u.equals(path.node, data), path => path.node === node)) {
+    if (
+      !u.test(
+        path.parentPath,
+        path => u.equals(path.node, data),
+        path => path.node === node,
+      )
+    ) {
       path.replaceWith(u.expressionStatement(declarations[0].init));
     }
 

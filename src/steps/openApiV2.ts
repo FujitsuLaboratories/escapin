@@ -471,7 +471,7 @@ function identifyRootNode(
         } else if (!computed && u.isIdentifier(property) && token === property.name) {
           break;
         }
-        iter = iter.get('object') as u.NodePath
+        iter = iter.get('object') as u.NodePath;
       }
       if (!u.isMemberExpression(iter.node)) {
         failed = true;
@@ -479,7 +479,7 @@ function identifyRootNode(
       }
       rootCandidate = rootCandidate || iter;
       matches += 1;
-      iter = iter.get('object') as u.NodePath
+      iter = iter.get('object') as u.NodePath;
     }
     if (!failed && u.equals(iter.node, key) && matches > maxMatches) {
       pathSpec = apiSpec.paths[path][method];

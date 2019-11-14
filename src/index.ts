@@ -1,4 +1,4 @@
-import cosmiconfig from 'cosmiconfig';
+import { cosmiconfigSync } from 'cosmiconfig';
 import deasync from 'deasync';
 import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
@@ -108,7 +108,7 @@ export class Escapin {
   }
 
   private loadConfig() {
-    const result = cosmiconfig('escapin').searchSync(this.basePath);
+    const result = cosmiconfigSync('escapin').search(this.basePath);
     if (result === null) {
       throw new Error('config file not found.');
     }

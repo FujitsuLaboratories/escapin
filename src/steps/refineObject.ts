@@ -198,7 +198,10 @@ const visitor: Visitor<ObjectState> = {
     let movedStmts: u.Statement[] = [];
     parentPath.traverse({
       Statement(path) {
-        if (path.isReturnStatement() || u.test(path, path => path.isIdentifier() && !path.isReferenced())) {
+        if (
+          path.isReturnStatement() ||
+          u.test(path, path => path.isIdentifier() && !path.isReferenced())
+        ) {
           path.skip();
         } else {
           u.replace(path, [left, right], variable);

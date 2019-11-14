@@ -44,7 +44,7 @@ if (_temp2 === null || _temp2.Item === undefined) {
 
 const foo = _store2;
 
-const _temp4 = new DynamoDB().deleteItem({
+const _temp3 = new DynamoDB().deleteItem({
   TableName: 'store-test',
   Key: {
     key: {
@@ -63,19 +63,19 @@ while (true) {
     },
     ProjectionExpression: '#ky',
   };
-  const _temp5 = new DynamoDB().scan(params);
+  const _temp4 = new DynamoDB().scan(params);
 
-  _store3.push(..._temp5.Items.map(item => item.key.S));
+  _store3.push(..._temp4.Items.map(item => item.key.S));
 
-  if (_temp5.LastEvaluatedKey === undefined) {
+  if (_temp4.LastEvaluatedKey === undefined) {
     break;
   }
 
-  params.ExclusiveStartKey = _temp5.LastEvaluatedKey;
+  params.ExclusiveStartKey = _temp4.LastEvaluatedKey;
 }
 
 for (const key of _store3) {
-  const _temp6 = new DynamoDB().getItem({
+  const _temp5 = new DynamoDB().getItem({
     TableName: 'store-test',
     Key: {
       key: {
@@ -86,13 +86,13 @@ for (const key of _store3) {
 
   let _store4;
 
-  if (_temp6 === null || _temp6.Item === undefined) {
+  if (_temp5 === null || _temp5.Item === undefined) {
     _store4 = undefined;
   } else {
     _store4 =
-      _temp6.Item.type.S === 'object' || _temp6.Item.type.S === 'function'
-        ? JSON.parse(_temp6.Item.value.S)
-        : _temp6.Item.value.S;
+      _temp5.Item.type.S === 'object' || _temp5.Item.type.S === 'function'
+        ? JSON.parse(_temp5.Item.value.S)
+        : _temp5.Item.value.S;
   }
 
   const bar = _store4;

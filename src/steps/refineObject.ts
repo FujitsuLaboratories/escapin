@@ -80,8 +80,8 @@ const visitor: Visitor<ObjectState> = {
     if (entry === undefined) {
       return;
     }
-    let replacement = u.reuseReplacement(path, state, node);
-    if (replacement) {
+    const replacement = u.reuseReplacement(path, state, node);
+    if (replacement !== undefined) {
       console.log(`replacing ${u.generate(node)} with ${u.generate(replacement.replaced)}`);
       u.replace(path, node, replacement.replaced);
       return;
@@ -91,19 +91,16 @@ const visitor: Visitor<ObjectState> = {
 
     const variable = path.scope.generateUidIdentifier(id.name);
 
-    const letSnippet = u.snippetFor(`${service}.get_let`, {
+    const vars = {
       $NAME: u.stringLiteral(`${id.name}-${state.escapin.id}`),
       $KEY: property,
       $VAR: variable,
       $TEMPVAR: path.scope.generateUidIdentifier('temp'),
-    });
+    };
 
-    const assignmentSnippet = u.snippetFor(`${service}.get_assign`, {
-      $NAME: u.stringLiteral(`${id.name}-${state.escapin.id}`),
-      $KEY: property,
-      $VAR: variable,
-      $TEMPVAR: path.scope.generateUidIdentifier('temp'),
-    });
+    const letSnippet = u.snippetFor(`${service}.get_let`, vars);
+
+    const assignmentSnippet = u.snippetFor(`${service}.get_assign`, vars);
 
     const stmtPath = path.findParent(path => path.isStatement());
     if (stmtPath === null) {
@@ -191,7 +188,7 @@ const visitor: Visitor<ObjectState> = {
       return;
     }
     const { left, right, variable, service } = assignment;
-    const parentPath = path.parentPath;
+    const { parentPath } = path;
     if (!u.isIdentifier(left.object)) {
       return;
     }
@@ -201,9 +198,7 @@ const visitor: Visitor<ObjectState> = {
     let movedStmts: u.Statement[] = [];
     parentPath.traverse({
       Statement(path) {
-        if (u.test(path, path => path.isIdentifier() && !path.isReferenced())) {
-          path.skip();
-        } else if (path.isReturnStatement()) {
+        if (path.isReturnStatement() || u.test(path, path => path.isIdentifier() && !path.isReferenced())) {
           path.skip();
         } else {
           u.replace(path, [left, right], variable);

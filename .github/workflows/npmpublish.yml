@@ -2,7 +2,9 @@ name: Node.js Package
 
 on:
   release:
-    types: [created]
+  push:
+    tags: v*
+    
 
 jobs:
   build:
@@ -15,7 +17,7 @@ jobs:
       - run: yarn install
       - run: yarn test
 
-  publish-npm:
+  publish-yarn:
     needs: build
     runs-on: ubuntu-latest
     steps:

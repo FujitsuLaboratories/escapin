@@ -1,9 +1,6 @@
 name: Node CI
 
-on:
-  pull_request:
-    branches:
-      - master
+on: [pull_request]
 
 jobs:
   build:
@@ -20,7 +17,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: yarn install, prettier-check-updted, lint-updated, and test
+    - name: yarn install, prettier-check-updated, lint-updated, and test
       run: |
         yarn
         yarn prettier-check-updated

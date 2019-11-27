@@ -22,6 +22,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: yarn install, prettier-check-updted, lint-updated, and test
       run: |
+        yarn
         yarn prettier-check-updated
         yarn lint-updated
         yarn test

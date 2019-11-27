@@ -30,11 +30,11 @@ const visitor: Visitor<FunctionState> = {
     if (id === undefined) {
       return;
     }
-    const name = id.name;
+    const { name } = id;
 
     const { params } = func;
     const req = params[0];
-    if (state.functions.includes(path.node)) {
+    if (state.functions.includes(func)) {
       return;
     }
     const info = state.getPathInfo(name);

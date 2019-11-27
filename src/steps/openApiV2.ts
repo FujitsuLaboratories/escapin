@@ -8,7 +8,7 @@ import requestOrg, { Response } from 'request';
 import { dereference } from 'swagger-parser';
 import { promisify } from 'util';
 import { sync as rimraf } from 'rimraf';
-import { isURL } from 'validator';
+import isURL from 'validator/lib/isURL';
 import { Escapin } from '..';
 import * as u from '../util';
 import { SyntaxError } from '../error';

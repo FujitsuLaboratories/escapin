@@ -16,11 +16,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: yarn install, prettier-check-updated, lint-updated, and test
+      - name: yarn install, prettier-check, lint, and test
         run: |
           yarn
-          yarn prettier-check-updated
-          yarn lint-updated
+          yarn prettier-check
+          yarn lint
           yarn test
         env:
           CI: true

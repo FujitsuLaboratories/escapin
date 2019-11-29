@@ -1,20 +1,18 @@
 import { Visitor } from '@babel/traverse';
 import { loopWhile } from 'deasync';
+import fetch from 'node-fetch';
 import fs from 'fs';
+import HttpsProxyAgent from 'https-proxy-agent';
 import { last } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
-import requestOrg, { Response } from 'request';
 import { dereference } from 'swagger-parser';
-import { promisify } from 'util';
 import { sync as rimraf } from 'rimraf';
 import isURL from 'validator/lib/isURL';
 import { Escapin } from '..';
 import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
-
-const request = promisify(requestOrg);
 
 export default function(escapin: Escapin) {
   console.log('openApiV2');
@@ -154,13 +152,12 @@ function getApiSpec(uri: string, state: OpenApiV2State) {
       let resolved;
       let cleanupNeeded = false;
       if (isURL(uri)) {
-        const response = (await request({
-          headers: {},
-          method: 'GET',
-          uri,
-        })) as Response;
+        const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
+        const response = await fetch(uri, {
+          agent: httpsProxy !== undefined ? new HttpsProxyAgent(httpsProxy) : undefined,
+        });
         resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
-        fs.writeFileSync(resolved, response.body);
+        fs.writeFileSync(resolved, await response.text());
         cleanupNeeded = true;
       } else {
         resolved = state.resolvePath(uri);

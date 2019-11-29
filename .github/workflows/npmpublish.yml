@@ -43,23 +43,3 @@ jobs:
           yarn publish --non-interactive
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x]
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: https://npm.pkg.github.com/
-          scope: "@kimusaku"
-      - run: |
-          npm install
-          npm run build
-          npm publish --non-interactive
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

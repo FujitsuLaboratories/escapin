@@ -55,7 +55,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://npm.pkg.github.com/
-          scope: '@kimusaku'
+          scope: "@kimusaku"
       - run: yarn install
       - run: yarn build
       - run: yarn publish --non-interactive

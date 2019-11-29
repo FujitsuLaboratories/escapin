@@ -6,7 +6,6 @@ on:
 
 jobs:
   publish-yarn:
-    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:

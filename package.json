@@ -9,10 +9,7 @@
   "bin": {
     "escapin": "bin/cli.js"
   },
-  "files": [
-    "/bin",
-    "/templates"
-  ],
+  "files": ["/bin", "/templates"],
   "scripts": {
     "prebuild": "rimraf bin",
     "build": "tsc",

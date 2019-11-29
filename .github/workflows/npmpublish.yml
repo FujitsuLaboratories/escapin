@@ -1,30 +1,41 @@
 name: Node.js Package
 
 on:
-  release:
   push:
     tags: v*
-    
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x]
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          node-version: 12
-      - run: yarn install
-      - run: yarn test
+          node-version: ${{ matrix.node-version }}
+      - name: yarn install, prettier-check, lint, and test
+        run: |
+          yarn
+          yarn prettier-check
+          yarn lint
+          yarn test
+        env:
+          CI: true
 
   publish-yarn:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x]
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: ${{ matrix.node-version }}
           registry-url: https://registry.yarnpkg.com/
       - run: yarn install
       - run: yarn build
@@ -35,13 +46,16 @@ jobs:
   publish-gpr:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x]
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: ${{ matrix.node-version }}
           registry-url: https://npm.pkg.github.com/
-          scope: '@your-github-username'
+          scope: '@kimusaku'
       - run: yarn install
       - run: yarn build
       - run: yarn publish --non-interactive

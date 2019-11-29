@@ -37,9 +37,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.yarnpkg.com/
-      - run: yarn install
-      - run: yarn build
-      - run: yarn publish --non-interactive
+      - run: |
+          yarn
+          yarn build
+          yarn publish --non-interactive
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
@@ -56,8 +57,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: https://npm.pkg.github.com/
           scope: "@kimusaku"
-      - run: yarn install
-      - run: yarn build
-      - run: yarn publish --non-interactive
+      - run: |
+          npm install
+          npm run build
+          npm publish --non-interactive
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

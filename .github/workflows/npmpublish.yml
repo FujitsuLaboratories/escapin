@@ -20,7 +20,7 @@ jobs:
           yarn
           yarn prettier-check
           yarn lint
-          yarn test
+          yarn coverage
           yarn build
           yarn publish --non-interactive
         env:

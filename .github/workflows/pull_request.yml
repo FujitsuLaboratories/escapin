@@ -21,6 +21,6 @@ jobs:
           yarn
           yarn prettier-check
           yarn lint
-          yarn test
+          yarn coverage
         env:
           CI: true

@@ -1,6 +1,6 @@
 {
   "name": "escapin",
-  "version": "0.2.21",
+  "version": "0.2.22",
   "description": "Escapin the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs",
   "main": "bin/index.js",
   "engines": {
@@ -9,7 +9,10 @@
   "bin": {
     "escapin": "bin/cli.js"
   },
-  "files": ["/bin", "/templates"],
+  "files": [
+    "/bin",
+    "/templates"
+  ],
   "scripts": {
     "prebuild": "rimraf bin",
     "build": "tsc",
@@ -70,14 +73,14 @@
     "@types/babel__template": "^7.0.2",
     "@types/babel__traverse": "^7.0.8",
     "@types/deasync": "^0.1.0",
-    "@types/eslint": "^6.1.4",
+    "@types/eslint": "^6.1.6",
     "@types/eslint-plugin-prettier": "^2.2.0",
-    "@types/jest": "^24.9.0",
+    "@types/jest": "^24.9.1",
     "@types/js-yaml": "^3.12.1",
     "@types/lodash": "^4.14.149",
     "@types/mkdirp": "^0.5.2",
     "@types/ncp": "^2.0.3",
-    "@types/node": "^13.1.8",
+    "@types/node": "^13.5.0",
     "@types/node-fetch": "^2.5.4",
     "@types/prettier": "^1.19.0",
     "@types/rimraf": "^2.0.3",
@@ -94,7 +97,7 @@
     "jest": "^25.1.0",
     "ncp": "^2.0.0",
     "prettier": "^1.19.1",
-    "ts-jest": "^24.3.0",
+    "ts-jest": "^25.0.0",
     "ts-node": "^8.6.2"
   }
 }

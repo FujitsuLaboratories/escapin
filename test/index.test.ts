@@ -1,12 +1,11 @@
 import fs from 'fs';
-import _mkdirp from 'mkdirp';
+import { sync as mkdirp } from 'mkdirp';
 import { ncp as _ncp } from 'ncp';
 import path from 'path';
 import { sync as rimraf } from 'rimraf';
 import { promisify } from 'util';
 import { Escapin } from '../src';
 
-const mkdirp = promisify(_mkdirp);
 const ncp = promisify(_ncp);
 
 const EXAMPLES_DIR = path.join(process.cwd(), 'examples');
@@ -18,7 +17,7 @@ test('transpiles all projects in ./examples', async done => {
     if (fs.existsSync(TEMP_DIR)) {
       rimraf(TEMP_DIR);
     }
-    await mkdirp(TEMP_DIR);
+    mkdirp(TEMP_DIR);
     await ncp(EXAMPLES_DIR, TEMP_DIR);
 
     const names = fs.readdirSync(TEMP_DIR, 'utf8');

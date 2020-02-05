@@ -1,15 +1,12 @@
 import fs from 'fs';
-import _mkdirp from 'mkdirp';
+import { sync as mkdirp } from 'mkdirp';
 import path from 'path';
 import { sync as rimraf } from 'rimraf';
-import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 import * as u from '../src/util';
 import { BaseState } from '../src/state';
 import { Escapin } from '../src';
 import * as types from '../src/types';
-
-const mkdirp = promisify(_mkdirp);
 
 export function initialize() {
   const state = new BaseState();
@@ -67,15 +64,15 @@ export function initialize() {
   return escapin;
 }
 
-export async function transpile(
+export function transpile(
   testName: string,
   ...steps: Array<(escapin: Escapin) => void>
-): Promise<{
+): {
   actual: u.Node;
   expected: u.Node;
-}> {
+} {
   const escapin = initialize();
-  await mkdirp(escapin.config.output_dir);
+  mkdirp(escapin.config.output_dir);
 
   const actual = fs.readFileSync(path.join(__dirname, `steps/${testName}.in.js`), 'utf8');
   const expected = fs.readFileSync(path.join(__dirname, `steps/${testName}.out.js`), 'utf8');
@@ -91,7 +88,7 @@ export async function transpile(
 
     const astExpected = u.parse(expected);
 
-    return Promise.resolve({ actual: u.purify(astActual), expected: u.purify(astExpected) });
+    return { actual: u.purify(astActual), expected: u.purify(astExpected) };
   } finally {
     rimraf(escapin.config.output_dir);
   }

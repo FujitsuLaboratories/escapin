@@ -4,7 +4,7 @@ import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
 import { safeLoad as loadYaml, dump as dumpYaml } from 'js-yaml';
 import { mergeWith } from 'lodash';
-import _mkdirp from 'mkdirp';
+import { sync as mkdirp } from 'mkdirp';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
 import { sync as rimraf } from 'rimraf';
@@ -15,8 +15,6 @@ import * as u from './util';
 import { BaseState } from './state';
 import { finalize, steps } from './steps';
 import { TypeDictionary } from './types';
-
-const mkdirp = deasync(_mkdirp);
 
 export interface IConfig {
   name: string;

@@ -1,5 +1,4 @@
 import { cosmiconfigSync } from 'cosmiconfig';
-import deasync from 'deasync';
 import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
 import { safeLoad as loadYaml, dump as dumpYaml } from 'js-yaml';

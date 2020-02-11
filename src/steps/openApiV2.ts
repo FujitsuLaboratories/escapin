@@ -2,7 +2,7 @@ import { Visitor } from '@babel/traverse';
 import { loopWhile } from 'deasync';
 import fetch from 'node-fetch';
 import fs from 'fs';
-import HttpsProxyAgent from 'https-proxy-agent';
+import createHttpsProxyAgent from 'https-proxy-agent';
 import { last } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
@@ -154,7 +154,7 @@ function getApiSpec(uri: string, state: OpenApiV2State) {
       if (isURL(uri)) {
         const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
         const response = await fetch(uri, {
-          agent: httpsProxy !== undefined ? new HttpsProxyAgent(httpsProxy) : undefined,
+          agent: httpsProxy !== undefined ? createHttpsProxyAgent(httpsProxy) : undefined,
         });
         resolved = Path.join(state.escapin.config.output_dir, encodeURIComponent(uri));
         fs.writeFileSync(resolved, await response.text());

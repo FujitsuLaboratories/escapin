@@ -5,7 +5,7 @@ import _traverse, { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import { loopWhile } from 'deasync';
 import fs from 'fs';
-import HttpsProxyAgent from 'https-proxy-agent';
+import createHttpsProxyAgent from 'https-proxy-agent';
 import { isEqual, last, remove as _remove } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import packageJson from 'package-json';
@@ -28,7 +28,7 @@ export function getLatestVersion(moduleName: string) {
     try {
       const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
       const options = {
-        agent: httpsProxy !== undefined ? new HttpsProxyAgent(httpsProxy) : undefined,
+        agent: httpsProxy !== undefined ? createHttpsProxyAgent(httpsProxy) : undefined,
       };
       const pkg = await packageJson(moduleName, options);
       latest = pkg.version as string;

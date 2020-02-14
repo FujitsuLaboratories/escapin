@@ -9,11 +9,5 @@ module.exports = {
         printWidth: 100,
       },
     },
-    {
-      files: '*.json',
-      options: {
-        parser: 'json',
-      },
-    },
   ],
 };

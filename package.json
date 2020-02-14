@@ -1,6 +1,6 @@
 {
   "name": "escapin",
-  "version": "0.2.24",
+  "version": "0.2.25",
   "description": "Escapin the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs",
   "main": "bin/index.js",
   "engines": {
@@ -9,7 +9,10 @@
   "bin": {
     "escapin": "bin/cli.js"
   },
-  "files": ["/bin", "/templates"],
+  "files": [
+    "/bin",
+    "/templates"
+  ],
   "scripts": {
     "prebuild": "rimraf bin",
     "build": "tsc",

@@ -64,6 +64,10 @@
     "validator": "^12.2.0"
   },
   "devDependencies": {
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/npm": "^7.0.3",
+    "@semantic-release/release-notes-generator": "^9.0.0",
     "@types/babel__code-frame": "^7.0.1",
     "@types/babel__generator": "^7.6.1",
     "@types/babel__template": "^7.0.2",

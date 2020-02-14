@@ -1,4 +1,4 @@
-![Escapin](https://raw.githubusercontent.com/FujitsuLaboratories/escapin/master/docs/assets/escapin-1280x640-large.png)
+![Escapin](https://raw.githubusercontent.com/FujitsuLaboratories/escapin/master/docs/assets/escapin-1280x324-large.png)
 
 <h2 align='center'>the transpiler for escaping from complicated usage<br />of cloud services and APIs</h2>
 

@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org/
-        env: 
+        env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: install and test
         run: npm install-ci-test

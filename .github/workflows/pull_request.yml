@@ -1,10 +1,7 @@
-name: Node CI
+name: pull request
 
 on:
   pull_request:
-  push:
-    branches:
-      - master
 
 jobs:
   build:
@@ -15,16 +12,12 @@ jobs:
         node-version: [10.x]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: yarn install, prettier-check, lint, and test
-        run: |
-          yarn
-          yarn prettier-check
-          yarn lint
-          yarn coverage
-        env:
-          CI: true
+      - name: install and test
+        run: npm install-ci-test
+      - name: build
+        run: npm run build

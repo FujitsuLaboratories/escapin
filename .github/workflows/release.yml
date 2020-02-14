@@ -1,0 +1,28 @@
+name: release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+      - name: install and test
+        run: npm install-ci-test
+      - name: build
+        run: npm run build
+      - name: semantic-release
+        run: npm run semantic-release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

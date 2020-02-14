@@ -26,21 +26,9 @@
 ## <a name="prerequisites"></a>Prerequisites
 
 1. [Node.js](https://nodejs.org/) 10.x or later
-2. [Yarn](https://yarnpkg.com/)
-3. [Serverless Framework](https://serverless.com/)
-4. The install location is added to your `PATH`
-
-```sh
-export PATH="$(yarn global bin):$PATH"
-```
+2. [Serverless Framework](https://serverless.com/)
 
 ## <a name="installation"></a>Installation
-
-```sh
-yarn global add escapin
-```
-
-or
 
 ```sh
 npm install -g escapin

@@ -18,8 +18,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: install and test
-        run: npm install-ci-test
+      - name: install
+        run: npm ci
       - name: build
         run: npm run build
       - name: semantic-release

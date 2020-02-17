@@ -31,34 +31,32 @@
 ## <a name="installation"></a>Installation
 
 ```sh
-npm install -g escapin
+npm install --save-dev escapin
 ```
 
 ## <a name="usage"></a>Usage
 
-The following example uses [a project in the GitHub repository](examples/sendmail)
-
 Escapin provides CLI `escapin` that works on Node.js project directories containing `./package.json`.
 
-First, run `escapin` on the project folder:
+First, append the following scripts in `package.json`:
+
+```json
+{
+  "scripts": {
+    "build": "escapin",
+    "start": "cd build && serverless deploy"
+  }
+}
+```
+
+Then, run `build` and `start` on the project folder:
 
 ```sh
-cd examples/sendmail
-
-escapin
+npm run build
+npm start
 ```
 
 Escapin transpiles your source code into executable one as a serverless application, and generates `serverless.yml` that can be used for deploying the programs to cloud services by [Serverless Framework](https://serverless.com/).
-
-Then, run `serverless deploy` on `./build` folder containing Escapin artifacts:
-
-```sh
-cd build
-
-serverless deploy
-```
-
-To learn more about the sendmail example, please read [examples/sendmail/README.md](examples/sendmail/README.md)
 
 ### <a name="cli-options"></a>CLI options
 

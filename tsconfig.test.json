@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2018",
-    "lib": ["es2018"],
+    "target": "es6",
     "types": ["node", "jest"],
     "esModuleInterop": true,
     "resolveJsonModule": true

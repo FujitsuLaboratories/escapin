@@ -19,5 +19,6 @@ jobs:
           path-to-signatures: "signatures/version1/cla.json"
           path-To-cladocument: "https://gist.githubusercontent.com/kimusaku/564f5ac305a8326c0be500d2001d70d0/raw/87c97974165a554a081117fc34a6e4fcf7d43337/escapin-icla.md"
           branch: "master"
+          whitelist: bot*
           empty-commit-flag: false
           blockchain-storage-flag: false

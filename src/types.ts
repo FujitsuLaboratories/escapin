@@ -81,7 +81,7 @@ export class TypeDictionary {
     return this.types.find(entry => 0 === difference(entry.names, names).length);
   }
 
-  public put(entry: FunctionType) {
+  public put(entry: FunctionType): void {
     const elder = this.get(...entry.names);
     if (elder) {
       elder.type = entry.type;

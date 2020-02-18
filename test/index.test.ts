@@ -21,26 +21,24 @@ test('transpiles all projects in ./examples', async done => {
     await ncp(EXAMPLES_DIR, TEMP_DIR);
 
     const names = fs.readdirSync(TEMP_DIR, 'utf8');
-    const promises: Promise<void>[] = [];
     for (const name of names) {
       const cwd = path.join(TEMP_DIR, name);
       const stat = fs.lstatSync(cwd);
       if (!stat.isDirectory()) {
         continue;
       }
-      promises.push(
+      await expect(
         new Promise((resolve, reject) => {
           try {
             const escapin = new Escapin(cwd);
             escapin.transpile();
-            resolve();
+            resolve(true);
           } catch (e) {
             reject(e);
           }
         }),
-      );
+      ).toBeTruthy();
     }
-    await Promise.all(promises);
   } catch (e) {
     console.error(e);
     throw e;

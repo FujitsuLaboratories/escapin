@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import createHttpsProxyAgent from 'https-proxy-agent';
 import { last } from 'lodash';
-import { OpenAPIV2 } from 'openapi-types';
+import { OpenAPIV2, OpenAPI } from 'openapi-types';
 import Path from 'path';
 import { dereference } from 'swagger-parser';
 import { sync as rimraf } from 'rimraf';
@@ -14,7 +14,7 @@ import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   console.log('openApiV2');
   for (const filename in escapin.states) {
     u.traverse(visitor, new OpenApiV2State(escapin.states[filename]));
@@ -144,10 +144,10 @@ const visitor: Visitor<OpenApiV2State> = {
   },
 };
 
-function getApiSpec(uri: string, state: OpenApiV2State) {
+function getApiSpec(uri: string, state: OpenApiV2State): OpenAPI.Document | null {
   let spec = null;
   let done = false;
-  (async () => {
+  (async (): Promise<void> => {
     try {
       let resolved;
       let cleanupNeeded = false;
@@ -230,7 +230,7 @@ function createURI(apiSpec: OpenAPIV2.Document, path: string): string {
 function getContentType(
   apiSpec: OpenAPIV2.Document,
   pathSpec: OpenAPIV2.OperationObject | undefined,
-) {
+): string {
   if (pathSpec && pathSpec.consumes && pathSpec.consumes.length > 0) {
     return pathSpec.consumes[0];
   } else if (apiSpec.consumes && apiSpec.consumes.length > 0) {
@@ -279,7 +279,7 @@ function createRequestOptions(
 
     const target = params !== undefined ? nodePath : rootPath;
 
-    let options = u.objectExpression([
+    const options = u.objectExpression([
       u.objectProperty(u.identifier('uri'), u.parseExpression(`\`${uri}\``)),
       u.objectProperty(u.identifier('method'), u.stringLiteral(method)),
     ]);
@@ -289,8 +289,8 @@ function createRequestOptions(
       );
     }
 
-    let headers = u.objectExpression([]);
-    let qs = u.objectExpression([]);
+    const headers = u.objectExpression([]);
+    const qs = u.objectExpression([]);
 
     if (params) {
       if (
@@ -506,7 +506,7 @@ function modifySnippets(
   path: u.NodePath,
   target: u.NodePath,
   options: u.ObjectExpression,
-) {
+): void {
   const variable = path.scope.generateUidIdentifier(method);
 
   const letSnippet = u.statements('const { $RES, $BODY } = request($OPTIONS); let $VAR = $BODY', {

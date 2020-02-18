@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import generator from '@babel/generator';
 import * as parser from '@babel/parser';
 import template from '@babel/template';
-import _traverse, { NodePath, Visitor } from '@babel/traverse';
+import _traverse, { NodePath, Visitor, Scope } from '@babel/traverse';
 import * as t from '@babel/types';
 import { loopWhile } from 'deasync';
 import fs from 'fs';
@@ -21,10 +22,10 @@ const PLACEHOLDER_PATTERN = /^\$[_$A-Z0-9]+$/;
 
 export type OneOrMore<T> = T | T[];
 
-export function getLatestVersion(moduleName: string) {
+export function getLatestVersion(moduleName: string): string {
   let latest = 'latest';
   let done = false;
-  (async () => {
+  (async (): Promise<void> => {
     try {
       const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
       const options = {
@@ -32,8 +33,6 @@ export function getLatestVersion(moduleName: string) {
       };
       const pkg = await packageJson(moduleName, options);
       latest = pkg.version as string;
-    } catch (err) {
-      throw err;
     } finally {
       done = true;
     }
@@ -55,7 +54,7 @@ export function deasyncPromise<T>(promise: Promise<T>): T {
   let ret!: T;
   let err!: Error;
 
-  (async () => {
+  (async (): Promise<void> => {
     try {
       ret = await promise;
     } catch (e) {
@@ -75,7 +74,7 @@ export function deasyncPromise<T>(promise: Promise<T>): T {
   return ret;
 }
 
-export function traverse<S extends BaseState>(visitor: Visitor<S>, state: S) {
+export function traverse<S extends BaseState>(visitor: Visitor<S>, state: S): void {
   _traverse(state.ast, {
     Program(path) {
       path.traverse(visitor, state);
@@ -178,7 +177,8 @@ export function purify(node: t.Node): t.Node {
   return _node;
 }
 
-export function equals(lhs: any, rhs: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function equals(lhs: any, rhs: any): boolean {
   if (lhs === undefined || rhs === undefined) {
     return false;
   }
@@ -188,7 +188,7 @@ export function equals(lhs: any, rhs: any) {
   return isEqual(lhs, rhs);
 }
 
-export function remove<T>(array: T[], item: T) {
+export function remove<T>(array: T[], item: T): void {
   _remove(array, that => equals(that, item));
 }
 
@@ -322,7 +322,17 @@ export function evalSnippet(snippet: t.Node, variables: { [x: string]: any } = {
   return script.runInContext(context);
 }
 
-export function reuseReplacement(path: NodePath, state: BaseState, right: t.MemberExpression) {
+export function reuseReplacement(
+  path: NodePath,
+  state: BaseState,
+  right: t.MemberExpression,
+):
+  | {
+      original: t.Node;
+      replaced: t.Node;
+      scope: Scope;
+    }
+  | undefined {
   if (!Array.isArray(path.container)) {
     return undefined;
   }

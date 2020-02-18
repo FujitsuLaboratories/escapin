@@ -9,7 +9,7 @@ import * as u from './util';
 
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
-export interface IPathInfo {
+export interface PathInfo {
   name: string;
   path: string;
   method: string;
@@ -35,7 +35,7 @@ export class BaseState {
     this.replacements = [];
   }
 
-  public getPathInfo(functionName: string): IPathInfo | undefined {
+  public getPathInfo(functionName: string): PathInfo | undefined {
     const apiSpec = this.escapin?.apiSpec?.data;
     if (apiSpec === undefined) {
       return undefined;
@@ -61,7 +61,7 @@ export class BaseState {
     return undefined;
   }
 
-  public pushProgramBody(snippet: u.OneOrMore<u.Statement>) {
+  public pushProgramBody(snippet: u.OneOrMore<u.Statement>): void {
     if (Array.isArray(snippet)) {
       this.ast.program.body.push(...snippet);
     } else {
@@ -69,7 +69,7 @@ export class BaseState {
     }
   }
 
-  public unshiftProgramBody(snippet: u.OneOrMore<u.Statement>) {
+  public unshiftProgramBody(snippet: u.OneOrMore<u.Statement>): void {
     if (Array.isArray(snippet)) {
       this.ast.program.body.unshift(...snippet);
     } else {
@@ -92,7 +92,7 @@ export class BaseState {
     return undefined;
   }
 
-  public addDependency(moduleName: string) {
+  public addDependency(moduleName: string): void {
     this.escapin.addDependency(moduleName);
     this.unshiftProgramBody(u.snippetFor(moduleName));
   }

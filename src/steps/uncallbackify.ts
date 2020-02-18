@@ -5,7 +5,7 @@ import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   console.log('uncallbackify');
   for (const filename in escapin.states) {
     u.traverse(visitor, escapin.states[filename]);

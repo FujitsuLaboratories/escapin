@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/camelcase */
 import { cosmiconfigSync } from 'cosmiconfig';
 import fs from 'fs';
 import ignore, { Ignore } from 'ignore';
@@ -15,21 +17,21 @@ import { BaseState } from './state';
 import { finalize, steps } from './steps';
 import { TypeDictionary } from './types';
 
-export interface IConfig {
+export interface Config {
   name: string;
   platform: string;
   default_storage: string;
   output_dir: string;
   api_spec?: string;
-  credentials?: ICredential[];
+  credentials?: Credential[];
 }
 
-export interface ICredential {
+export interface Credential {
   api: string;
   [x: string]: string;
 }
 
-export interface IPackageJson {
+export interface PackageJson {
   main?: string;
   scripts?: { [script: string]: string };
   dependencies: { [moduleName: string]: string };
@@ -42,7 +44,7 @@ export interface IPackageJson {
   [key: string]: any;
 }
 
-export interface IServerlessConfig {
+export interface ServerlessConfig {
   service?: string;
   provider?: any;
   functions?: { [name: string]: any };
@@ -65,12 +67,12 @@ export class Escapin {
     file: string;
     data: OpenAPIV2.Document;
   };
-  public config!: IConfig;
-  public packageJson!: IPackageJson;
+  public config!: Config;
+  public packageJson!: PackageJson;
   public types: TypeDictionary;
-  public serverlessConfig!: IServerlessConfig;
+  public serverlessConfig!: ServerlessConfig;
 
-  constructor(basePath: string, ignorePath: string = '.gitignore') {
+  constructor(basePath: string, ignorePath = '.gitignore') {
     this.id = uuid();
     this.basePath = Path.resolve(basePath);
     this.ignorePath = ignorePath;
@@ -78,7 +80,7 @@ export class Escapin {
     this.types = new TypeDictionary();
   }
 
-  public transpile() {
+  public transpile(): void {
     this.load();
 
     for (const step of steps) {
@@ -89,7 +91,7 @@ export class Escapin {
     this.save();
   }
 
-  public load() {
+  public load(): void {
     this.loadConfig();
     this.loadPackageJson();
     this.loadAPISpec();
@@ -97,14 +99,14 @@ export class Escapin {
     this.loadJSFiles();
   }
 
-  public save() {
+  public save(): void {
     this.savePackageJson();
     this.saveAPISpec();
     this.saveServerlessConfig();
     this.saveJSFiles();
   }
 
-  private loadConfig() {
+  private loadConfig(): void {
     const result = cosmiconfigSync('escapin').search(this.basePath);
     if (result === null) {
       throw new Error('config file not found.');
@@ -118,10 +120,10 @@ export class Escapin {
     result.config.platform = result.config.platform || PLATFORM;
     result.config.default_storage = result.config.default_storage || DEFAULT_STORAGE;
 
-    this.config = result.config as IConfig;
+    this.config = result.config as Config;
   }
 
-  private loadPackageJson() {
+  private loadPackageJson(): void {
     const packageJsonPath = Path.join(this.basePath, 'package.json');
     if (!fs.existsSync(packageJsonPath)) {
       throw new Error('The project does not contain package.json.');
@@ -141,16 +143,16 @@ export class Escapin {
   public addDependency(
     moduleName: string,
     location: 'dependencies' | 'devDependencies' = 'dependencies',
-  ) {
+  ): void {
     this.packageJson[location][moduleName] = `^${u.getLatestVersion(moduleName)}`;
   }
 
-  private savePackageJson() {
+  private savePackageJson(): void {
     const filePath = Path.join(this.config.output_dir, 'package.json');
     fs.writeFileSync(filePath, JSON.stringify(this.packageJson, null, 2));
   }
 
-  private loadAPISpec() {
+  private loadAPISpec(): void {
     if (this.config.api_spec) {
       const filename = Path.join(this.basePath, this.config.api_spec);
       console.log(`load api spec ${filename}`);
@@ -193,7 +195,7 @@ export class Escapin {
     }
   }
 
-  private saveAPISpec() {
+  private saveAPISpec(): void {
     if (this.apiSpec !== undefined) {
       fs.writeFileSync(
         Path.join(this.config.output_dir, this.apiSpec.file),
@@ -203,7 +205,7 @@ export class Escapin {
     }
   }
 
-  private loadJSFilesRecursive(current: string, ig: Ignore) {
+  private loadJSFilesRecursive(current: string, ig: Ignore): void {
     const names = fs.readdirSync(current, 'utf8');
     for (const name of names) {
       const path = Path.join(current, name);
@@ -227,7 +229,7 @@ export class Escapin {
     }
   }
 
-  private loadJSFiles() {
+  private loadJSFiles(): void {
     const ignoreFile = Path.join(this.basePath, this.ignorePath);
     const ig = ignore();
     if (fs.existsSync(ignoreFile)) {
@@ -236,7 +238,7 @@ export class Escapin {
     this.loadJSFilesRecursive(this.basePath, ig);
   }
 
-  private saveJSFiles() {
+  private saveJSFiles(): void {
     for (const filename in this.states) {
       this.states[filename].code = u.generate(this.states[filename].ast);
       const path = Path.join(this.config.output_dir, filename);
@@ -244,7 +246,7 @@ export class Escapin {
     }
   }
 
-  private updateJSFiles() {
+  private updateJSFiles(): void {
     finalize(this);
     for (const filename in this.states) {
       this.states[filename].code = u.generate(this.states[filename].ast);
@@ -252,7 +254,7 @@ export class Escapin {
     }
   }
 
-  private loadServerlessConfig() {
+  private loadServerlessConfig(): void {
     const serverlessFile = Path.join(this.basePath, SERVERLESS_YML);
     if (fs.existsSync(serverlessFile)) {
       this.serverlessConfig = loadYaml(fs.readFileSync(serverlessFile, 'utf8'));
@@ -268,7 +270,7 @@ export class Escapin {
     });
   }
 
-  public addServerlessConfig(specifier: string, vars: { [key: string]: any }) {
+  public addServerlessConfig(specifier: string, vars: { [key: string]: any }): void {
     const file = Path.resolve(
       __dirname,
       `../templates/serverless/${specifier.replace(/\./g, '/').toLowerCase()}.yml`,
@@ -288,7 +290,7 @@ export class Escapin {
     });
   }
 
-  private saveServerlessConfig() {
+  private saveServerlessConfig(): void {
     const serverlessFile = Path.join(this.config.output_dir, SERVERLESS_YML);
     fs.writeFileSync(serverlessFile, dumpYaml(this.serverlessConfig), 'utf8');
   }

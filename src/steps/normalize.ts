@@ -2,7 +2,7 @@ import { Visitor } from '@babel/traverse';
 import { Escapin } from '..';
 import * as u from '../util';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   console.log('normalize');
   for (const filename in escapin.states) {
     u.traverse(visitor, escapin.states[filename]);

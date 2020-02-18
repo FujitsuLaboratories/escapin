@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { commandSync } from 'execa';
 import fs from 'fs';
 import { uniq } from 'lodash';
@@ -8,7 +9,7 @@ import { Escapin } from '..';
 import * as t from '../types';
 import * as u from '../util';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   console.log('functionType');
 
   const { output_dir } = escapin.config;
@@ -49,7 +50,7 @@ function installTypesInDependencies(
   dependencies: { [moduleName: string]: string },
   devDependencies: { [moduleName: string]: string },
   pwd: string,
-) {
+): void {
   u.deasyncPromise(
     installTypes(Object.keys(dependencies), {
       selections: {
@@ -65,7 +66,7 @@ function installTypesInDependencies(
   );
 }
 
-function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_dir: string) {
+function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_dir: string): void {
   const program = ts.createProgram([path.join(output_dir, filename)], {
     allowJs: true,
     typeRoots: [path.join(output_dir, 'node_modules')],
@@ -80,7 +81,7 @@ function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_di
   // TODO: find out the below types from the AST
   types.put(t.errorFirstCallback('request'));
 
-  function visit(node: ts.Node) {
+  function visit(node: ts.Node): void {
     try {
       if (ts.isCallExpression(node)) {
         const symbol = checker.getSymbolAtLocation(node.expression);
@@ -105,7 +106,10 @@ function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_di
           return;
         }
         const lastParam = params[params.length - 1];
-        let paramType = checker.getTypeOfSymbolAtLocation(lastParam, lastParam.valueDeclaration!);
+        if (lastParam.valueDeclaration === null) {
+          return;
+        }
+        let paramType = checker.getTypeOfSymbolAtLocation(lastParam, lastParam.valueDeclaration);
         let paramTypeNode = checker.typeToTypeNode(paramType);
         if (paramTypeNode !== undefined && ts.isTypeReferenceNode(paramTypeNode)) {
           paramType = checker.getTypeFromTypeNode(paramTypeNode);

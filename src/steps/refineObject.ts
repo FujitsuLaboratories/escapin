@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { Visitor } from '@babel/traverse';
 import { cloneDeep } from 'lodash';
 import Path from 'path';
@@ -6,7 +7,7 @@ import * as u from '../util';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   console.log('refineObject');
   for (const filename in escapin.states) {
     u.traverse(visitor, new ObjectState(escapin.states[filename]));
@@ -195,7 +196,7 @@ const visitor: Visitor<ObjectState> = {
 
     u.remove(state.assignments, assignment);
 
-    let movedStmts: u.Statement[] = [];
+    const movedStmts: u.Statement[] = [];
     parentPath.traverse({
       Statement(path) {
         if (

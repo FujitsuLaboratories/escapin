@@ -3,7 +3,7 @@ import { Escapin } from '..';
 import * as u from '../util';
 import { BaseState } from '../state';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   for (const filename in escapin.states) {
     u.traverse(visitor, new FinalizationState(escapin.states[filename]));
   }

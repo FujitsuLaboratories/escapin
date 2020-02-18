@@ -12,7 +12,24 @@ function dir(val: string): string {
   return path.resolve(val);
 }
 
-function main() {
+function doTranspileProcess(options: { dir: string; ignorePath: string }): void {
+  const { dir, ignorePath } = options;
+
+  console.log(`working directory: ${dir}`);
+  console.log(`path of ignore file: ${ignorePath}`);
+
+  const escapin = new Escapin(dir, ignorePath);
+
+  try {
+    escapin.transpile();
+  } catch (err) {
+    console.error(err);
+    // eslint-disable-next-line no-process-exit
+    process.exit(-1);
+  }
+}
+
+function main(): void {
   const latestVersion = getLatestVersion('escapin');
   if (pkg.version !== latestVersion) {
     const message = boxen(
@@ -43,19 +60,3 @@ Latest:  ${chalk.green(latestVersion)}`,
 }
 
 main();
-
-function doTranspileProcess(options: { dir: string; ignorePath: string }) {
-  const { dir, ignorePath } = options;
-
-  console.log(`working directory: ${dir}`);
-  console.log(`path of ignore file: ${ignorePath}`);
-
-  const escapin = new Escapin(dir, ignorePath);
-
-  try {
-    escapin.transpile();
-  } catch (err) {
-    console.error(err);
-    process.exit(-1);
-  }
-}

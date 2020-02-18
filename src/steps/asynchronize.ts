@@ -6,7 +6,7 @@ import * as t from '../types';
 import { SyntaxError } from '../error';
 import { BaseState } from '../state';
 
-export default function(escapin: Escapin) {
+export default function(escapin: Escapin): void {
   console.log('asynchronize');
   const states: { [filename: string]: AsynchronizationState } = {};
   for (const filename in escapin.states) {
@@ -321,7 +321,10 @@ function fetchGeneralCallback(
   return true;
 }
 
-function fetchAsynchronous(path: u.NodePath<u.CallExpression>, state: AsynchronizationState) {
+function fetchAsynchronous(
+  path: u.NodePath<u.CallExpression>,
+  state: AsynchronizationState,
+): boolean {
   const { node } = path;
   if (null === path.findParent(path => u.isFunction(path.node))) {
     return false;

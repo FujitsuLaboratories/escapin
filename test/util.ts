@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import fs from 'fs';
 import { sync as mkdirp } from 'mkdirp';
 import path from 'path';
@@ -8,7 +9,7 @@ import { BaseState } from '../src/state';
 import { Escapin } from '../src';
 import * as types from '../src/types';
 
-export function initialize() {
+export function initialize(): Escapin {
   const state = new BaseState();
   state.filename = 'dummy.js';
   const escapin = new Escapin(process.cwd());

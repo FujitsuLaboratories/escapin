@@ -1,16 +1,8 @@
 import { Visitor } from '@babel/traverse';
 import { last } from 'lodash';
-import { Escapin } from '..';
 import * as u from '../util';
-import { SyntaxError } from '../error';
+import { EscapinSyntaxError } from '../error';
 import { BaseState } from '../state';
-
-export default function(escapin: Escapin): void {
-  console.log('uncallbackify');
-  for (const filename in escapin.states) {
-    u.traverse(visitor, escapin.states[filename]);
-  }
-}
 
 const visitor: Visitor<BaseState> = {
   CallExpression(path, state) {
@@ -20,10 +12,7 @@ const visitor: Visitor<BaseState> = {
     }
     const args = path.get('arguments') as u.NodePath<u.Expression>[];
     const callbackPath = last(args);
-    if (callbackPath === undefined || callbackPath.node === null) {
-      return;
-    }
-    if (!callbackPath.isFunction()) {
+    if (callbackPath?.node === null || !callbackPath?.isFunction()) {
       return;
     }
     const params = callbackPath.get('params') as u.NodePath[];
@@ -83,8 +72,10 @@ function getObjectPattern(params: u.NodePath[], state: BaseState): u.ObjectPatte
       } else if (u.isExpression(node) || u.isPatternLike(node)) {
         return u.objectProperty(node, node, false, true);
       } else {
-        throw new SyntaxError('Unsupported parameter type', node, state);
+        throw new EscapinSyntaxError('Unsupported parameter type', node, state);
       }
     }),
   );
 }
+
+export default visitor;

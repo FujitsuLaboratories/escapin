@@ -2,7 +2,7 @@
 import generator from '@babel/generator';
 import * as parser from '@babel/parser';
 import template from '@babel/template';
-import _traverse, { NodePath, Visitor, Scope } from '@babel/traverse';
+import _traverse, { NodePath, Visitor, Scope, TraverseOptions } from '@babel/traverse';
 import * as t from '@babel/types';
 import { loopWhile } from 'deasync';
 import fs from 'fs';
@@ -74,13 +74,8 @@ export function deasyncPromise<T>(promise: Promise<T>): T {
   return ret;
 }
 
-export function traverse<S extends BaseState>(visitor: Visitor<S>, state: S): void {
-  _traverse(state.ast, {
-    Program(path) {
-      path.traverse(visitor, state);
-      path.skip();
-    },
-  });
+export function traverse(visitor: Visitor<BaseState>, state: BaseState, scope?: Scope): void {
+  _traverse(state.ast, visitor as TraverseOptions, scope, state);
 }
 
 export function parse(code: string): t.File {

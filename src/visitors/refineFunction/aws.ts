@@ -1,81 +1,46 @@
 import { Visitor } from '@babel/traverse';
 import { isEqual } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
-import Path from 'path';
-import * as u from '../util';
-import { EscapinSyntaxError } from '../error';
-import { BaseState } from '../state';
+import { EscapinSyntaxError } from '../../error';
+import { BaseState, PathInfo } from '../../state';
+import * as u from '../../util';
 
-const visitor: Visitor<BaseState> = {
-  Function(path, state) {
-    const func = path.node;
-    const stmtPath = path.isExpression() ? path.findParent(path => path.isStatement()) : path;
-    const id = u.getFunctionId(stmtPath, func);
-    if (id === undefined) {
-      return;
-    }
-    const { name } = id;
-
-    const { params } = func;
-    const info = state.getPathInfo(name);
-    if (info === undefined) {
-      return;
-    }
-
-    const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${name}`;
-
-    const { parameters } = info;
-    const { platform } = state.escapin.config;
-
-    state.escapin.addServerlessConfig(`${platform}.function`, {
-      name,
-      handler,
-    });
-    state.escapin.addServerlessConfig(`${platform}.function.http`, {
-      name,
-      path: info.path.substring(1),
-      method: info.method,
-    });
-
-    const firstParam = params[0];
-    params.push(u.identifier('context'));
-    params.push(u.identifier('callback'));
-
-    const parametersWithoutRefs = parameters.filter(
-      param => !('name' in param),
-    ) as OpenAPIV2.Parameter[];
-
-    path.traverse(functionVisitor(func, firstParam, parametersWithoutRefs), state);
-
-    const body = func.body as u.BlockStatement;
-
-    body.body = [
-      u.statement('try { $BODY } catch (err) { callback(new Error(`[500] ${err.toString()}`)); }', {
-        $BODY: body.body,
-      }),
-    ];
-
-    if (info.consumes && info.consumes.some(consumes => consumes === 'multipart/form-data')) {
-      body.body.unshift(u.statement('$PARAM = parseMultipart($PARAM);', { $PARAM: firstParam }));
-      stmtPath.insertBefore(u.snippetFor('misc.multipart'));
-    }
-  },
-};
-
-type FirstParameter =
-  | u.ArrayPattern
-  | u.AssignmentPattern
-  | u.Identifier
-  | u.RestElement
-  | u.ObjectPattern
-  | u.TSParameterProperty;
-
-function functionVisitor(
+export default function(
+  stmtPath: u.NodePath,
   func: u.Function,
-  firstParam: FirstParameter,
-  params: OpenAPIV2.Parameter[],
+  info: PathInfo,
 ): Visitor<BaseState> {
+  const { params } = func;
+  const firstParam = params[0];
+  const parameters = info.parameters.filter(param => !('name' in param)) as OpenAPIV2.Parameter[];
+
   return {
+    Function(path): void {
+      if (path.node !== func) {
+        path.skip();
+        return;
+      }
+
+      const { params } = func;
+      params.push(u.identifier('context'));
+      params.push(u.identifier('callback'));
+
+      const body = func.body as u.BlockStatement;
+
+      body.body = [
+        u.statement(
+          'try { $BODY } catch (err) { callback(new Error(`[500] ${err.toString()}`)); }',
+          {
+            $BODY: body.body,
+          },
+        ),
+      ];
+
+      if (info.consumes && info.consumes.some(consumes => consumes === 'multipart/form-data')) {
+        body.body.unshift(u.statement('$PARAM = parseMultipart($PARAM);', { $PARAM: firstParam }));
+        stmtPath.insertBefore(u.snippetFor('misc.multipart'));
+      }
+    },
     VariableDeclarator(path, state): void {
       const { node } = path;
       const { id, init } = node;
@@ -90,7 +55,7 @@ function functionVisitor(
         if (!u.isObjectProperty(prop)) {
           continue;
         }
-        const param = params.find(param => param.name === prop.key.name);
+        const param = parameters.find(param => param.name === prop.key.name);
         if (param === undefined) {
           throw new Error(`Parameter "${prop.key.name}" does not exist.`);
         }
@@ -123,7 +88,7 @@ function functionVisitor(
           state,
         );
       }
-      const param = params.find(param => param.name === property.name);
+      const param = parameters.find(param => param.name === property.name);
       if (param === undefined) {
         throw new EscapinSyntaxError(
           `Parameter "${property.name}" does not exist.`,
@@ -159,5 +124,3 @@ function functionVisitor(
     },
   };
 }
-
-export default visitor;

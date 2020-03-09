@@ -16,7 +16,7 @@
     "@babel/core": "^7.8.7",
     "@babel/preset-env": "^7.8.7",
     "babel-loader": "^8.0.6",
-    "escapin": "^0.2.26",
+    "escapin": "^0.2.27",
     "serverless-webpack": "^5.3.1",
     "webpack": "^4.42.0",
     "webpack-node-externals": "^1.7.2"

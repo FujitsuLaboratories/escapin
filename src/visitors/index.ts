@@ -7,7 +7,7 @@ import functionTypes from './functionTypes';
 import asynchronize from './asynchronize';
 import finalize from './finalize';
 
-const steps = [
+const visitors = [
   normalize,
   uncallbackify,
   openApiV2,
@@ -26,5 +26,5 @@ export {
   functionTypes,
   asynchronize,
   finalize,
-  steps,
+  visitors,
 };

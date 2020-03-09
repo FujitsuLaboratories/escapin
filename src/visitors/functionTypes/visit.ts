@@ -1,87 +1,10 @@
-/* eslint-disable @typescript-eslint/camelcase */
-import { commandSync } from 'execa';
-import fs from 'fs';
 import { uniq } from 'lodash';
-import path from 'path';
 import * as ts from 'typescript';
-import { installTypes } from 'types-installer';
-import { Escapin } from '..';
-import * as t from '../types';
-import * as u from '../util';
+import * as t from '../../types';
+import * as u from '../../util';
 
-export default function(escapin: Escapin): void {
-  console.log('functionType');
-
-  const { output_dir } = escapin.config;
-
-  console.log('flush changes');
-
-  escapin.save();
-
-  console.log('npm install');
-
-  commandSync('npm install', {
-    cwd: output_dir,
-    stdout: process.stdout,
-  });
-
-  console.log(`install types at ${output_dir}`);
-
-  const { dependencies, devDependencies } = escapin.packageJson;
-  installTypesInDependencies(dependencies, devDependencies, output_dir);
-
-  console.log('reload package.json');
-
-  const packageJson = JSON.parse(fs.readFileSync(path.join(output_dir, 'package.json'), 'utf8'));
-  escapin.packageJson = packageJson;
-
-  console.log('check function types');
-
-  for (const filename in escapin.states) {
-    checkFunctionTypes(escapin.types, filename, output_dir);
-  }
-
-  for (const entry of escapin.types.getAll()) {
-    console.log(entry);
-  }
-}
-
-function installTypesInDependencies(
-  dependencies: { [moduleName: string]: string },
-  devDependencies: { [moduleName: string]: string },
-  pwd: string,
-): void {
-  u.deasyncPromise(
-    installTypes(Object.keys(dependencies), {
-      selections: {
-        dependencies,
-        devDependencies,
-        all: Object.assign(dependencies, devDependencies),
-      },
-      selection: 'all',
-      pwd,
-      toDev: true,
-      packageManager: 'npm',
-    }),
-  );
-}
-
-function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_dir: string): void {
-  const program = ts.createProgram([path.join(output_dir, filename)], {
-    allowJs: true,
-    typeRoots: [path.join(output_dir, 'node_modules')],
-  });
-  const checker = program.getTypeChecker();
-  for (const sourceFile of program.getSourceFiles()) {
-    if (!sourceFile.isDeclarationFile) {
-      ts.forEachChild(sourceFile, visit);
-    }
-  }
-
-  // TODO: find out the below types from the AST
-  types.put(t.errorFirstCallback('request'));
-
-  function visit(node: ts.Node): void {
+export default function(types: t.TypeDictionary, checker: ts.TypeChecker): (node: ts.Node) => void {
+  return function visit(node: ts.Node): void {
     try {
       if (ts.isCallExpression(node)) {
         const symbol = checker.getSymbolAtLocation(node.expression);
@@ -147,5 +70,5 @@ function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_di
     } finally {
       ts.forEachChild(node, visit);
     }
-  }
+  };
 }

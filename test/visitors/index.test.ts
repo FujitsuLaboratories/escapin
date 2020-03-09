@@ -7,7 +7,7 @@ import {
   functionTypes,
   asynchronize,
   finalize,
-} from '../../src/steps';
+} from '../../src/visitors';
 import { transpile } from '../util';
 
 test('[normalize.1] nominal case of normalize', () => {

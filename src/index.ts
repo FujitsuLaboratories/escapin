@@ -14,7 +14,7 @@ import { v4 as uuid } from 'uuid';
 import vm from 'vm';
 import * as u from './util';
 import { BaseState } from './state';
-import { finalize, steps } from './steps';
+import { finalize, visitors } from './visitors';
 import { TypeDictionary } from './types';
 
 export interface Config {
@@ -83,8 +83,10 @@ export class Escapin {
   public transpile(): void {
     this.load();
 
-    for (const step of steps) {
-      step(this);
+    for (const visitor of visitors) {
+      for (const filename in this.states) {
+        u.traverse(visitor, this.states[filename]);
+      }
       this.updateJSFiles();
     }
 
@@ -240,17 +242,19 @@ export class Escapin {
 
   private saveJSFiles(): void {
     for (const filename in this.states) {
-      this.states[filename].code = u.generate(this.states[filename].ast);
+      const state = this.states[filename];
+      state.code = u.generate(state.ast);
       const path = Path.join(this.config.output_dir, filename);
-      fs.writeFileSync(path, this.states[filename].code, 'utf8');
+      fs.writeFileSync(path, state.code, 'utf8');
     }
   }
 
   private updateJSFiles(): void {
-    finalize(this);
     for (const filename in this.states) {
-      this.states[filename].code = u.generate(this.states[filename].ast);
-      this.states[filename].ast = u.parse(this.states[filename].code);
+      const state = this.states[filename];
+      u.traverse(finalize, state);
+      state.code = u.generate(state.ast);
+      state.ast = u.parse(state.code);
     }
   }
 

@@ -8,6 +8,7 @@ import * as u from '../src/util';
 import { BaseState } from '../src/state';
 import { Escapin } from '../src';
 import * as types from '../src/types';
+import { Visitor } from '@babel/traverse';
 
 export function initialize(): Escapin {
   const state = new BaseState();
@@ -67,7 +68,7 @@ export function initialize(): Escapin {
 
 export function transpile(
   testName: string,
-  ...steps: Array<(escapin: Escapin) => void>
+  ...visitors: Visitor<BaseState>[]
 ): {
   actual: u.Node;
   expected: u.Node;
@@ -75,16 +76,17 @@ export function transpile(
   const escapin = initialize();
   mkdirp(escapin.config.output_dir);
 
-  const actual = fs.readFileSync(path.join(__dirname, `steps/${testName}.in.js`), 'utf8');
-  const expected = fs.readFileSync(path.join(__dirname, `steps/${testName}.out.js`), 'utf8');
+  const actual = fs.readFileSync(path.join(__dirname, `visitors/${testName}.in.js`), 'utf8');
+  const expected = fs.readFileSync(path.join(__dirname, `visitors/${testName}.out.js`), 'utf8');
 
   try {
     const astActual = u.parse(actual);
-    escapin.states['dummy.js'].code = actual;
-    escapin.states['dummy.js'].ast = astActual;
+    const state = escapin.states['dummy.js'];
+    state.code = actual;
+    state.ast = astActual;
 
-    for (const step of steps) {
-      step(escapin);
+    for (const visitor of visitors) {
+      u.traverse(visitor, state);
     }
 
     const astExpected = u.parse(expected);

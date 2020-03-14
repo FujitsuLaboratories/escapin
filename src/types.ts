@@ -1,5 +1,49 @@
-import { difference, uniq } from 'lodash';
-import * as u from './util';
+import { OpenAPIV2 } from 'openapi-types';
+
+export type OneOrMore<T> = T | T[];
+
+export interface Config {
+  name: string;
+  platform: string;
+  default_storage: string;
+  output_dir: string;
+  api_spec?: string;
+  credentials?: Credential[];
+}
+
+export interface Credential {
+  api: string;
+  [x: string]: string;
+}
+
+export interface PackageJson {
+  main?: string;
+  scripts?: { [script: string]: string };
+  dependencies: { [moduleName: string]: string };
+  devDependencies: { [moduleName: string]: string };
+  peerDependencies?: { [moduleName: string]: string };
+  optionalDependencies?: { [moduleName: string]: string };
+  bundledDependencies?: string[];
+  types?: string;
+  typings?: string;
+  [key: string]: any;
+}
+
+export interface ServerlessConfig {
+  service?: string;
+  provider?: any;
+  functions?: { [name: string]: any };
+  resources?: { [name: string]: any };
+}
+
+export interface PathInfo {
+  name: string;
+  path: string;
+  method: string;
+  consumes: string[];
+  produces: string[];
+  parameters: OpenAPIV2.Parameters;
+}
 
 export interface FunctionType {
   names: string[];
@@ -52,41 +96,4 @@ export function generalCallback(...names: string[]): GeneralCallback {
 
 export function general(...names: string[]): General {
   return { type: 'general', names };
-}
-
-export function getNames(path: u.NodePath): string[] {
-  const names: string[] = [];
-  if (path.isIdentifier()) {
-    names.push(path.node.name);
-  }
-  path.traverse({
-    Identifier(path) {
-      names.push(path.node.name);
-    },
-  });
-  return uniq(names);
-}
-
-export class TypeDictionary {
-  private types: FunctionType[];
-  constructor() {
-    this.types = [];
-  }
-
-  public getAll(): FunctionType[] {
-    return this.types;
-  }
-
-  public get(...names: string[]): FunctionType | undefined {
-    return this.types.find(entry => 0 === difference(entry.names, names).length);
-  }
-
-  public put(entry: FunctionType): void {
-    const elder = this.get(...entry.names);
-    if (elder) {
-      elder.type = entry.type;
-    } else {
-      this.types.push(entry);
-    }
-  }
 }

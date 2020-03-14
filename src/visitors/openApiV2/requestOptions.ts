@@ -2,9 +2,9 @@ import { OpenAPIV2 } from 'openapi-types';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import identifyRootNode from './rootNode';
+import { identifyRootNode } from './rootNode';
 
-export default function(
+export function createRequestOptions(
   method: string,
   key: u.Identifier,
   spec: OpenAPIV2.Document,

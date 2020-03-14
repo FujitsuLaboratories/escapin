@@ -2,7 +2,7 @@ import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
 
-export default function(
+export function fetchObjectKeys(
   path: u.NodePath<u.CallExpression>,
   state: BaseState,
   id: u.Identifier,

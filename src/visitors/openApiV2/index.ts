@@ -3,8 +3,8 @@ import { OpenAPIV2 } from 'openapi-types';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import load from './load';
-import createRequestOptions from './requestOptions';
+import { loadOpenApiV2 } from './load';
+import { createRequestOptions } from './requestOptions';
 
 const visitor: Visitor<BaseState> = {
   ImportDeclaration(path, state) {
@@ -18,7 +18,7 @@ const visitor: Visitor<BaseState> = {
 
     try {
       const uri = path.node.source.value;
-      const spec = load(uri, state);
+      const spec = loadOpenApiV2(uri, state);
       if (spec === null) {
         path.skip();
         return;

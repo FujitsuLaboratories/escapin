@@ -1,17 +1,18 @@
 import { last } from 'lodash';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
-import * as t from '../../types';
+import { getNames } from '../../functionTypes';
+import { isAsynchronous, isGeneralCallback } from '../../types';
 import * as u from '../../util';
 
-export default function(
+export function fetchGeneralCallback(
   path: u.NodePath<u.CallExpression>,
   asynchronized: u.Node[],
   state: BaseState,
 ): boolean {
-  const names = t.getNames(path.get('callee') as u.NodePath);
+  const names = getNames(path.get('callee') as u.NodePath);
   const entry = state.escapin.types.get(...names);
-  if (!t.isGeneralCallback(entry)) {
+  if (!isGeneralCallback(entry)) {
     return false;
   }
 
@@ -61,9 +62,9 @@ export default function(
       const declarations0 = path.get('declarations.0') as u.NodePath<u.VariableDeclarator>;
       const init = declarations0.get('init') as u.NodePath;
       if (init.isCallExpression()) {
-        const names = t.getNames(init.get('callee') as u.NodePath);
+        const names = getNames(init.get('callee') as u.NodePath);
         const entry = state.escapin.types.get(...names);
-        if (!t.isAsynchronous(entry)) {
+        if (!isAsynchronous(entry)) {
           return;
         }
       } else if (!u.isAwaitExpression(init.node) || !u.isNewPromise(init.node.argument)) {
@@ -86,9 +87,9 @@ export default function(
       const { expression } = path.node;
       const expressionPath = path.get('expression') as u.NodePath<u.Expression>;
       if (expressionPath.isCallExpression()) {
-        const names = t.getNames(expressionPath.get('callee') as u.NodePath);
+        const names = getNames(expressionPath.get('callee') as u.NodePath);
         const entry = state.escapin.types.get(...names);
-        if (!t.isAsynchronous(entry)) {
+        if (!isAsynchronous(entry)) {
           return;
         }
       } else if (!u.isAwaitExpression(expression) || !u.isNewPromise(expression.argument)) {

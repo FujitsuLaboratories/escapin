@@ -2,7 +2,8 @@ import { Visitor } from '@babel/traverse';
 import { isEqual } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import { EscapinSyntaxError } from '../../error';
-import { BaseState, PathInfo } from '../../state';
+import { BaseState } from '../../state';
+import { PathInfo } from '../../types';
 import * as u from '../../util';
 
 export default function(

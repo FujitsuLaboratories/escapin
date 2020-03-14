@@ -5,7 +5,7 @@ import Path from 'path';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import fetchObjectKeys from './objectKeys';
+import { fetchObjectKeys } from './objectKeys';
 
 const visitor: Visitor<BaseState> = {
   ExportNamedDeclaration(path, state) {

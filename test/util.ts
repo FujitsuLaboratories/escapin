@@ -4,10 +4,11 @@ import { sync as mkdirp } from 'mkdirp';
 import path from 'path';
 import { sync as rimraf } from 'rimraf';
 import { v4 as uuid } from 'uuid';
-import * as u from '../src/util';
+import { TypeDictionary } from '../src/functionTypes';
 import { BaseState } from '../src/state';
+import { asynchronous, errorFirstCallback, general, generalCallback } from '../src/types';
+import * as u from '../src/util';
 import { Escapin } from '../src';
-import * as types from '../src/types';
 import { Visitor } from '@babel/traverse';
 
 export function initialize(): Escapin {
@@ -58,11 +59,11 @@ export function initialize(): Escapin {
     dependencies: {},
     devDependencies: {},
   };
-  escapin.types = new types.TypeDictionary();
-  escapin.types.put(types.asynchronous('asyncFunc'));
-  escapin.types.put(types.errorFirstCallback('errorFirstCallbackFunc'));
-  escapin.types.put(types.generalCallback('generalCallbackFunc'));
-  escapin.types.put(types.general('generalFunc'));
+  escapin.types = new TypeDictionary();
+  escapin.types.put(asynchronous('asyncFunc'));
+  escapin.types.put(errorFirstCallback('errorFirstCallbackFunc'));
+  escapin.types.put(generalCallback('generalCallbackFunc'));
+  escapin.types.put(general('generalFunc'));
   return escapin;
 }
 

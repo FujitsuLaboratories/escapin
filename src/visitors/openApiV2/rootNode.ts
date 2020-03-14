@@ -2,7 +2,7 @@ import { last } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
 import * as u from '../../util';
 
-export default function(
+export function identifyRootNode(
   spec: OpenAPIV2.Document,
   nodePath: u.NodePath,
   method: string,

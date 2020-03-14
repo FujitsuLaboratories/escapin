@@ -5,18 +5,10 @@ import module from 'module';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
 import { Escapin } from '.';
+import { OneOrMore, PathInfo } from './types';
 import * as u from './util';
 
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
-
-export interface PathInfo {
-  name: string;
-  path: string;
-  method: string;
-  consumes: string[];
-  produces: string[];
-  parameters: OpenAPIV2.Parameters;
-}
 
 export class BaseState {
   public escapin!: Escapin;
@@ -61,7 +53,7 @@ export class BaseState {
     return undefined;
   }
 
-  public pushProgramBody(snippet: u.OneOrMore<u.Statement>): void {
+  public pushProgramBody(snippet: OneOrMore<u.Statement>): void {
     if (Array.isArray(snippet)) {
       this.ast.program.body.push(...snippet);
     } else {
@@ -69,7 +61,7 @@ export class BaseState {
     }
   }
 
-  public unshiftProgramBody(snippet: u.OneOrMore<u.Statement>): void {
+  public unshiftProgramBody(snippet: OneOrMore<u.Statement>): void {
     if (Array.isArray(snippet)) {
       this.ast.program.body.unshift(...snippet);
     } else {

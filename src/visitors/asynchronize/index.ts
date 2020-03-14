@@ -1,9 +1,9 @@
 import { Visitor } from '@babel/traverse';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import fetchAsynchronous from './asynchronous';
-import fetchErrorFirstCallback from './errorFirstCallback';
-import fetchGeneralCallback from './generalCallback';
+import { fetchAsynchronous } from './asynchronous';
+import { fetchErrorFirstCallback } from './errorFirstCallback';
+import { fetchGeneralCallback } from './generalCallback';
 
 function newVisitor(): Visitor<BaseState> {
   const asynchronized: u.Node[] = [];

@@ -12,44 +12,11 @@ import { sync as rimraf } from 'rimraf';
 import { dereference } from 'swagger-parser';
 import { v4 as uuid } from 'uuid';
 import vm from 'vm';
-import * as u from './util';
+import { TypeDictionary } from './functionTypes';
 import { BaseState } from './state';
+import { Config, PackageJson, ServerlessConfig } from './types';
+import * as u from './util';
 import { finalize, visitors } from './visitors';
-import { TypeDictionary } from './types';
-
-export interface Config {
-  name: string;
-  platform: string;
-  default_storage: string;
-  output_dir: string;
-  api_spec?: string;
-  credentials?: Credential[];
-}
-
-export interface Credential {
-  api: string;
-  [x: string]: string;
-}
-
-export interface PackageJson {
-  main?: string;
-  scripts?: { [script: string]: string };
-  dependencies: { [moduleName: string]: string };
-  devDependencies: { [moduleName: string]: string };
-  peerDependencies?: { [moduleName: string]: string };
-  optionalDependencies?: { [moduleName: string]: string };
-  bundledDependencies?: string[];
-  types?: string;
-  typings?: string;
-  [key: string]: any;
-}
-
-export interface ServerlessConfig {
-  service?: string;
-  provider?: any;
-  functions?: { [name: string]: any };
-  resources?: { [name: string]: any };
-}
 
 const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
 const PLATFORM = 'aws';
@@ -149,7 +116,7 @@ export class Escapin {
     this.packageJson[location][moduleName] = `^${u.getLatestVersion(moduleName)}`;
   }
 
-  private savePackageJson(): void {
+  public savePackageJson(): void {
     const filePath = Path.join(this.config.output_dir, 'package.json');
     fs.writeFileSync(filePath, JSON.stringify(this.packageJson, null, 2));
   }

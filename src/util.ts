@@ -8,11 +8,13 @@ import { loopWhile } from 'deasync';
 import fs from 'fs';
 import createHttpsProxyAgent from 'https-proxy-agent';
 import { isEqual, last, remove as _remove } from 'lodash';
+import _fetch from 'node-fetch';
 import { OpenAPIV2 } from 'openapi-types';
 import packageJson from 'package-json';
 import Path from 'path';
 import vm from 'vm';
 import { BaseState } from './state';
+import { OneOrMore } from './types';
 
 export * from '@babel/types';
 export { NodePath } from '@babel/traverse';
@@ -20,25 +22,30 @@ export { NodePath } from '@babel/traverse';
 export const ERROR_PATTERN = /(^e$|^e(r|x)+.*)/;
 const PLACEHOLDER_PATTERN = /^\$[_$A-Z0-9]+$/;
 
-export type OneOrMore<T> = T | T[];
+const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
+export const httpsProxyAgent =
+  httpsProxy !== undefined ? createHttpsProxyAgent(httpsProxy) : undefined;
+
+export function fetch(uri: string): string {
+  return deasyncPromise(
+    (async (): Promise<string> => {
+      const response = await _fetch(uri, {
+        agent: httpsProxyAgent,
+      });
+      return await response.text();
+    })(),
+  );
+}
 
 export function getLatestVersion(moduleName: string): string {
-  let latest = 'latest';
-  let done = false;
-  (async (): Promise<void> => {
-    try {
-      const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
-      const options = {
-        agent: httpsProxy !== undefined ? createHttpsProxyAgent(httpsProxy) : undefined,
-      };
-      const pkg = await packageJson(moduleName, options);
-      latest = pkg.version as string;
-    } finally {
-      done = true;
-    }
-  })();
-  loopWhile(() => !done);
-  return latest;
+  return deasyncPromise(
+    (async (): Promise<string> => {
+      const pkg = await packageJson(moduleName, {
+        agent: httpsProxyAgent,
+      });
+      return pkg.version as string;
+    })(),
+  );
 }
 
 export function isOpenAPIV2Document(data: any): data is OpenAPIV2.Document {

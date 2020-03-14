@@ -1,6 +1,7 @@
 import { Visitor } from '@babel/traverse';
 import Path from 'path';
-import { BaseState, PathInfo } from '../../state';
+import { BaseState } from '../../state';
+import { PathInfo } from '../../types';
 import * as u from '../../util';
 import aws from './aws';
 

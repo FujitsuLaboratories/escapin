@@ -20,12 +20,11 @@ function newVisitor(): Visitor<BaseState> {
 
         escapin.save();
 
-        const modules = Object.keys(escapin.packageJson.dependencies).concat(
-          Object.keys(escapin.packageJson.devDependencies),
-        );
+        const { dependencies, devDependencies } = escapin.packageJson;
+        const modules = Object.keys(dependencies).concat(Object.keys(devDependencies));
 
         getTypings(modules).forEach(typing => {
-          escapin.packageJson.devDependencies[typing] = getLatestVersion(typing);
+          devDependencies[typing] = getLatestVersion(typing);
         });
 
         escapin.savePackageJson();

@@ -47,7 +47,11 @@ export interface PathInfo {
 
 export interface FunctionType {
   names: string[];
-  type: 'asynchronous' | 'error-first-callback' | 'general-callback' | 'general';
+  type:
+    | 'asynchronous'
+    | 'error-first-callback'
+    | 'general-callback'
+    | 'general';
 }
 
 export interface Asynchronous extends FunctionType {
@@ -66,15 +70,21 @@ export interface General extends FunctionType {
   type: 'general';
 }
 
-export function isAsynchronous(entry: FunctionType | undefined): entry is Asynchronous {
+export function isAsynchronous(
+  entry: FunctionType | undefined,
+): entry is Asynchronous {
   return entry?.type === 'asynchronous';
 }
 
-export function isErrorFirstCallback(entry: FunctionType | undefined): entry is ErrorFirstCallback {
+export function isErrorFirstCallback(
+  entry: FunctionType | undefined,
+): entry is ErrorFirstCallback {
   return entry?.type === 'error-first-callback';
 }
 
-export function isGeneralCallback(entry: FunctionType | undefined): entry is GeneralCallback {
+export function isGeneralCallback(
+  entry: FunctionType | undefined,
+): entry is GeneralCallback {
   return entry?.type === 'general-callback';
 }
 

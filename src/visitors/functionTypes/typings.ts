@@ -10,6 +10,8 @@ function assumeTypingName(module: string): string {
 
 export function getTypings(modules: string[]): string[] {
   return (JSON.parse(fetch(TYPINGS_URL)) as Array<{ t: string }>)
-    .filter(typing => modules.some(module => assumeTypingName(module) === typing.t))
+    .filter(typing =>
+      modules.some(module => assumeTypingName(module) === typing.t),
+    )
     .map(typing => `@types/${typing.t}`);
 }

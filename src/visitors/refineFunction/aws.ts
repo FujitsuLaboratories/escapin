@@ -6,14 +6,16 @@ import { BaseState } from '../../state';
 import { PathInfo } from '../../types';
 import * as u from '../../util';
 
-export default function(
+export default function (
   stmtPath: u.NodePath,
   func: u.Function,
   info: PathInfo,
 ): Visitor<BaseState> {
   const { params } = func;
   const firstParam = params[0];
-  const parameters = info.parameters.filter(param => !('name' in param)) as OpenAPIV2.Parameter[];
+  const parameters = info.parameters.filter(
+    param => !('name' in param),
+  ) as OpenAPIV2.Parameter[];
 
   return {
     Function(path): void {
@@ -30,15 +32,23 @@ export default function(
 
       body.body = [
         u.statement(
-          'try { $BODY } catch (err) { callback(new Error(`[500] ${err.toString()}`)); }',
+          `try { $BODY } catch (err) {
+            callback(new Error(\`[500] $\{err.toString()}\`)); }`,
           {
             $BODY: body.body,
           },
         ),
       ];
 
-      if (info.consumes && info.consumes.some(consumes => consumes === 'multipart/form-data')) {
-        body.body.unshift(u.statement('$PARAM = parseMultipart($PARAM);', { $PARAM: firstParam }));
+      if (
+        info.consumes &&
+        info.consumes.some(consumes => consumes === 'multipart/form-data')
+      ) {
+        body.body.unshift(
+          u.statement('$PARAM = parseMultipart($PARAM);', {
+            $PARAM: firstParam,
+          }),
+        );
         stmtPath.insertBefore(u.snippetFor('misc.multipart'));
       }
     },
@@ -64,9 +74,9 @@ export default function(
           throw new EscapinSyntaxError(
             `Wrong parameter access "${u.generate(init)}.${
               param.name
-            }". The correct parameter access is "${u.generate(firstParam)}.${param.in}.${
-              param.name
-            }"`,
+            }". The correct parameter access is "${u.generate(firstParam)}.${
+              param.in
+            }.${param.name}"`,
             init,
             state,
           );
@@ -82,7 +92,9 @@ export default function(
       if (!isEqual(object, firstParam) || !u.isIdentifier(property)) {
         return;
       }
-      if (!['query', 'path', 'header', 'body', 'formData'].includes(property.name)) {
+      if (
+        !['query', 'path', 'header', 'body', 'formData'].includes(property.name)
+      ) {
         throw new EscapinSyntaxError(
           `Invalid request parameter access. Property names of "req" should be either "query", "path", "header", "body" or "formData"`,
           property,
@@ -101,9 +113,9 @@ export default function(
         throw new EscapinSyntaxError(
           `Wrong parameter access "${u.generate(
             node,
-          )}". The correct parameter access is "${u.generate(firstParam)}.${param.in}.${
-            param.name
-          }"`,
+          )}". The correct parameter access is "${u.generate(firstParam)}.${
+            param.in
+          }.${param.name}"`,
           node,
           state,
         );
@@ -111,7 +123,9 @@ export default function(
     },
     ReturnStatement(path): void {
       if (path.node.argument !== null) {
-        path.insertBefore(u.statement('callback(null, $ARG);', { $ARG: path.node.argument }));
+        path.insertBefore(
+          u.statement('callback(null, $ARG);', { $ARG: path.node.argument }),
+        );
         path.node.argument = null;
       }
     },
@@ -120,7 +134,9 @@ export default function(
         path.skip();
         return;
       }
-      path.insertBefore(u.statement('callback($ARG);', { $ARG: path.node.argument }));
+      path.insertBefore(
+        u.statement('callback($ARG);', { $ARG: path.node.argument }),
+      );
       path.replaceWith(u.returnStatement());
     },
   };

@@ -2,7 +2,12 @@
 import generator from '@babel/generator';
 import * as parser from '@babel/parser';
 import template from '@babel/template';
-import _traverse, { NodePath, Visitor, Scope, TraverseOptions } from '@babel/traverse';
+import _traverse, {
+  NodePath,
+  Visitor,
+  Scope,
+  TraverseOptions,
+} from '@babel/traverse';
 import * as t from '@babel/types';
 import { loopWhile } from 'deasync';
 import fs from 'fs';
@@ -81,7 +86,11 @@ export function deasyncPromise<T>(promise: Promise<T>): T {
   return ret;
 }
 
-export function traverse(visitor: Visitor<BaseState>, state: BaseState, scope?: Scope): void {
+export function traverse(
+  visitor: Visitor<BaseState>,
+  state: BaseState,
+  scope?: Scope,
+): void {
   _traverse(state.ast, visitor as TraverseOptions, scope, state);
 }
 
@@ -105,19 +114,28 @@ export function generate(ast: t.Node): string {
   return generator(ast).code;
 }
 
-export function statements(tpl: string, vars: { [x: string]: OneOrMore<t.Node> }): t.Statement[] {
+export function statements(
+  tpl: string,
+  vars: { [x: string]: OneOrMore<t.Node> },
+): t.Statement[] {
   return template.statements(tpl, {
     placeholderPattern: PLACEHOLDER_PATTERN,
   })(vars);
 }
 
-export function statement(tpl: string, vars: { [x: string]: OneOrMore<t.Node> }): t.Statement {
+export function statement(
+  tpl: string,
+  vars: { [x: string]: OneOrMore<t.Node> },
+): t.Statement {
   return template.statement(tpl, {
     placeholderPattern: PLACEHOLDER_PATTERN,
   })(vars);
 }
 
-export function expression(tpl: string, vars: { [x: string]: OneOrMore<t.Node> }): t.Expression {
+export function expression(
+  tpl: string,
+  vars: { [x: string]: OneOrMore<t.Node> },
+): t.Expression {
   return template.expression(tpl, {
     placeholderPattern: PLACEHOLDER_PATTERN,
   })(vars);
@@ -247,7 +265,10 @@ export function test(
   return undefined !== find(path, positive, negative);
 }
 
-export function equalsEither(path: NodePath, target: OneOrMore<t.Node>): boolean {
+export function equalsEither(
+  path: NodePath,
+  target: OneOrMore<t.Node>,
+): boolean {
   return Array.isArray(target)
     ? target.some(that => equals(path.node, that))
     : equals(path.node, target);
@@ -284,10 +305,15 @@ export function isSimpleAwaitStatement(node: t.Node): boolean {
 }
 
 export function isNewPromise(node: t.Node): boolean {
-  return t.isNewExpression(node) && t.isIdentifier(node.callee, { name: 'Promise' });
+  return (
+    t.isNewExpression(node) && t.isIdentifier(node.callee, { name: 'Promise' })
+  );
 }
 
-export function getFunctionId(path: NodePath, func: t.Function): t.Identifier | undefined {
+export function getFunctionId(
+  path: NodePath,
+  func: t.Function,
+): t.Identifier | undefined {
   const { node } = path;
   if (
     t.isExpressionStatement(node) &&
@@ -318,7 +344,10 @@ export function toStatements(node: t.Statement): t.Statement[] {
   return [node];
 }
 
-export function evalSnippet(snippet: t.Node, variables: { [x: string]: any } = {}): string {
+export function evalSnippet(
+  snippet: t.Node,
+  variables: { [x: string]: any } = {},
+): string {
   const script = new vm.Script(generate(snippet));
   const context = vm.createContext(variables);
   return script.runInContext(context);
@@ -349,9 +378,15 @@ export function reuseReplacement(
   for (const that of state.replacements) {
     if (path.scope === that.scope && equals(right, that.original)) {
       const index = path.container.findIndex(
-        stmt => t.isVariableDeclaration(stmt) && equals(stmt.declarations[0].id, that.replaced),
+        stmt =>
+          t.isVariableDeclaration(stmt) &&
+          equals(stmt.declarations[0].id, that.replaced),
       );
-      if (indexOfPropertyChange < index && nearestIndex < index && index < path.key) {
+      if (
+        indexOfPropertyChange < index &&
+        nearestIndex < index &&
+        index < path.key
+      ) {
         nearestIndex = index;
         reused = that;
       }

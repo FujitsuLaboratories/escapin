@@ -18,7 +18,8 @@ import { Config, PackageJson, ServerlessConfig } from './types';
 import * as u from './util';
 import { finalize, visitors } from './visitors';
 
-const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
+const API_SPEC_FILENAME =
+  process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
 const PLATFORM = 'aws';
 const OUTPUT_DIR = 'build';
 const DEFAULT_STORAGE = 'table';
@@ -80,14 +81,18 @@ export class Escapin {
     if (result === null) {
       throw new Error('config file not found.');
     }
-    result.config.output_dir = Path.join(this.basePath, result.config.output_dir || OUTPUT_DIR);
+    result.config.output_dir = Path.join(
+      this.basePath,
+      result.config.output_dir || OUTPUT_DIR,
+    );
     if (fs.existsSync(result.config.output_dir)) {
       rimraf(result.config.output_dir);
     }
     mkdirp(result.config.output_dir);
 
     result.config.platform = result.config.platform || PLATFORM;
-    result.config.default_storage = result.config.default_storage || DEFAULT_STORAGE;
+    result.config.default_storage =
+      result.config.default_storage || DEFAULT_STORAGE;
 
     this.config = result.config as Config;
   }
@@ -113,7 +118,9 @@ export class Escapin {
     moduleName: string,
     location: 'dependencies' | 'devDependencies' = 'dependencies',
   ): void {
-    this.packageJson[location][moduleName] = `^${u.getLatestVersion(moduleName)}`;
+    this.packageJson[location][moduleName] = `^${u.getLatestVersion(
+      moduleName,
+    )}`;
   }
 
   public savePackageJson(): void {
@@ -145,7 +152,8 @@ export class Escapin {
           if (method === 'parameters') {
             continue;
           }
-          data.paths[path][method].parameters = data.paths[path][method].parameters
+          data.paths[path][method].parameters = data.paths[path][method]
+            .parameters
             ? [...data.paths[path][method].parameters, ...commonParams]
             : commonParams;
           data.paths[path][method].responses.default = undefined;
@@ -241,10 +249,15 @@ export class Escapin {
     });
   }
 
-  public addServerlessConfig(specifier: string, vars: { [key: string]: any }): void {
+  public addServerlessConfig(
+    specifier: string,
+    vars: { [key: string]: any },
+  ): void {
     const file = Path.resolve(
       __dirname,
-      `../templates/serverless/${specifier.replace(/\./g, '/').toLowerCase()}.yml`,
+      `../templates/serverless/${specifier
+        .replace(/\./g, '/')
+        .toLowerCase()}.yml`,
     );
     if (!fs.existsSync(file)) {
       throw new Error(`${file} not found`);

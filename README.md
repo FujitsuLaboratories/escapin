@@ -102,7 +102,7 @@ module.exports = {
   credentials: [{ api: "mailgun API", basicAuth: "api:<YOUR_API_KEY>" }],
   platform: "aws",
   default_storage: "table",
-  output_dir: "build"
+  output_dir: "build",
 };
 ```
 
@@ -191,9 +191,9 @@ await new Promise((resolve, reject) => {
           S:
             typeof bar === "object" || typeof bar === "function"
               ? JSON.stringify(bar)
-              : bar
-        }
-      }
+              : bar,
+        },
+      },
     },
     (err, _temp) => {
       if (err) {
@@ -469,14 +469,14 @@ const { _res, _body } = request({
   contentType: "application/json",
   json: true,
   qs: {
-    foo: "bar"
+    foo: "bar",
   },
   headers: {
-    baz: "qux"
+    baz: "qux",
   },
   body: {
-    quux: "corge"
-  }
+    quux: "corge",
+  },
 });
 ```
 
@@ -902,10 +902,10 @@ switch (_data) {
 
 ```javascript
 // special rules are applied for Array#map and Array#forEach
-args.map(arg => api.call(arg));
-args.forEach(arg => api.call(arg));
+args.map((arg) => api.call(arg));
+args.forEach((arg) => api.call(arg));
 
-args.some(arg => api.call(arg));
+args.some((arg) => api.call(arg));
 ```
 
 ---
@@ -915,10 +915,10 @@ args.some(arg => api.call(arg));
 ```javascript
 import deasync from "deasync";
 
-await Promise.all(args.map(async arg => await api.call(arg)));
-args.forEach(async arg => await api.call(arg));
+await Promise.all(args.map(async (arg) => await api.call(arg)));
+args.forEach(async (arg) => await api.call(arg));
 
-args.some(arg => {
+args.some((arg) => {
   let _data;
   let done = false;
   new Promise((resolve, reject) => {
@@ -926,11 +926,11 @@ args.some(arg => {
       if (err) reject(err);
       else resolve(data);
     });
-  }).then(data => {
+  }).then((data) => {
     _data = data;
     done = true;
   });
-  deasync.loopWhile(_ => !done);
+  deasync.loopWhile((_) => !done);
   return _data;
 });
 ```
@@ -952,7 +952,7 @@ args.map(arg => await promisifiedFunc(arg));
 ##### Output
 
 ```javascript
-await Promise.all(args.map(async arg => await promisifiedFunc(arg)));
+await Promise.all(args.map(async (arg) => await promisifiedFunc(arg)));
 ```
 
 ---

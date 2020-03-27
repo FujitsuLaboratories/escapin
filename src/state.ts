@@ -12,7 +12,11 @@ export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
 export class BaseState {
   public escapin!: Escapin;
-  public replacements!: Array<{ original: u.Node; replaced: u.Node; scope: Scope }>;
+  public replacements!: Array<{
+    original: u.Node;
+    replaced: u.Node;
+    scope: Scope;
+  }>;
   public filename!: string;
   public code!: string;
   public ast!: t.File;
@@ -38,7 +42,9 @@ export class BaseState {
       for (const method in resource) {
         const info = resource[method] as OpenAPIV2.OperationObject;
         const handler = info['x-escapin-handler'] as string;
-        if (handler === `${Path.basename(this.filename, '.js')}.${functionName}`) {
+        if (
+          handler === `${Path.basename(this.filename, '.js')}.${functionName}`
+        ) {
           return {
             name,
             path,
@@ -70,7 +76,9 @@ export class BaseState {
   }
 
   public resolvePath(file: string): string | undefined {
-    const currentPath = Path.dirname(Path.join(this.escapin.basePath, this.filename));
+    const currentPath = Path.dirname(
+      Path.join(this.escapin.basePath, this.filename),
+    );
     file = Path.join(currentPath, file);
     if (fs.existsSync(file)) {
       return file;

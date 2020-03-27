@@ -40,9 +40,15 @@ const visitor: Visitor<BaseState> = {
   },
 };
 
-function apiVisitor(key: u.Identifier, spec: OpenAPIV2.Document): Visitor<BaseState> {
+function apiVisitor(
+  key: u.Identifier,
+  spec: OpenAPIV2.Document,
+): Visitor<BaseState> {
   function keyIncluded(path: u.NodePath, key: u.Identifier): boolean {
-    return u.test(path, path => path.isMemberExpression() && u.equals(path.node.object, key));
+    return u.test(
+      path,
+      path => path.isMemberExpression() && u.equals(path.node.object, key),
+    );
   }
   return {
     MemberExpression(path, state): void {
@@ -51,7 +57,13 @@ function apiVisitor(key: u.Identifier, spec: OpenAPIV2.Document): Visitor<BaseSt
         return;
       }
 
-      const { options, target } = createRequestOptions('GET', key, spec, path, state);
+      const { options, target } = createRequestOptions(
+        'GET',
+        key,
+        spec,
+        path,
+        state,
+      );
 
       modifySnippets('get', path, target, options);
       path.skip();
@@ -67,12 +79,20 @@ function apiVisitor(key: u.Identifier, spec: OpenAPIV2.Document): Visitor<BaseSt
       ) {
         return;
       }
-      const { options, bodyParameter } = createRequestOptions('POST', key, spec, callee, state);
+      const { options, bodyParameter } = createRequestOptions(
+        'POST',
+        key,
+        spec,
+        callee,
+        state,
+      );
 
       if (u.isSpreadElement(arg0)) {
         options.properties.unshift(arg0);
       } else {
-        options.properties.unshift(u.objectProperty(u.identifier(bodyParameter), arg0));
+        options.properties.unshift(
+          u.objectProperty(u.identifier(bodyParameter), arg0),
+        );
       }
 
       modifySnippets('post', path, path, options);
@@ -84,7 +104,13 @@ function apiVisitor(key: u.Identifier, spec: OpenAPIV2.Document): Visitor<BaseSt
       if (!keyIncluded(left, key)) {
         return;
       }
-      const { options, bodyParameter } = createRequestOptions('PUT', key, spec, left, state);
+      const { options, bodyParameter } = createRequestOptions(
+        'PUT',
+        key,
+        spec,
+        left,
+        state,
+      );
 
       options.properties.unshift(
         u.objectProperty(
@@ -104,7 +130,13 @@ function apiVisitor(key: u.Identifier, spec: OpenAPIV2.Document): Visitor<BaseSt
       if (!keyIncluded(argument, key) || path.node.operator !== 'delete') {
         return;
       }
-      const { options } = createRequestOptions('DELETE', key, spec, argument, state);
+      const { options } = createRequestOptions(
+        'DELETE',
+        key,
+        spec,
+        argument,
+        state,
+      );
 
       const stmtPath = path.findParent(path => path.isStatement());
       stmtPath.replaceWith(
@@ -127,12 +159,15 @@ function modifySnippets(
 ): void {
   const variable = path.scope.generateUidIdentifier(method);
 
-  const letSnippet = u.statements('const { $RES, $BODY } = request($OPTIONS); let $VAR = $BODY', {
-    $BODY: path.scope.generateUidIdentifier('body'),
-    $OPTIONS: options,
-    $RES: path.scope.generateUidIdentifier('res'),
-    $VAR: variable,
-  });
+  const letSnippet = u.statements(
+    'const { $RES, $BODY } = request($OPTIONS); let $VAR = $BODY',
+    {
+      $BODY: path.scope.generateUidIdentifier('body'),
+      $OPTIONS: options,
+      $RES: path.scope.generateUidIdentifier('res'),
+      $VAR: variable,
+    },
+  );
 
   const assignmentSnippet = u.statements(
     'const { $RES, $BODY } = request($OPTIONS); $VAR = $BODY',
@@ -145,7 +180,10 @@ function modifySnippets(
   );
 
   const stmtPath = path.findParent(path => path.isStatement());
-  if (stmtPath.isExpressionStatement() && u.equals(stmtPath.node.expression, target.node)) {
+  if (
+    stmtPath.isExpressionStatement() &&
+    u.equals(stmtPath.node.expression, target.node)
+  ) {
     stmtPath.replaceWith(letSnippet[0]);
   } else if (stmtPath.isWhileStatement()) {
     stmtPath.insertBefore(letSnippet);

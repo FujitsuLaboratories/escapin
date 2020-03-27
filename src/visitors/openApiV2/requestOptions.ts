@@ -18,12 +18,14 @@ export function createRequestOptions(
   try {
     method = method.toLowerCase();
 
-    const { uri, contentType, bodyParameter, params, rootPath, operation } = identifyRootNode(
-      spec,
-      nodePath,
-      method,
-      key,
-    );
+    const {
+      uri,
+      contentType,
+      bodyParameter,
+      params,
+      rootPath,
+      operation,
+    } = identifyRootNode(spec, nodePath, method, key);
 
     const target = params !== undefined ? nodePath : rootPath;
 
@@ -33,7 +35,10 @@ export function createRequestOptions(
     ]);
     if (contentType) {
       options.properties.push(
-        u.objectProperty(u.identifier('contentType'), u.stringLiteral(contentType)),
+        u.objectProperty(
+          u.identifier('contentType'),
+          u.stringLiteral(contentType),
+        ),
       );
     }
 
@@ -121,7 +126,9 @@ export function createRequestOptions(
         if (state.escapin.config.credentials === undefined) {
           break;
         }
-        const cred = state.escapin.config.credentials.find(that => that.api === spec.info.title);
+        const cred = state.escapin.config.credentials.find(
+          that => that.api === spec.info.title,
+        );
         if (cred === undefined) {
           break;
         }
@@ -132,13 +139,21 @@ export function createRequestOptions(
         const security = spec.securityDefinitions[key];
         if (security.type === 'basic') {
           const basicCred = `Basic ${
-            isBase64Encoded(value) ? value : Buffer.from(value).toString('base64')
+            isBase64Encoded(value)
+              ? value
+              : Buffer.from(value).toString('base64')
           }`;
           headers.properties.push(
-            u.objectProperty(u.identifier('authorization'), u.stringLiteral(basicCred)),
+            u.objectProperty(
+              u.identifier('authorization'),
+              u.stringLiteral(basicCred),
+            ),
           );
         } else if (isSecuritySchemeApiKey(security)) {
-          const apiKeyProp = u.objectProperty(u.identifier(security.name), u.stringLiteral(value));
+          const apiKeyProp = u.objectProperty(
+            u.identifier(security.name),
+            u.stringLiteral(value),
+          );
           if (security.in === 'header') {
             headers.properties.push(apiKeyProp);
           } else {
@@ -150,10 +165,14 @@ export function createRequestOptions(
       }
     }
     if (bodyParameter === 'body') {
-      options.properties.push(u.objectProperty(u.identifier('json'), u.booleanLiteral(true)));
+      options.properties.push(
+        u.objectProperty(u.identifier('json'), u.booleanLiteral(true)),
+      );
     }
     if (headers.properties.length > 0) {
-      options.properties.push(u.objectProperty(u.identifier('headers'), headers));
+      options.properties.push(
+        u.objectProperty(u.identifier('headers'), headers),
+      );
     }
     if (qs.properties.length > 0) {
       options.properties.push(u.objectProperty(u.identifier('qs'), qs));
@@ -184,7 +203,8 @@ function isReferenceObject(
 
 function isBase64Encoded(str: string): boolean {
   return (
-    str.match(/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/) !==
-    null
+    str.match(
+      /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/,
+    ) !== null
   );
 }

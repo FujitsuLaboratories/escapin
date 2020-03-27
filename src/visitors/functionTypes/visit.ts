@@ -1,10 +1,18 @@
 import { uniq } from 'lodash';
 import * as ts from 'typescript';
 import { TypeDictionary } from '../../functionTypes';
-import { asynchronous, errorFirstCallback, general, generalCallback } from '../../types';
+import {
+  asynchronous,
+  errorFirstCallback,
+  general,
+  generalCallback,
+} from '../../types';
 import * as u from '../../util';
 
-export function newVisit(types: TypeDictionary, checker: ts.TypeChecker): (node: ts.Node) => void {
+export function newVisit(
+  types: TypeDictionary,
+  checker: ts.TypeChecker,
+): (node: ts.Node) => void {
   return function visit(node: ts.Node): void {
     try {
       if (ts.isCallExpression(node)) {
@@ -33,9 +41,15 @@ export function newVisit(types: TypeDictionary, checker: ts.TypeChecker): (node:
         if (lastParam.valueDeclaration === null) {
           return;
         }
-        let paramType = checker.getTypeOfSymbolAtLocation(lastParam, lastParam.valueDeclaration);
+        let paramType = checker.getTypeOfSymbolAtLocation(
+          lastParam,
+          lastParam.valueDeclaration,
+        );
         let paramTypeNode = checker.typeToTypeNode(paramType);
-        if (paramTypeNode !== undefined && ts.isTypeReferenceNode(paramTypeNode)) {
+        if (
+          paramTypeNode !== undefined &&
+          ts.isTypeReferenceNode(paramTypeNode)
+        ) {
           paramType = checker.getTypeFromTypeNode(paramTypeNode);
           paramTypeNode = checker.typeToTypeNode(paramType);
         }

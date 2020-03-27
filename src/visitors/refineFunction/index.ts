@@ -7,7 +7,11 @@ import aws from './aws';
 
 function newVisitor(
   platform: string,
-): (stmtPath: u.NodePath, func: u.Function, info: PathInfo) => Visitor<BaseState> {
+): (
+  stmtPath: u.NodePath,
+  func: u.Function,
+  info: PathInfo,
+) => Visitor<BaseState> {
   const visitors = { aws };
   return visitors[platform];
 }
@@ -15,7 +19,9 @@ function newVisitor(
 const visitor: Visitor<BaseState> = {
   Function(path, state) {
     const func = path.node;
-    const stmtPath = path.isExpression() ? path.findParent(path => path.isStatement()) : path;
+    const stmtPath = path.isExpression()
+      ? path.findParent(path => path.isStatement())
+      : path;
     const id = u.getFunctionId(stmtPath, func);
     if (id === undefined) {
       return;
@@ -28,7 +34,10 @@ const visitor: Visitor<BaseState> = {
       return;
     }
 
-    const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${name}`;
+    const handler = `${Path.basename(
+      state.filename,
+      Path.extname(state.filename),
+    )}.${name}`;
     const { platform } = state.escapin.config;
 
     state.escapin.addServerlessConfig(`${platform}.function`, {

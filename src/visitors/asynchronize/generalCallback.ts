@@ -16,7 +16,9 @@ export function fetchGeneralCallback(
     return false;
   }
 
-  const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
+  const callbackPath = last(
+    path.get('arguments') as u.NodePath[],
+  ) as u.NodePath;
   if (!callbackPath?.isFunction()) {
     return false;
   }
@@ -59,7 +61,9 @@ export function fetchGeneralCallback(
   const done = path.scope.generateUidIdentifier('done');
   callbackPath.traverse({
     VariableDeclaration(path) {
-      const declarations0 = path.get('declarations.0') as u.NodePath<u.VariableDeclarator>;
+      const declarations0 = path.get('declarations.0') as u.NodePath<
+        u.VariableDeclarator
+      >;
       const init = declarations0.get('init') as u.NodePath;
       if (init.isCallExpression()) {
         const names = getNames(init.get('callee') as u.NodePath);
@@ -67,12 +71,19 @@ export function fetchGeneralCallback(
         if (!isAsynchronous(entry)) {
           return;
         }
-      } else if (!u.isAwaitExpression(init.node) || !u.isNewPromise(init.node.argument)) {
+      } else if (
+        !u.isAwaitExpression(init.node) ||
+        !u.isNewPromise(init.node.argument)
+      ) {
         return;
       }
-      const func = u.isAwaitExpression(init.node) ? init.node.argument : init.node;
+      const func = u.isAwaitExpression(init.node)
+        ? init.node.argument
+        : init.node;
       declarations0.node.init = u.expression(
-        '(() => { let $TEMP; let $DONE = false; $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; }); deasync.loopWhile(_ => !$DONE); return $TEMP; })()',
+        `(() => { let $TEMP; let $DONE = false;
+        $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; });
+        deasync.loopWhile(_ => !$DONE); return $TEMP; })()`,
         {
           $DATA: data,
           $DONE: done,
@@ -92,13 +103,20 @@ export function fetchGeneralCallback(
         if (!isAsynchronous(entry)) {
           return;
         }
-      } else if (!u.isAwaitExpression(expression) || !u.isNewPromise(expression.argument)) {
+      } else if (
+        !u.isAwaitExpression(expression) ||
+        !u.isNewPromise(expression.argument)
+      ) {
         return;
       }
-      const func = u.isAwaitExpression(expression) ? expression.argument : expression;
+      const func = u.isAwaitExpression(expression)
+        ? expression.argument
+        : expression;
       path.replaceWithMultiple(
         u.statements(
-          'let $DONE = false; $FUNC.then(_ => { $DONE = true; }); deasync.loopWhile(_ => !$DONE)',
+          `let $DONE = false;
+          $FUNC.then(_ => { $DONE = true; });
+          deasync.loopWhile(_ => !$DONE)`,
           {
             $DONE: done,
             $FUNC: func,

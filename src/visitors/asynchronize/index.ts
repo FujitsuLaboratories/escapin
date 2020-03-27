@@ -68,9 +68,9 @@ function newVisitor(): Visitor<BaseState> {
 
       asynchronized.push(path.node);
 
-      const decl = path.get(path.isForStatement() ? 'init' : 'left') as u.NodePath<
-        u.VariableDeclaration
-      >;
+      const decl = path.get(
+        path.isForStatement() ? 'init' : 'left',
+      ) as u.NodePath<u.VariableDeclaration>;
       for (const declarator of decl.node.declarations) {
         const { id } = declarator;
         if (!u.isIdentifier(id)) {
@@ -82,7 +82,9 @@ function newVisitor(): Visitor<BaseState> {
 
       const promise = path.scope.generateUidIdentifier('promise');
 
-      path.insertBefore(u.statement('let $PROMISE = [];', { $PROMISE: promise }));
+      path.insertBefore(
+        u.statement('let $PROMISE = [];', { $PROMISE: promise }),
+      );
       const block = path.get('body') as u.NodePath<u.BlockStatement>;
       block.traverse({
         ContinueStatement(path) {
@@ -100,7 +102,9 @@ function newVisitor(): Visitor<BaseState> {
       );
       path.insertAfter(
         u.expressionStatement(
-          u.awaitExpression(u.expression('Promise.all($PROMISE)', { $PROMISE: promise })),
+          u.awaitExpression(
+            u.expression('Promise.all($PROMISE)', { $PROMISE: promise }),
+          ),
         ),
       );
 

@@ -21,7 +21,9 @@ function newVisitor(): Visitor<BaseState> {
         escapin.save();
 
         const { dependencies, devDependencies } = escapin.packageJson;
-        const modules = Object.keys(dependencies).concat(Object.keys(devDependencies));
+        const modules = Object.keys(dependencies).concat(
+          Object.keys(devDependencies),
+        );
 
         getTypings(modules).forEach(typing => {
           devDependencies[typing] = getLatestVersion(typing);
@@ -49,7 +51,11 @@ function newVisitor(): Visitor<BaseState> {
   };
 }
 
-function checkFunctionTypes(types: TypeDictionary, filename: string, output_dir: string): void {
+function checkFunctionTypes(
+  types: TypeDictionary,
+  filename: string,
+  output_dir: string,
+): void {
   const program = ts.createProgram([join(output_dir, filename)], {
     allowJs: true,
     typeRoots: [join(output_dir, 'node_modules')],

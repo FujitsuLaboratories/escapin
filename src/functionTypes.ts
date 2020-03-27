@@ -26,7 +26,9 @@ export class TypeDictionary {
   }
 
   public get(...names: string[]): FunctionType | undefined {
-    return this.types.find(entry => 0 === difference(entry.names, names).length);
+    return this.types.find(
+      entry => 0 === difference(entry.names, names).length,
+    );
   }
 
   public put(entry: FunctionType): void {

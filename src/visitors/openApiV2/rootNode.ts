@@ -48,10 +48,16 @@ export function identifyRootNode(
         } else if (computed && token.match(pathParamPattern)) {
           newPath = newPath.replace(
             token,
-            u.isStringLiteral(property) ? property.value : `$\{${u.generate(property)}}`,
+            u.isStringLiteral(property)
+              ? property.value
+              : `$\{${u.generate(property)}}`,
           );
           break;
-        } else if (!computed && u.isIdentifier(property) && token === property.name) {
+        } else if (
+          !computed &&
+          u.isIdentifier(property) &&
+          token === property.name
+        ) {
           break;
         }
         iter = iter.get('object') as u.NodePath;
@@ -89,7 +95,9 @@ export function identifyRootNode(
 
 function createURI(spec: OpenAPIV2.Document, path: string): string {
   const scheme =
-    spec.schemes && Array.isArray(spec.schemes) && spec.schemes.includes('https')
+    spec.schemes &&
+    Array.isArray(spec.schemes) &&
+    spec.schemes.includes('https')
       ? 'https'
       : 'http';
   return `${scheme}://${spec.host}${spec.basePath}${path}`;

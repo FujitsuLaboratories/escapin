@@ -6,7 +6,12 @@ import { sync as rimraf } from 'rimraf';
 import { v4 as uuid } from 'uuid';
 import { TypeDictionary } from '../src/functionTypes';
 import { BaseState } from '../src/state';
-import { asynchronous, errorFirstCallback, general, generalCallback } from '../src/types';
+import {
+  asynchronous,
+  errorFirstCallback,
+  general,
+  generalCallback,
+} from '../src/types';
 import * as u from '../src/util';
 import { Escapin } from '../src';
 import { Visitor } from '@babel/traverse';
@@ -77,8 +82,14 @@ export function transpile(
   const escapin = initialize();
   mkdirp(escapin.config.output_dir);
 
-  const actual = fs.readFileSync(path.join(__dirname, `visitors/${testName}.in.js`), 'utf8');
-  const expected = fs.readFileSync(path.join(__dirname, `visitors/${testName}.out.js`), 'utf8');
+  const actual = fs.readFileSync(
+    path.join(__dirname, `visitors/${testName}.in.js`),
+    'utf8',
+  );
+  const expected = fs.readFileSync(
+    path.join(__dirname, `visitors/${testName}.out.js`),
+    'utf8',
+  );
 
   try {
     const astActual = u.parse(actual);

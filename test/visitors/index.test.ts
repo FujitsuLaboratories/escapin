@@ -31,17 +31,30 @@ test('[openApiV2.2] ignore conventional import declarations', () => {
 });
 
 test('[refineObject.1] nominal case of refineObject', () => {
-  const { actual, expected } = transpile('refineObject.1', refineObject, finalize);
+  const { actual, expected } = transpile(
+    'refineObject.1',
+    refineObject,
+    finalize,
+  );
   expect(actual).toEqual(expected);
 });
 
 test('[refineFunction.1] nominal case of refineFunction', () => {
-  const { actual, expected } = transpile('refineFunction.1', refineFunction, finalize);
+  const { actual, expected } = transpile(
+    'refineFunction.1',
+    refineFunction,
+    finalize,
+  );
   expect(actual).toEqual(expected);
 });
 
 test('[asynchronize.1] nominal case of asynchronize', () => {
-  const { actual, expected } = transpile('asynchronize.1', functionTypes, asynchronize, finalize);
+  const { actual, expected } = transpile(
+    'asynchronize.1',
+    functionTypes,
+    asynchronize,
+    finalize,
+  );
   expect(actual).toEqual(expected);
 });
 

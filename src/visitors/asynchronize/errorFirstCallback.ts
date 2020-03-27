@@ -54,12 +54,17 @@ export function fetchErrorFirstCallback(
         path.parentPath,
         property.key,
         u.memberExpression(data, property.key),
-        path => path.isObjectProperty() || path.isMemberExpression() || path.isFunction(node),
+        path =>
+          path.isObjectProperty() ||
+          path.isMemberExpression() ||
+          path.isFunction(node),
       );
     }
     newId = u.objectExpression(
       id.properties.map(prop =>
-        u.isRestElement(prop) ? u.spreadElement(prop.argument as u.Identifier) : prop,
+        u.isRestElement(prop)
+          ? u.spreadElement(prop.argument as u.Identifier)
+          : prop,
       ),
     );
   } else if (u.isIdentifier(id)) {

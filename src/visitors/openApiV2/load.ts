@@ -7,7 +7,10 @@ import isURL from 'validator/lib/isURL';
 import { BaseState } from '../../state';
 import { deasyncPromise, fetch } from '../../util';
 
-export function loadOpenApiV2(uri: string, state: BaseState): OpenAPI.Document | null {
+export function loadOpenApiV2(
+  uri: string,
+  state: BaseState,
+): OpenAPI.Document | null {
   let spec = null;
   try {
     let resolved;

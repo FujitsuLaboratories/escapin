@@ -2,7 +2,7 @@ import { difference, uniq } from 'lodash';
 import { FunctionType } from './types';
 import * as u from './util';
 
-export function getNames(path: u.NodePath): string[] {
+export function getNames<T>(path: u.NodePath<T>): string[] {
   const names: string[] = [];
   if (path.isIdentifier()) {
     names.push(path.node.name);

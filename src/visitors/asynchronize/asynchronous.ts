@@ -13,7 +13,7 @@ export function fetchAsynchronous(
     return false;
   }
 
-  const names = getNames(path.get('callee') as u.NodePath);
+  const names = getNames(path.get('callee'));
   const entry = state.escapin.types.get(...names);
   if (!isAsynchronous(entry)) {
     return false;

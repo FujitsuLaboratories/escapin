@@ -21,11 +21,13 @@ export function fetchObjectKeys(
       $TEMPVAR: tempVar,
       $VAR: variable,
     });
-    const stmtPath = path.findParent(path => path.isStatement());
+    const stmtPath = path.findParent(path => path.isStatement()) as u.NodePath<
+      u.Statement
+    >;
     for (const line of snippet) {
       stmtPath.insertBefore(line);
     }
-    u.replace(stmtPath, node, variable);
+    u.replace<u.Statement>(stmtPath, node, variable);
 
     state.replacements.push({
       original: node,

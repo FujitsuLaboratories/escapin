@@ -19,7 +19,7 @@ import packageJson from 'package-json';
 import Path from 'path';
 import vm from 'vm';
 import { BaseState } from './state';
-import { OneOrMore } from './types';
+import { OneOrMore, FunctionToBeRefined } from './types';
 
 export * from '@babel/types';
 export { NodePath } from '@babel/traverse';
@@ -212,15 +212,15 @@ export function remove<T>(array: T[], item: T): void {
   _remove(array, that => equals(that, item));
 }
 
-export function find(
-  path: NodePath,
+export function find<T>(
+  path: NodePath | NodePath<Extract<t.Node, T>>,
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): NodePath | undefined {
-  let ret;
-  if (positive(path)) {
-    ret = path;
-  } else if (!(negative && negative(path))) {
+  let ret!: NodePath;
+  if (positive(path as NodePath)) {
+    ret = path as NodePath;
+  } else if (!(negative && negative(path as NodePath))) {
     path.traverse({
       enter(path) {
         if (positive(path)) {
@@ -235,15 +235,15 @@ export function find(
   return ret;
 }
 
-export function findAll(
-  path: NodePath,
+export function findAll<T>(
+  path: NodePath | NodePath<Extract<t.Node, T>>,
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): NodePath[] {
-  const ret = [];
-  if (positive(path)) {
-    ret.push(path);
-  } else if (!(negative && negative(path))) {
+  const ret: NodePath[] = [];
+  if (positive(path as NodePath)) {
+    ret.push(path as NodePath);
+  } else if (!(negative && negative(path as NodePath))) {
     path.traverse({
       enter(path) {
         if (positive(path)) {
@@ -257,16 +257,16 @@ export function findAll(
   return ret;
 }
 
-export function test(
-  path: NodePath,
+export function test<T>(
+  path: NodePath | NodePath<Extract<t.Node, T>>,
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): boolean {
   return undefined !== find(path, positive, negative);
 }
 
-export function equalsEither(
-  path: NodePath,
+export function equalsEither<T>(
+  path: NodePath | NodePath<Extract<t.Node, T>>,
   target: OneOrMore<t.Node>,
 ): boolean {
   return Array.isArray(target)
@@ -274,23 +274,26 @@ export function equalsEither(
     : equals(path.node, target);
 }
 
-export function includes(path: NodePath, target: OneOrMore<t.Node>): boolean {
-  return test(path, path => equalsEither(path, target));
+export function includes<T>(
+  path: NodePath | NodePath<Extract<t.Node, T>>,
+  target: OneOrMore<t.Node>,
+): boolean {
+  return test(path, (path: NodePath) => equalsEither(path, target));
 }
 
-export function replace(
-  path: NodePath,
+export function replace<T>(
+  path: NodePath | NodePath<Extract<t.Node, T>>,
   target: OneOrMore<t.Node>,
   replacement: t.Node,
   ignoreIf?: (x: NodePath) => boolean,
 ): void {
   path.traverse({
-    enter(path) {
-      if (ignoreIf && ignoreIf(path)) {
-        path.skip();
-      } else if (equalsEither(path, target)) {
-        path.replaceWith(replacement);
-        path.skip();
+    enter(_path) {
+      if (ignoreIf && ignoreIf(_path)) {
+        _path.skip();
+      } else if (equalsEither(_path, target)) {
+        _path.replaceWith(replacement);
+        _path.skip();
       }
     },
   });
@@ -311,10 +314,9 @@ export function isNewPromise(node: t.Node): boolean {
 }
 
 export function getFunctionId(
-  path: NodePath,
+  node: FunctionToBeRefined,
   func: t.Function,
-): t.Identifier | undefined {
-  const { node } = path;
+): t.Identifier {
   if (
     t.isExpressionStatement(node) &&
     t.isAssignmentExpression(node.expression) &&
@@ -327,10 +329,14 @@ export function getFunctionId(
     if (t.isIdentifier(id) && func === init) {
       return id;
     }
-  } else if (t.isFunctionDeclaration(node) && t.isIdentifier(node.id)) {
+  } else if (
+    t.isFunction(node) &&
+    t.isStatement(node) &&
+    t.isIdentifier(node.id)
+  ) {
     return node.id;
   }
-  return undefined;
+  throw new Error('Invalid FunctionId');
 }
 
 export function isErrorParam(node: t.Node): node is t.Identifier {
@@ -353,8 +359,8 @@ export function evalSnippet(
   return script.runInContext(context);
 }
 
-export function reuseReplacement(
-  path: NodePath,
+export function reuseReplacement<T>(
+  path: NodePath<Extract<t.Node, T>>,
   state: BaseState,
   right: t.MemberExpression,
 ):

@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { OpenAPIV2 } from 'openapi-types';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
 
 export type OneOrMore<T> = T | T[];
 
@@ -9,6 +12,7 @@ export interface Config {
   output_dir: string;
   api_spec?: string;
   credentials?: Credential[];
+  http_client: string;
 }
 
 export interface Credential {
@@ -106,4 +110,47 @@ export function generalCallback(...names: string[]): GeneralCallback {
 
 export function general(...names: string[]): General {
   return { type: 'general', names };
+}
+
+export type FunctionToBeRefined =
+  | t.FunctionDeclaration
+  | t.ExpressionStatement
+  | t.VariableDeclaration;
+
+export function isFunctionToBeRefined(
+  node: t.Node,
+): node is FunctionToBeRefined {
+  if (
+    t.isExpressionStatement(node) &&
+    t.isAssignmentExpression(node.expression) &&
+    t.isIdentifier(node.expression.left) &&
+    t.isFunction(node.expression.right)
+  ) {
+    return true;
+  } else if (
+    t.isVariableDeclaration(node) &&
+    t.isFunction(node.declarations[0].init)
+  ) {
+    return true;
+  } else if (t.isFunctionDeclaration(node) && node.id !== null) {
+    return true;
+  }
+  return false;
+}
+
+export type HttpMethod =
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'delete'
+  | 'patch'
+  | 'options'
+  | 'head';
+
+export interface HttpRequest {
+  targetNodePath: NodePath;
+  uri: string;
+  contentType: string;
+  header: t.ObjectExpression;
+  query: t.ObjectExpression;
 }

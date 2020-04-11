@@ -1,10 +1,26 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { Visitor } from '@babel/traverse';
-import { OpenAPIV2 } from 'openapi-types';
-import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
+import { HttpMethod } from '../../types';
 import * as u from '../../util';
+import axios from './axios';
 import { loadOpenApiV2 } from './load';
-import { createRequestOptions } from './requestOptions';
+import request from './request';
+import { OpenAPIV2 } from 'openapi-types';
+
+function _modifySnippets(
+  http_client: string,
+): (
+  method: HttpMethod,
+  key: u.Identifier,
+  spec: OpenAPIV2.Document,
+  state: BaseState,
+  path: u.NodePath,
+  target: u.NodePath,
+  data?: u.Node,
+) => void {
+  return { axios, request }[http_client];
+}
 
 const visitor: Visitor<BaseState> = {
   ImportDeclaration(path, state) {
@@ -16,61 +32,53 @@ const visitor: Visitor<BaseState> = {
       return;
     }
 
-    try {
-      const uri = path.node.source.value;
-      const spec = loadOpenApiV2(uri, state);
-      if (spec === null) {
-        path.skip();
-        return;
-      }
-
-      if (!u.isOpenAPIV2Document(spec)) {
-        throw new Error('This API specification does not conform to OAS V2');
-      }
-
-      const { local } = firstSpecifier;
-      if (local) {
-        u.traverse(apiVisitor(local, spec), state);
-        state.addDependency('request');
-      }
-      path.remove();
-    } catch (err) {
-      throw new EscapinSyntaxError(err, path.node, state);
+    const uri = path.node.source.value;
+    const spec = loadOpenApiV2(uri, state);
+    if (spec === null) {
+      path.skip();
+      return;
     }
+
+    if (!u.isOpenAPIV2Document(spec)) {
+      throw new Error('This API specification does not conform to OAS V2');
+    }
+
+    const { local } = firstSpecifier;
+    if (local) {
+      const { http_client } = state.escapin.config;
+      u.traverse(newVisitor(http_client, local, spec), state);
+      state.addDependency(http_client);
+    }
+    path.remove();
   },
 };
 
-function apiVisitor(
+function newVisitor(
+  http_client: string,
   key: u.Identifier,
   spec: OpenAPIV2.Document,
 ): Visitor<BaseState> {
-  function keyIncluded(path: u.NodePath, key: u.Identifier): boolean {
-    return u.test(
-      path,
-      path => path.isMemberExpression() && u.equals(path.node.object, key),
-    );
-  }
+  const modifySnippets = _modifySnippets(http_client);
   return {
     MemberExpression(path, state): void {
       // GET
-      if (!keyIncluded(path, key)) {
+      if (!keyIncluded(path as u.NodePath, key)) {
         return;
       }
 
-      const { options, target } = createRequestOptions(
-        'GET',
+      modifySnippets(
+        'get',
         key,
         spec,
-        path,
         state,
+        path as u.NodePath,
+        path as u.NodePath,
       );
-
-      modifySnippets('get', path, target, options);
       path.skip();
     },
     CallExpression(path, state): void {
       // POST
-      const callee = path.get('callee');
+      const callee = path.get('callee') as u.NodePath;
       const arg0 = path.node.arguments[0];
       if (
         !keyIncluded(callee, key) ||
@@ -79,124 +87,45 @@ function apiVisitor(
       ) {
         return;
       }
-      const { options, bodyParameter } = createRequestOptions(
-        'POST',
+
+      modifySnippets(
+        'post',
         key,
         spec,
-        callee,
         state,
+        path as u.NodePath,
+        callee,
+        arg0,
       );
-
-      if (u.isSpreadElement(arg0)) {
-        options.properties.unshift(arg0);
-      } else {
-        options.properties.unshift(
-          u.objectProperty(u.identifier(bodyParameter), arg0),
-        );
-      }
-
-      modifySnippets('post', path, path, options);
       path.skip();
     },
     AssignmentExpression(path, state): void {
       // PUT
-      const left = path.get('left');
+      const left = path.get('left') as u.NodePath;
+      const right = path.get('right').node;
       if (!keyIncluded(left, key)) {
         return;
       }
-      const { options, bodyParameter } = createRequestOptions(
-        'PUT',
-        key,
-        spec,
-        left,
-        state,
-      );
-
-      options.properties.unshift(
-        u.objectProperty(
-          u.identifier(bodyParameter),
-          u.expression('JSON.stringify($BODY)', {
-            $BODY: path.node.right,
-          }),
-        ),
-      );
-
-      modifySnippets('put', path, path, options);
+      modifySnippets('put', key, spec, state, path as u.NodePath, left, right);
       path.skip();
     },
     UnaryExpression(path, state): void {
       // DELETE
-      const argument = path.get('argument');
+      const argument = path.get('argument') as u.NodePath;
       if (!keyIncluded(argument, key) || path.node.operator !== 'delete') {
         return;
       }
-      const { options } = createRequestOptions(
-        'DELETE',
-        key,
-        spec,
-        argument,
-        state,
-      );
-
-      const stmtPath = path.findParent(path => path.isStatement());
-      stmtPath.replaceWith(
-        u.statement('const { $RES, $BODY } = request($OPTIONS);', {
-          $BODY: path.scope.generateUidIdentifier('body'),
-          $OPTIONS: options,
-          $RES: path.scope.generateUidIdentifier('res'),
-        }),
-      );
+      modifySnippets('delete', key, spec, state, path as u.NodePath, argument);
       path.skip();
     },
   };
 }
 
-function modifySnippets(
-  method: string,
-  path: u.NodePath,
-  target: u.NodePath,
-  options: u.ObjectExpression,
-): void {
-  const variable = path.scope.generateUidIdentifier(method);
-
-  const letSnippet = u.statements(
-    'const { $RES, $BODY } = request($OPTIONS); let $VAR = $BODY',
-    {
-      $BODY: path.scope.generateUidIdentifier('body'),
-      $OPTIONS: options,
-      $RES: path.scope.generateUidIdentifier('res'),
-      $VAR: variable,
-    },
+function keyIncluded(path: u.NodePath, key: u.Identifier): boolean {
+  return u.test(
+    path,
+    path => path.isMemberExpression() && u.equals(path.node.object, key),
   );
-
-  const assignmentSnippet = u.statements(
-    'const { $RES, $BODY } = request($OPTIONS); $VAR = $BODY',
-    {
-      $BODY: path.scope.generateUidIdentifier('body'),
-      $OPTIONS: options,
-      $RES: path.scope.generateUidIdentifier('res'),
-      $VAR: variable,
-    },
-  );
-
-  const stmtPath = path.findParent(path => path.isStatement());
-  if (
-    stmtPath.isExpressionStatement() &&
-    u.equals(stmtPath.node.expression, target.node)
-  ) {
-    stmtPath.replaceWith(letSnippet[0]);
-  } else if (stmtPath.isWhileStatement()) {
-    stmtPath.insertBefore(letSnippet);
-    const block = stmtPath.node.body as u.BlockStatement;
-    block.body = [...block.body, ...assignmentSnippet];
-  } else if (stmtPath.isDoWhileStatement()) {
-    stmtPath.insertBefore(u.statement('let $VAR;', { $VAR: variable }));
-    const block = stmtPath.node.body as u.BlockStatement;
-    block.body = [...block.body, ...assignmentSnippet];
-  } else {
-    stmtPath.insertBefore(letSnippet);
-  }
-  u.replace(stmtPath, target.node, variable);
 }
 
 export default visitor;

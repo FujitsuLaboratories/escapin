@@ -20,9 +20,10 @@ import { finalize, visitors } from './visitors';
 
 const API_SPEC_FILENAME =
   process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
-const PLATFORM = 'aws';
-const OUTPUT_DIR = 'build';
+const DEFAULT_PLATFORM = 'aws';
+const DEFAULT_OUTPUT_DIR = 'build';
 const DEFAULT_STORAGE = 'table';
+const DEFAULT_HTTP_CLIENT = 'axios';
 const SERVERLESS_YML = 'serverless.yml';
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
@@ -83,16 +84,18 @@ export class Escapin {
     }
     result.config.output_dir = Path.join(
       this.basePath,
-      result.config.output_dir || OUTPUT_DIR,
+      result.config.output_dir || DEFAULT_OUTPUT_DIR,
     );
     if (fs.existsSync(result.config.output_dir)) {
       rimraf(result.config.output_dir);
     }
     mkdirp(result.config.output_dir);
 
-    result.config.platform = result.config.platform || PLATFORM;
+    result.config.platform = result.config.platform || DEFAULT_PLATFORM;
     result.config.default_storage =
       result.config.default_storage || DEFAULT_STORAGE;
+    result.config.http_client =
+      result.config.http_client || DEFAULT_HTTP_CLIENT;
 
     this.config = result.config as Config;
   }

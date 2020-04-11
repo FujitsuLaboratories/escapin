@@ -11,6 +11,7 @@ import {
   errorFirstCallback,
   general,
   generalCallback,
+  Config,
 } from '../src/types';
 import * as u from '../src/util';
 import { Escapin } from '../src';
@@ -30,6 +31,7 @@ export function initialize(): Escapin {
     platform: 'aws',
     default_storage: 'table',
     output_dir: `${__dirname}/${uuid()}`,
+    http_client: 'axios',
   };
   escapin.apiSpec = {
     file: 'test.json',
@@ -74,12 +76,18 @@ export function initialize(): Escapin {
 
 export function transpile(
   testName: string,
+  config?: Partial<Config>,
   ...visitors: Visitor<BaseState>[]
 ): {
   actual: u.Node;
   expected: u.Node;
 } {
   const escapin = initialize();
+  if (config) {
+    for (const key in config) {
+      escapin.config[key] = config[key];
+    }
+  }
   mkdirp(escapin.config.output_dir);
 
   const actual = fs.readFileSync(

@@ -93,7 +93,9 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
 
       const assignmentSnippet = u.snippetFor(`${service}.get_assign`, vars);
 
-      const stmtPath = path.findParent(path => path.isStatement());
+      const stmtPath = path.findParent(path =>
+        path.isStatement(),
+      ) as u.NodePath<u.Statement>;
       if (stmtPath === null) {
         throw new Error(JSON.stringify(path.parent, null, 2));
       }
@@ -121,7 +123,7 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
       } else {
         stmtPath.insertBefore(letSnippet);
       }
-      u.replace(stmtPath, node, variable);
+      u.replace<u.Statement>(stmtPath, node, variable);
 
       state.replacements.push({
         original: node,
@@ -189,11 +191,14 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
         Statement(path) {
           if (
             path.isReturnStatement() ||
-            u.test(path, path => path.isIdentifier() && !path.isReferenced())
+            u.test<u.Statement>(
+              path,
+              path => path.isIdentifier() && !path.isReferenced(),
+            )
           ) {
             path.skip();
           } else {
-            u.replace(path, [left, right], variable);
+            u.replace<u.Statement>(path, [left, right], variable);
             movedStmts.push(cloneDeep(path.node));
             path.remove();
           }

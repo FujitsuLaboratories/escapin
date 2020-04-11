@@ -1,7 +1,7 @@
 import { Visitor } from '@babel/traverse';
 import Path from 'path';
 import { BaseState } from '../../state';
-import { PathInfo } from '../../types';
+import { PathInfo, isFunctionToBeRefined } from '../../types';
 import * as u from '../../util';
 import aws from './aws';
 
@@ -20,12 +20,13 @@ const visitor: Visitor<BaseState> = {
   Function(path, state) {
     const func = path.node;
     const stmtPath = path.isExpression()
-      ? path.findParent(path => path.isStatement())
-      : path;
-    const id = u.getFunctionId(stmtPath, func);
-    if (id === undefined) {
+      ? (path.findParent(path => path.isStatement()) as u.NodePath)
+      : (path as u.NodePath);
+    const { node } = stmtPath;
+    if (!isFunctionToBeRefined(node)) {
       return;
     }
+    const id = u.getFunctionId(node, func);
 
     const { name } = id;
 

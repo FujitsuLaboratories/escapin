@@ -10,7 +10,7 @@ function newVisitor(): Visitor<BaseState> {
   let changed = false;
   const visitor: Visitor<BaseState> = {
     Program: {
-      enter(path): void {
+      enter(): void {
         changed = false;
       },
       exit(path, state): void {
@@ -26,7 +26,12 @@ function newVisitor(): Visitor<BaseState> {
         return;
       }
 
-      if (!(u.test(path, _path => _path.isAwaitExpression()) && !node.async)) {
+      if (
+        !(
+          u.test<u.Function>(path, path => path.isAwaitExpression()) &&
+          !node.async
+        )
+      ) {
         return;
       }
 
@@ -62,7 +67,7 @@ function newVisitor(): Visitor<BaseState> {
         return;
       }
 
-      if (!u.test(path, _path => u.isSimpleAwaitStatement(_path.node))) {
+      if (!u.test<u.For>(path, path => u.isSimpleAwaitStatement(path.node))) {
         return;
       }
 
@@ -77,7 +82,7 @@ function newVisitor(): Visitor<BaseState> {
           continue;
         }
         declarator.id = path.scope.generateUidIdentifier(id.name);
-        u.replace(path, id, declarator.id);
+        u.replace<u.For>(path, id, declarator.id);
       }
 
       const promise = path.scope.generateUidIdentifier('promise');

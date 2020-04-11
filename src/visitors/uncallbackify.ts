@@ -25,29 +25,27 @@ const visitor: Visitor<BaseState> = {
     const errorParam = params.shift() as u.NodePath<u.Identifier>;
     let consequent = [];
     let alternate = [];
-    const bodyPath = callbackPath.get('body') as u.NodePath;
-    if (bodyPath.isBlockStatement()) {
-      const blockPath = bodyPath.get('body') as u.NodePath<u.Statement>[];
-      for (const stmtPath of blockPath) {
-        if (stmtPath.isIfStatement() && u.includes(stmtPath, errorParam.node)) {
-          const stmt = stmtPath.node;
-          const result = u.evalSnippet(stmt.test, {
-            [errorParam.node.name]: new Error(),
-          });
-          if (result) {
-            alternate.push(...u.toStatements(stmt.consequent));
-            if (stmt.alternate !== null) {
-              consequent.push(...u.toStatements(stmt.alternate));
-            }
-          } else {
-            consequent.push(...u.toStatements(stmt.consequent));
-            if (stmt.alternate !== null) {
-              alternate.push(...u.toStatements(stmt.alternate));
-            }
+    const bodyPath = callbackPath.get('body') as u.NodePath<u.BlockStatement>;
+    const blockPath = bodyPath.get('body') as u.NodePath<u.Statement>[];
+    for (const stmtPath of blockPath) {
+      if (stmtPath.isIfStatement() && u.includes(stmtPath, errorParam.node)) {
+        const stmt = stmtPath.node;
+        const result = u.evalSnippet(stmt.test, {
+          [errorParam.node.name]: new Error(),
+        });
+        if (result) {
+          alternate.push(...u.toStatements(stmt.consequent));
+          if (stmt.alternate !== null) {
+            consequent.push(...u.toStatements(stmt.alternate));
           }
         } else {
-          consequent.push(stmtPath.node);
+          consequent.push(...u.toStatements(stmt.consequent));
+          if (stmt.alternate !== null) {
+            alternate.push(...u.toStatements(stmt.alternate));
+          }
         }
+      } else {
+        consequent.push(stmtPath.node);
       }
     }
 

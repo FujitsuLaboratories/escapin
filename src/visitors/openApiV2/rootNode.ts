@@ -1,26 +1,25 @@
 import { last } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
+import { HttpMethod } from '../../types';
 import * as u from '../../util';
 
 export function identifyRootNode(
   spec: OpenAPIV2.Document,
   nodePath: u.NodePath,
-  method: string,
+  method: HttpMethod,
   key: u.Identifier,
 ): {
   uri: string;
   contentType: string;
-  bodyParameter: string;
   params?: u.ObjectExpression;
-  rootPath: u.NodePath;
+  rootNodePath: u.NodePath;
   operation: OpenAPIV2.OperationObject;
 } {
   let maxMatches = 0;
   let uri!: string;
   let contentType!: string;
-  let bodyParameter!: string;
   let params!: u.ObjectExpression;
-  let rootPath!: u.NodePath;
+  let rootNodePath!: u.NodePath;
   let operation!: OpenAPIV2.OperationObject;
   const pathParamPattern = /^\{.*\}$/;
 
@@ -74,8 +73,7 @@ export function identifyRootNode(
       operation = spec.paths[path][method];
       uri = createURI(spec, newPath);
       contentType = getContentType(spec, operation);
-      bodyParameter = getBodyParameter(contentType);
-      rootPath = rootCandidate;
+      rootNodePath = rootCandidate;
       maxMatches = matches;
     }
   }
@@ -86,9 +84,8 @@ export function identifyRootNode(
   return {
     uri,
     contentType,
-    bodyParameter,
     params,
-    rootPath,
+    rootNodePath,
     operation,
   };
 }
@@ -113,16 +110,4 @@ function getContentType(
     return spec.consumes[0];
   }
   return 'application/json';
-}
-
-function getBodyParameter(contentType: string): string {
-  switch (contentType) {
-    case 'multipart/form-data':
-      return 'formData';
-    case 'application/x-www-form-urlencoded':
-      return 'form';
-    case 'application/json':
-    default:
-      return 'body';
-  }
 }

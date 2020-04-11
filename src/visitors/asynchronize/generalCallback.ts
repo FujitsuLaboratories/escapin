@@ -10,15 +10,13 @@ export function fetchGeneralCallback(
   asynchronized: u.Node[],
   state: BaseState,
 ): boolean {
-  const names = getNames(path.get('callee') as u.NodePath);
+  const names = getNames(path.get('callee'));
   const entry = state.escapin.types.get(...names);
   if (!isGeneralCallback(entry)) {
     return false;
   }
 
-  const callbackPath = last(
-    path.get('arguments') as u.NodePath[],
-  ) as u.NodePath;
+  const callbackPath = last(path.get('arguments'));
   if (!callbackPath?.isFunction()) {
     return false;
   }
@@ -61,10 +59,8 @@ export function fetchGeneralCallback(
   const done = path.scope.generateUidIdentifier('done');
   callbackPath.traverse({
     VariableDeclaration(path) {
-      const declarations0 = path.get('declarations.0') as u.NodePath<
-        u.VariableDeclarator
-      >;
-      const init = declarations0.get('init') as u.NodePath;
+      const declarations = path.get('declarations');
+      const init = declarations[0].get('init');
       if (init.isCallExpression()) {
         const names = getNames(init.get('callee') as u.NodePath);
         const entry = state.escapin.types.get(...names);
@@ -80,7 +76,10 @@ export function fetchGeneralCallback(
       const func = u.isAwaitExpression(init.node)
         ? init.node.argument
         : init.node;
-      declarations0.node.init = u.expression(
+      if (func === null) {
+        return;
+      }
+      declarations[0].node.init = u.expression(
         `(() => { let $TEMP; let $DONE = false;
         $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; });
         deasync.loopWhile(_ => !$DONE); return $TEMP; })()`,
@@ -96,9 +95,10 @@ export function fetchGeneralCallback(
     },
     ExpressionStatement(path) {
       const { expression } = path.node;
-      const expressionPath = path.get('expression') as u.NodePath<u.Expression>;
+      const expressionPath = path.get('expression');
       if (expressionPath.isCallExpression()) {
-        const names = getNames(expressionPath.get('callee') as u.NodePath);
+        const callExpression = expressionPath as u.NodePath<u.CallExpression>;
+        const names = getNames(callExpression.get('callee'));
         const entry = state.escapin.types.get(...names);
         if (!isAsynchronous(entry)) {
           return;

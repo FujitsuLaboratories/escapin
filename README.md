@@ -91,7 +91,8 @@ Here is the example of JSON configuration file `.escapinrc`.
   "credentials": [{ "api": "mailgun API", "basicAuth": "api:<YOUR_API_KEY>" }],
   "platform": "aws",
   "default_storage": "table",
-  "output_dir": "build"
+  "output_dir": "build",
+  "http_client": "axios"
 }
 ```
 
@@ -103,17 +104,19 @@ module.exports = {
   platform: "aws",
   default_storage: "table",
   output_dir: "build",
+  http_client: "axios",
 };
 ```
 
-|       Name        | Description                                                            | Default |
-| :---------------: | ---------------------------------------------------------------------- | :-----: |
-|      `name`       | name of the application                                                |         |
-|    `api_spec`     | path of the specification file of the API published by the application |         |
-|   `credentials`   | credentials required in calling external APIs                          |         |
-|    `platform`     | cloud platform where the application is being deployed                 |  `aws`  |
-| `default_storage` | the storage type that are selected by default                          | `table` |
-|   `output_dir`    | directory where the transpilcation artifacts are being stored          | `build` |
+|       Name        | Description                                                            |        Options         | Default |
+| :---------------: | ---------------------------------------------------------------------- | :--------------------: | :-----: |
+|      `name`       | name of the application                                                |                        |         |
+|    `api_spec`     | path of the specification file of the API published by the application |                        |         |
+|   `credentials`   | credentials required in calling external APIs                          |                        |         |
+|    `platform`     | cloud platform where the application is being deployed                 |         `aws`          |  `aws`  |
+| `default_storage` | the storage type that are selected by default                          | `table`<br />`bucket`  | `table` |
+|   `output_dir`    | directory where the transpilcation artifacts are being stored          |                        | `build` |
+|   `http_client`   | http client used in generated code for requesting apis defined by OAS  | `axios`<br />`request` | `axios` |
 
 ## <a name="features"></a>Transpilation features
 
@@ -395,6 +398,15 @@ import api from "http://path/to/swagger.yaml";
 ```javascript
 import api from "http://path/to/swagger.yaml";
 api.items[id][{ foo: "bar", baz: "qux" }]({ quux: "corge" });
+```
+
+##### `.escapinrc.js`
+
+```javascript
+module.exports = {
+  http_client: "request",
+  ...
+};
 ```
 
 ##### `http://path/to/swagger.yaml`

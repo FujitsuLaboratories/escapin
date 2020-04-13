@@ -12,6 +12,7 @@ module.exports = {
     'no-unused-vars': 'off',
     'no-undef': 'off',
     'prefer-const': 'off',
+    'import/no-unresolved': 'off',
     'node/no-missing-import': 'off',
     'node/no-missing-require': 'off',
     'node/no-unpublished-import': 'off',

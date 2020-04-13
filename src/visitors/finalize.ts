@@ -9,9 +9,7 @@ function newVisitor(): Visitor {
     },
     TemplateLiteral(path): void {
       if (
-        path.node.expressions.every(
-          expr => u.isStringLiteral(expr) || u.isNumericLiteral(expr),
-        ) ||
+        path.node.expressions.every(expr => u.isStringLiteral(expr) || u.isNumericLiteral(expr)) ||
         path.node.expressions.length === 0
       ) {
         path.replaceWith(u.stringLiteral(u.evalSnippet(path.node)));
@@ -31,13 +29,9 @@ function newVisitor(): Visitor {
         for (const specifier of specifiers) {
           if (
             (u.isImportDefaultSpecifier(specifier) &&
-              !elderSpecifiers.some(that =>
-                u.isImportDefaultSpecifier(that),
-              )) ||
+              !elderSpecifiers.some(that => u.isImportDefaultSpecifier(that))) ||
             (u.isImportNamespaceSpecifier(specifier) &&
-              !elderSpecifiers.some(that =>
-                u.isImportNamespaceSpecifier(that),
-              )) ||
+              !elderSpecifiers.some(that => u.isImportNamespaceSpecifier(that))) ||
             (u.isImportSpecifier(specifier) &&
               !elderSpecifiers.some(that => u.equals(that, specifier)))
           ) {

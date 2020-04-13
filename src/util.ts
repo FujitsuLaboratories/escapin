@@ -2,24 +2,17 @@
 import generator from '@babel/generator';
 import * as parser from '@babel/parser';
 import template from '@babel/template';
-import _traverse, {
-  NodePath,
-  Visitor,
-  Scope,
-  TraverseOptions,
-} from '@babel/traverse';
+import _traverse, { NodePath, Visitor, Scope, TraverseOptions } from '@babel/traverse';
 import * as t from '@babel/types';
 import { loopWhile } from 'deasync';
 import fs from 'fs';
 import createHttpsProxyAgent from 'https-proxy-agent';
 import { isEqual, last, remove as _remove } from 'lodash';
-import _fetch from 'node-fetch';
 import { OpenAPIV2 } from 'openapi-types';
 import packageJson from 'package-json';
 import Path from 'path';
 import vm from 'vm';
 import { BaseState } from './state';
-import { OneOrMore, FunctionToBeRefined } from './types';
 
 export * from '@babel/types';
 export { NodePath } from '@babel/traverse';
@@ -27,30 +20,25 @@ export { NodePath } from '@babel/traverse';
 export const ERROR_PATTERN = /(^e$|^e(r|x)+.*)/;
 const PLACEHOLDER_PATTERN = /^\$[_$A-Z0-9]+$/;
 
-const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
-export const httpsProxyAgent =
-  httpsProxy !== undefined ? createHttpsProxyAgent(httpsProxy) : undefined;
-
-export function fetch(uri: string): string {
-  return deasyncPromise(
-    (async (): Promise<string> => {
-      const response = await _fetch(uri, {
-        agent: httpsProxyAgent,
-      });
-      return await response.text();
-    })(),
-  );
-}
+export type OneOrMore<T> = T | T[];
 
 export function getLatestVersion(moduleName: string): string {
-  return deasyncPromise(
-    (async (): Promise<string> => {
-      const pkg = await packageJson(moduleName, {
-        agent: httpsProxyAgent,
-      });
-      return pkg.version as string;
-    })(),
-  );
+  let latest = 'latest';
+  let done = false;
+  (async (): Promise<void> => {
+    try {
+      const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
+      const options = {
+        agent: httpsProxy !== undefined ? createHttpsProxyAgent(httpsProxy) : undefined,
+      };
+      const pkg = await packageJson(moduleName, options);
+      latest = pkg.version as string;
+    } finally {
+      done = true;
+    }
+  })();
+  loopWhile(() => !done);
+  return latest;
 }
 
 export function isOpenAPIV2Document(data: any): data is OpenAPIV2.Document {
@@ -86,11 +74,7 @@ export function deasyncPromise<T>(promise: Promise<T>): T {
   return ret;
 }
 
-export function traverse(
-  visitor: Visitor<BaseState>,
-  state: BaseState,
-  scope?: Scope,
-): void {
+export function traverse(visitor: Visitor<BaseState>, state: BaseState, scope?: Scope): void {
   _traverse(state.ast, visitor as TraverseOptions, scope, state);
 }
 
@@ -114,28 +98,19 @@ export function generate(ast: t.Node): string {
   return generator(ast).code;
 }
 
-export function statements(
-  tpl: string,
-  vars: { [x: string]: OneOrMore<t.Node> },
-): t.Statement[] {
+export function statements(tpl: string, vars: { [x: string]: OneOrMore<t.Node> }): t.Statement[] {
   return template.statements(tpl, {
     placeholderPattern: PLACEHOLDER_PATTERN,
   })(vars);
 }
 
-export function statement(
-  tpl: string,
-  vars: { [x: string]: OneOrMore<t.Node> },
-): t.Statement {
+export function statement(tpl: string, vars: { [x: string]: OneOrMore<t.Node> }): t.Statement {
   return template.statement(tpl, {
     placeholderPattern: PLACEHOLDER_PATTERN,
   })(vars);
 }
 
-export function expression(
-  tpl: string,
-  vars: { [x: string]: OneOrMore<t.Node> },
-): t.Expression {
+export function expression(tpl: string, vars: { [x: string]: OneOrMore<t.Node> }): t.Expression {
   return template.expression(tpl, {
     placeholderPattern: PLACEHOLDER_PATTERN,
   })(vars);
@@ -212,15 +187,15 @@ export function remove<T>(array: T[], item: T): void {
   _remove(array, that => equals(that, item));
 }
 
-export function find<T>(
-  path: NodePath | NodePath<Extract<t.Node, T>>,
+export function find(
+  path: NodePath,
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): NodePath | undefined {
-  let ret!: NodePath;
-  if (positive(path as NodePath)) {
-    ret = path as NodePath;
-  } else if (!(negative && negative(path as NodePath))) {
+  let ret;
+  if (positive(path)) {
+    ret = path;
+  } else if (!(negative && negative(path))) {
     path.traverse({
       enter(path) {
         if (positive(path)) {
@@ -235,15 +210,15 @@ export function find<T>(
   return ret;
 }
 
-export function findAll<T>(
-  path: NodePath | NodePath<Extract<t.Node, T>>,
+export function findAll(
+  path: NodePath,
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): NodePath[] {
-  const ret: NodePath[] = [];
-  if (positive(path as NodePath)) {
-    ret.push(path as NodePath);
-  } else if (!(negative && negative(path as NodePath))) {
+  const ret = [];
+  if (positive(path)) {
+    ret.push(path);
+  } else if (!(negative && negative(path))) {
     path.traverse({
       enter(path) {
         if (positive(path)) {
@@ -257,43 +232,37 @@ export function findAll<T>(
   return ret;
 }
 
-export function test<T>(
-  path: NodePath | NodePath<Extract<t.Node, T>>,
+export function test(
+  path: NodePath,
   positive: (x: NodePath) => boolean,
   negative?: (x: NodePath) => boolean,
 ): boolean {
   return undefined !== find(path, positive, negative);
 }
 
-export function equalsEither<T>(
-  path: NodePath | NodePath<Extract<t.Node, T>>,
-  target: OneOrMore<t.Node>,
-): boolean {
+export function equalsEither(path: NodePath, target: OneOrMore<t.Node>): boolean {
   return Array.isArray(target)
     ? target.some(that => equals(path.node, that))
     : equals(path.node, target);
 }
 
-export function includes<T>(
-  path: NodePath | NodePath<Extract<t.Node, T>>,
-  target: OneOrMore<t.Node>,
-): boolean {
-  return test(path, (path: NodePath) => equalsEither(path, target));
+export function includes(path: NodePath, target: OneOrMore<t.Node>): boolean {
+  return test(path, path => equalsEither(path, target));
 }
 
-export function replace<T>(
-  path: NodePath | NodePath<Extract<t.Node, T>>,
+export function replace(
+  path: NodePath,
   target: OneOrMore<t.Node>,
   replacement: t.Node,
   ignoreIf?: (x: NodePath) => boolean,
 ): void {
   path.traverse({
-    enter(_path) {
-      if (ignoreIf && ignoreIf(_path)) {
-        _path.skip();
-      } else if (equalsEither(_path, target)) {
-        _path.replaceWith(replacement);
-        _path.skip();
+    enter(path) {
+      if (ignoreIf && ignoreIf(path)) {
+        path.skip();
+      } else if (equalsEither(path, target)) {
+        path.replaceWith(replacement);
+        path.skip();
       }
     },
   });
@@ -308,15 +277,11 @@ export function isSimpleAwaitStatement(node: t.Node): boolean {
 }
 
 export function isNewPromise(node: t.Node): boolean {
-  return (
-    t.isNewExpression(node) && t.isIdentifier(node.callee, { name: 'Promise' })
-  );
+  return t.isNewExpression(node) && t.isIdentifier(node.callee, { name: 'Promise' });
 }
 
-export function getFunctionId(
-  node: FunctionToBeRefined,
-  func: t.Function,
-): t.Identifier {
+export function getFunctionId(path: NodePath, func: t.Function): t.Identifier | undefined {
+  const { node } = path;
   if (
     t.isExpressionStatement(node) &&
     t.isAssignmentExpression(node.expression) &&
@@ -329,14 +294,10 @@ export function getFunctionId(
     if (t.isIdentifier(id) && func === init) {
       return id;
     }
-  } else if (
-    t.isFunction(node) &&
-    t.isStatement(node) &&
-    t.isIdentifier(node.id)
-  ) {
+  } else if (t.isFunctionDeclaration(node) && t.isIdentifier(node.id)) {
     return node.id;
   }
-  throw new Error('Invalid FunctionId');
+  return undefined;
 }
 
 export function isErrorParam(node: t.Node): node is t.Identifier {
@@ -350,17 +311,14 @@ export function toStatements(node: t.Statement): t.Statement[] {
   return [node];
 }
 
-export function evalSnippet(
-  snippet: t.Node,
-  variables: { [x: string]: any } = {},
-): string {
+export function evalSnippet(snippet: t.Node, variables: { [x: string]: any } = {}): string {
   const script = new vm.Script(generate(snippet));
   const context = vm.createContext(variables);
   return script.runInContext(context);
 }
 
-export function reuseReplacement<T>(
-  path: NodePath<Extract<t.Node, T>>,
+export function reuseReplacement(
+  path: NodePath,
   state: BaseState,
   right: t.MemberExpression,
 ):
@@ -384,15 +342,9 @@ export function reuseReplacement<T>(
   for (const that of state.replacements) {
     if (path.scope === that.scope && equals(right, that.original)) {
       const index = path.container.findIndex(
-        stmt =>
-          t.isVariableDeclaration(stmt) &&
-          equals(stmt.declarations[0].id, that.replaced),
+        stmt => t.isVariableDeclaration(stmt) && equals(stmt.declarations[0].id, that.replaced),
       );
-      if (
-        indexOfPropertyChange < index &&
-        nearestIndex < index &&
-        index < path.key
-      ) {
+      if (indexOfPropertyChange < index && nearestIndex < index && index < path.key) {
         nearestIndex = index;
         reused = that;
       }

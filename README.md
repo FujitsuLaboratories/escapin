@@ -91,8 +91,7 @@ Here is the example of JSON configuration file `.escapinrc`.
   "credentials": [{ "api": "mailgun API", "basicAuth": "api:<YOUR_API_KEY>" }],
   "platform": "aws",
   "default_storage": "table",
-  "output_dir": "build",
-  "http_client": "axios"
+  "output_dir": "build"
 }
 ```
 
@@ -103,20 +102,18 @@ module.exports = {
   credentials: [{ api: "mailgun API", basicAuth: "api:<YOUR_API_KEY>" }],
   platform: "aws",
   default_storage: "table",
-  output_dir: "build",
-  http_client: "axios",
+  output_dir: "build"
 };
 ```
 
-|       Name        | Description                                                            |        Options         | Default |
-| :---------------: | ---------------------------------------------------------------------- | :--------------------: | :-----: |
-|      `name`       | name of the application                                                |                        |         |
-|    `api_spec`     | path of the specification file of the API published by the application |                        |         |
-|   `credentials`   | credentials required in calling external APIs                          |                        |         |
-|    `platform`     | cloud platform where the application is being deployed                 |         `aws`          |  `aws`  |
-| `default_storage` | the storage type that are selected by default                          | `table`<br />`bucket`  | `table` |
-|   `output_dir`    | directory where the transpilcation artifacts are being stored          |                        | `build` |
-|   `http_client`   | http client used in generated code for requesting apis defined by OAS  | `axios`<br />`request` | `axios` |
+|       Name        | Description                                                            | Default |
+| :---------------: | ---------------------------------------------------------------------- | :-----: |
+|      `name`       | name of the application                                                |         |
+|    `api_spec`     | path of the specification file of the API published by the application |         |
+|   `credentials`   | credentials required in calling external APIs                          |         |
+|    `platform`     | cloud platform where the application is being deployed                 |  `aws`  |
+| `default_storage` | the storage type that are selected by default                          | `table` |
+|   `output_dir`    | directory where the transpilcation artifacts are being stored          | `build` |
 
 ## <a name="features"></a>Transpilation features
 
@@ -194,9 +191,9 @@ await new Promise((resolve, reject) => {
           S:
             typeof bar === "object" || typeof bar === "function"
               ? JSON.stringify(bar)
-              : bar,
-        },
-      },
+              : bar
+        }
+      }
     },
     (err, _temp) => {
       if (err) {
@@ -400,15 +397,6 @@ import api from "http://path/to/swagger.yaml";
 api.items[id][{ foo: "bar", baz: "qux" }]({ quux: "corge" });
 ```
 
-##### `.escapinrc.js`
-
-```javascript
-module.exports = {
-  http_client: "request",
-  ...
-};
-```
-
 ##### `http://path/to/swagger.yaml`
 
 ```yaml
@@ -481,14 +469,14 @@ const { _res, _body } = request({
   contentType: "application/json",
   json: true,
   qs: {
-    foo: "bar",
+    foo: "bar"
   },
   headers: {
-    baz: "qux",
+    baz: "qux"
   },
   body: {
-    quux: "corge",
-  },
+    quux: "corge"
+  }
 });
 ```
 
@@ -914,10 +902,10 @@ switch (_data) {
 
 ```javascript
 // special rules are applied for Array#map and Array#forEach
-args.map((arg) => api.call(arg));
-args.forEach((arg) => api.call(arg));
+args.map(arg => api.call(arg));
+args.forEach(arg => api.call(arg));
 
-args.some((arg) => api.call(arg));
+args.some(arg => api.call(arg));
 ```
 
 ---
@@ -927,10 +915,10 @@ args.some((arg) => api.call(arg));
 ```javascript
 import deasync from "deasync";
 
-await Promise.all(args.map(async (arg) => await api.call(arg)));
-args.forEach(async (arg) => await api.call(arg));
+await Promise.all(args.map(async arg => await api.call(arg)));
+args.forEach(async arg => await api.call(arg));
 
-args.some((arg) => {
+args.some(arg => {
   let _data;
   let done = false;
   new Promise((resolve, reject) => {
@@ -938,11 +926,11 @@ args.some((arg) => {
       if (err) reject(err);
       else resolve(data);
     });
-  }).then((data) => {
+  }).then(data => {
     _data = data;
     done = true;
   });
-  deasync.loopWhile((_) => !done);
+  deasync.loopWhile(_ => !done);
   return _data;
 });
 ```
@@ -964,7 +952,7 @@ args.map(arg => await promisifiedFunc(arg));
 ##### Output
 
 ```javascript
-await Promise.all(args.map(async (arg) => await promisifiedFunc(arg)));
+await Promise.all(args.map(async arg => await promisifiedFunc(arg)));
 ```
 
 ---

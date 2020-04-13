@@ -7,10 +7,7 @@ import { BaseState } from '../state';
 const visitor: Visitor<BaseState> = {
   CallExpression(path, state) {
     const stmtPath = path.findParent(path => path.isStatement());
-    if (
-      !stmtPath.isExpressionStatement() ||
-      stmtPath.node.expression !== path.node
-    ) {
+    if (!stmtPath.isExpressionStatement() || stmtPath.node.expression !== path.node) {
       return;
     }
     const args = path.get('arguments') as u.NodePath<u.Expression>[];
@@ -25,27 +22,27 @@ const visitor: Visitor<BaseState> = {
     const errorParam = params.shift() as u.NodePath<u.Identifier>;
     let consequent = [];
     let alternate = [];
-    const bodyPath = callbackPath.get('body') as u.NodePath<u.BlockStatement>;
-    const blockPath = bodyPath.get('body') as u.NodePath<u.Statement>[];
-    for (const stmtPath of blockPath) {
-      if (stmtPath.isIfStatement() && u.includes(stmtPath, errorParam.node)) {
-        const stmt = stmtPath.node;
-        const result = u.evalSnippet(stmt.test, {
-          [errorParam.node.name]: new Error(),
-        });
-        if (result) {
-          alternate.push(...u.toStatements(stmt.consequent));
-          if (stmt.alternate !== null) {
-            consequent.push(...u.toStatements(stmt.alternate));
+    const bodyPath = callbackPath.get('body') as u.NodePath;
+    if (bodyPath.isBlockStatement()) {
+      const blockPath = bodyPath.get('body') as u.NodePath<u.Statement>[];
+      for (const stmtPath of blockPath) {
+        if (stmtPath.isIfStatement() && u.includes(stmtPath, errorParam.node)) {
+          const stmt = stmtPath.node;
+          const result = u.evalSnippet(stmt.test, { [errorParam.node.name]: new Error() });
+          if (result) {
+            alternate.push(...u.toStatements(stmt.consequent));
+            if (stmt.alternate !== null) {
+              consequent.push(...u.toStatements(stmt.alternate));
+            }
+          } else {
+            consequent.push(...u.toStatements(stmt.consequent));
+            if (stmt.alternate !== null) {
+              alternate.push(...u.toStatements(stmt.alternate));
+            }
           }
         } else {
-          consequent.push(...u.toStatements(stmt.consequent));
-          if (stmt.alternate !== null) {
-            alternate.push(...u.toStatements(stmt.alternate));
-          }
+          consequent.push(stmtPath.node);
         }
-      } else {
-        consequent.push(stmtPath.node);
       }
     }
 
@@ -55,24 +52,18 @@ const visitor: Visitor<BaseState> = {
     callbackPath.remove();
 
     stmtPath.replaceWith(
-      u.statement(
-        'try { const $OBJ = $FUNC; $CONSEQUENT; } catch ($ERROR) { $ALTERNATE; }',
-        {
-          $ALTERNATE: alternate,
-          $CONSEQUENT: consequent,
-          $ERROR: errorParam.node,
-          $FUNC: path.node,
-          $OBJ: getObjectPattern(params, state),
-        },
-      ),
+      u.statement('try { const $OBJ = $FUNC; $CONSEQUENT; } catch ($ERROR) { $ALTERNATE; }', {
+        $ALTERNATE: alternate,
+        $CONSEQUENT: consequent,
+        $ERROR: errorParam.node,
+        $FUNC: path.node,
+        $OBJ: getObjectPattern(params, state),
+      }),
     );
   },
 };
 
-function getObjectPattern(
-  params: u.NodePath[],
-  state: BaseState,
-): u.ObjectPattern {
+function getObjectPattern(params: u.NodePath[], state: BaseState): u.ObjectPattern {
   return u.objectPattern(
     params.map(param => {
       const { node } = param;

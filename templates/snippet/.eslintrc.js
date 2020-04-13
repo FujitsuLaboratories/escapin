@@ -3,7 +3,6 @@ module.exports = {
     'no-constant-condition': 'off',
     'no-undef': 'off',
     'prefer-const': 'off',
-    'import/no-unresolved': 'off',
     'node/no-extraneous-import': 'off',
     'node/no-missing-import': 'off',
     'node/no-unpublished-import': 'off',

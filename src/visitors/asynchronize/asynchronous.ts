@@ -1,8 +1,9 @@
+import { getNames } from '../../functionTypes';
 import { BaseState } from '../../state';
-import * as t from '../../types';
+import { isAsynchronous } from '../../types';
 import * as u from '../../util';
 
-export default function(
+export function fetchAsynchronous(
   path: u.NodePath<u.CallExpression>,
   asynchronized: u.Node[],
   state: BaseState,
@@ -12,9 +13,9 @@ export default function(
     return false;
   }
 
-  const names = t.getNames(path.get('callee') as u.NodePath);
+  const names = getNames(path.get('callee'));
   const entry = state.escapin.types.get(...names);
-  if (!t.isAsynchronous(entry)) {
+  if (!isAsynchronous(entry)) {
     return false;
   }
 

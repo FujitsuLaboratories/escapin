@@ -2,43 +2,31 @@ import { OpenAPIV2 } from 'openapi-types';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import identifyRootNode from './rootNode';
+import { HttpMethod, HttpRequest } from '../../types';
+import { identifyRootNode } from './rootNode';
 
-export default function(
-  method: string,
+export function createOptions(
+  method: HttpMethod,
   key: u.Identifier,
   spec: OpenAPIV2.Document,
   nodePath: u.NodePath,
+  target: u.NodePath,
   state: BaseState,
-): {
-  options: u.ObjectExpression;
-  bodyParameter: string;
-  target: u.NodePath;
-} {
+): HttpRequest {
   try {
-    method = method.toLowerCase();
+    const {
+      uri,
+      contentType,
+      params,
+      rootNodePath,
+      operation,
+    } = identifyRootNode(spec, target, method, key);
 
-    const { uri, contentType, bodyParameter, params, rootPath, operation } = identifyRootNode(
-      spec,
-      nodePath,
-      method,
-      key,
-    );
+    const targetNodePath =
+      method !== 'get' || params !== undefined ? nodePath : rootNodePath;
 
-    const target = params !== undefined ? nodePath : rootPath;
-
-    const options = u.objectExpression([
-      u.objectProperty(u.identifier('uri'), u.parseExpression(`\`${uri}\``)),
-      u.objectProperty(u.identifier('method'), u.stringLiteral(method)),
-    ]);
-    if (contentType) {
-      options.properties.push(
-        u.objectProperty(u.identifier('contentType'), u.stringLiteral(contentType)),
-      );
-    }
-
-    const headers = u.objectExpression([]);
-    const qs = u.objectExpression([]);
+    const header = u.objectExpression([]);
+    const query = u.objectExpression([]);
 
     if (params) {
       if (
@@ -59,10 +47,10 @@ export default function(
           if (param && !isReferenceObject(param)) {
             switch (param.in) {
               case 'query':
-                qs.properties.push(property);
+                query.properties.push(property);
                 break;
               case 'header':
-                headers.properties.push(property);
+                header.properties.push(property);
                 break;
               case 'path':
               default:
@@ -91,7 +79,7 @@ export default function(
             const key = param.name;
             switch (param.in) {
               case 'query':
-                qs.properties.push(
+                query.properties.push(
                   u.objectProperty(
                     u.identifier(key),
                     u.memberExpression(paramsId, u.identifier(key)),
@@ -99,7 +87,7 @@ export default function(
                 );
                 break;
               case 'header':
-                headers.properties.push(
+                header.properties.push(
                   u.objectProperty(
                     u.identifier(key),
                     u.memberExpression(paramsId, u.identifier(key)),
@@ -121,7 +109,9 @@ export default function(
         if (state.escapin.config.credentials === undefined) {
           break;
         }
-        const cred = state.escapin.config.credentials.find(that => that.api === spec.info.title);
+        const cred = state.escapin.config.credentials.find(
+          that => that.api === spec.info.title,
+        );
         if (cred === undefined) {
           break;
         }
@@ -132,33 +122,32 @@ export default function(
         const security = spec.securityDefinitions[key];
         if (security.type === 'basic') {
           const basicCred = `Basic ${
-            isBase64Encoded(value) ? value : Buffer.from(value).toString('base64')
+            isBase64Encoded(value)
+              ? value
+              : Buffer.from(value).toString('base64')
           }`;
-          headers.properties.push(
-            u.objectProperty(u.identifier('authorization'), u.stringLiteral(basicCred)),
+          header.properties.push(
+            u.objectProperty(
+              u.identifier('authorization'),
+              u.stringLiteral(basicCred),
+            ),
           );
         } else if (isSecuritySchemeApiKey(security)) {
-          const apiKeyProp = u.objectProperty(u.identifier(security.name), u.stringLiteral(value));
+          const apiKeyProp = u.objectProperty(
+            u.identifier(security.name),
+            u.stringLiteral(value),
+          );
           if (security.in === 'header') {
-            headers.properties.push(apiKeyProp);
+            header.properties.push(apiKeyProp);
           } else {
-            qs.properties.push(apiKeyProp);
+            query.properties.push(apiKeyProp);
           }
         } else if (isSecurityOAuth2(security)) {
           // do nothing
         }
       }
     }
-    if (bodyParameter === 'body') {
-      options.properties.push(u.objectProperty(u.identifier('json'), u.booleanLiteral(true)));
-    }
-    if (headers.properties.length > 0) {
-      options.properties.push(u.objectProperty(u.identifier('headers'), headers));
-    }
-    if (qs.properties.length > 0) {
-      options.properties.push(u.objectProperty(u.identifier('qs'), qs));
-    }
-    return { options, bodyParameter, target };
+    return { targetNodePath, uri, contentType, header, query };
   } catch (err) {
     throw new EscapinSyntaxError(err, nodePath.node, state);
   }
@@ -184,7 +173,8 @@ function isReferenceObject(
 
 function isBase64Encoded(str: string): boolean {
   return (
-    str.match(/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/) !==
-    null
+    str.match(
+      /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/,
+    ) !== null
   );
 }

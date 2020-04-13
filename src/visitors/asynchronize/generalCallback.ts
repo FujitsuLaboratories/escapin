@@ -1,21 +1,22 @@
 import { last } from 'lodash';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
-import * as t from '../../types';
+import { getNames } from '../../functionTypes';
+import { isAsynchronous, isGeneralCallback } from '../../types';
 import * as u from '../../util';
 
-export default function(
+export function fetchGeneralCallback(
   path: u.NodePath<u.CallExpression>,
   asynchronized: u.Node[],
   state: BaseState,
 ): boolean {
-  const names = t.getNames(path.get('callee') as u.NodePath);
+  const names = getNames(path.get('callee'));
   const entry = state.escapin.types.get(...names);
-  if (!t.isGeneralCallback(entry)) {
+  if (!isGeneralCallback(entry)) {
     return false;
   }
 
-  const callbackPath = last(path.get('arguments') as u.NodePath[]) as u.NodePath;
+  const callbackPath = last(path.get('arguments'));
   if (!callbackPath?.isFunction()) {
     return false;
   }
@@ -58,20 +59,30 @@ export default function(
   const done = path.scope.generateUidIdentifier('done');
   callbackPath.traverse({
     VariableDeclaration(path) {
-      const declarations0 = path.get('declarations.0') as u.NodePath<u.VariableDeclarator>;
-      const init = declarations0.get('init') as u.NodePath;
+      const declarations = path.get('declarations');
+      const init = declarations[0].get('init');
       if (init.isCallExpression()) {
-        const names = t.getNames(init.get('callee') as u.NodePath);
+        const names = getNames(init.get('callee') as u.NodePath);
         const entry = state.escapin.types.get(...names);
-        if (!t.isAsynchronous(entry)) {
+        if (!isAsynchronous(entry)) {
           return;
         }
-      } else if (!u.isAwaitExpression(init.node) || !u.isNewPromise(init.node.argument)) {
+      } else if (
+        !u.isAwaitExpression(init.node) ||
+        !u.isNewPromise(init.node.argument)
+      ) {
         return;
       }
-      const func = u.isAwaitExpression(init.node) ? init.node.argument : init.node;
-      declarations0.node.init = u.expression(
-        '(() => { let $TEMP; let $DONE = false; $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; }); deasync.loopWhile(_ => !$DONE); return $TEMP; })()',
+      const func = u.isAwaitExpression(init.node)
+        ? init.node.argument
+        : init.node;
+      if (func === null) {
+        return;
+      }
+      declarations[0].node.init = u.expression(
+        `(() => { let $TEMP; let $DONE = false;
+        $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; });
+        deasync.loopWhile(_ => !$DONE); return $TEMP; })()`,
         {
           $DATA: data,
           $DONE: done,
@@ -84,20 +95,28 @@ export default function(
     },
     ExpressionStatement(path) {
       const { expression } = path.node;
-      const expressionPath = path.get('expression') as u.NodePath<u.Expression>;
+      const expressionPath = path.get('expression');
       if (expressionPath.isCallExpression()) {
-        const names = t.getNames(expressionPath.get('callee') as u.NodePath);
+        const callExpression = expressionPath as u.NodePath<u.CallExpression>;
+        const names = getNames(callExpression.get('callee'));
         const entry = state.escapin.types.get(...names);
-        if (!t.isAsynchronous(entry)) {
+        if (!isAsynchronous(entry)) {
           return;
         }
-      } else if (!u.isAwaitExpression(expression) || !u.isNewPromise(expression.argument)) {
+      } else if (
+        !u.isAwaitExpression(expression) ||
+        !u.isNewPromise(expression.argument)
+      ) {
         return;
       }
-      const func = u.isAwaitExpression(expression) ? expression.argument : expression;
+      const func = u.isAwaitExpression(expression)
+        ? expression.argument
+        : expression;
       path.replaceWithMultiple(
         u.statements(
-          'let $DONE = false; $FUNC.then(_ => { $DONE = true; }); deasync.loopWhile(_ => !$DONE)',
+          `let $DONE = false;
+          $FUNC.then(_ => { $DONE = true; });
+          deasync.loopWhile(_ => !$DONE)`,
           {
             $DONE: done,
             $FUNC: func,

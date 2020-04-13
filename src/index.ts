@@ -12,49 +12,18 @@ import { sync as rimraf } from 'rimraf';
 import { dereference } from 'swagger-parser';
 import { v4 as uuid } from 'uuid';
 import vm from 'vm';
-import * as u from './util';
+import { TypeDictionary } from './functionTypes';
 import { BaseState } from './state';
+import { Config, PackageJson, ServerlessConfig } from './types';
+import * as u from './util';
 import { finalize, visitors } from './visitors';
-import { TypeDictionary } from './types';
 
-export interface Config {
-  name: string;
-  platform: string;
-  default_storage: string;
-  output_dir: string;
-  api_spec?: string;
-  credentials?: Credential[];
-}
-
-export interface Credential {
-  api: string;
-  [x: string]: string;
-}
-
-export interface PackageJson {
-  main?: string;
-  scripts?: { [script: string]: string };
-  dependencies: { [moduleName: string]: string };
-  devDependencies: { [moduleName: string]: string };
-  peerDependencies?: { [moduleName: string]: string };
-  optionalDependencies?: { [moduleName: string]: string };
-  bundledDependencies?: string[];
-  types?: string;
-  typings?: string;
-  [key: string]: any;
-}
-
-export interface ServerlessConfig {
-  service?: string;
-  provider?: any;
-  functions?: { [name: string]: any };
-  resources?: { [name: string]: any };
-}
-
-const API_SPEC_FILENAME = process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
-const PLATFORM = 'aws';
-const OUTPUT_DIR = 'build';
+const API_SPEC_FILENAME =
+  process.env.API_SPEC_FILENAME || 'apispec_bundled.json';
+const DEFAULT_PLATFORM = 'aws';
+const DEFAULT_OUTPUT_DIR = 'build';
 const DEFAULT_STORAGE = 'table';
+const DEFAULT_HTTP_CLIENT = 'axios';
 const SERVERLESS_YML = 'serverless.yml';
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
@@ -113,14 +82,20 @@ export class Escapin {
     if (result === null) {
       throw new Error('config file not found.');
     }
-    result.config.output_dir = Path.join(this.basePath, result.config.output_dir || OUTPUT_DIR);
+    result.config.output_dir = Path.join(
+      this.basePath,
+      result.config.output_dir || DEFAULT_OUTPUT_DIR,
+    );
     if (fs.existsSync(result.config.output_dir)) {
       rimraf(result.config.output_dir);
     }
     mkdirp(result.config.output_dir);
 
-    result.config.platform = result.config.platform || PLATFORM;
-    result.config.default_storage = result.config.default_storage || DEFAULT_STORAGE;
+    result.config.platform = result.config.platform || DEFAULT_PLATFORM;
+    result.config.default_storage =
+      result.config.default_storage || DEFAULT_STORAGE;
+    result.config.http_client =
+      result.config.http_client || DEFAULT_HTTP_CLIENT;
 
     this.config = result.config as Config;
   }
@@ -146,10 +121,12 @@ export class Escapin {
     moduleName: string,
     location: 'dependencies' | 'devDependencies' = 'dependencies',
   ): void {
-    this.packageJson[location][moduleName] = `^${u.getLatestVersion(moduleName)}`;
+    this.packageJson[location][moduleName] = `^${u.getLatestVersion(
+      moduleName,
+    )}`;
   }
 
-  private savePackageJson(): void {
+  public savePackageJson(): void {
     const filePath = Path.join(this.config.output_dir, 'package.json');
     fs.writeFileSync(filePath, JSON.stringify(this.packageJson, null, 2));
   }
@@ -178,7 +155,8 @@ export class Escapin {
           if (method === 'parameters') {
             continue;
           }
-          data.paths[path][method].parameters = data.paths[path][method].parameters
+          data.paths[path][method].parameters = data.paths[path][method]
+            .parameters
             ? [...data.paths[path][method].parameters, ...commonParams]
             : commonParams;
           data.paths[path][method].responses.default = undefined;
@@ -274,10 +252,15 @@ export class Escapin {
     });
   }
 
-  public addServerlessConfig(specifier: string, vars: { [key: string]: any }): void {
+  public addServerlessConfig(
+    specifier: string,
+    vars: { [key: string]: any },
+  ): void {
     const file = Path.resolve(
       __dirname,
-      `../templates/serverless/${specifier.replace(/\./g, '/').toLowerCase()}.yml`,
+      `../templates/serverless/${specifier
+        .replace(/\./g, '/')
+        .toLowerCase()}.yml`,
     );
     if (!fs.existsSync(file)) {
       throw new Error(`${file} not found`);

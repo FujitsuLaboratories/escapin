@@ -5,7 +5,7 @@ import Path from 'path';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import fetchObjectKeys from './objectKeys';
+import { fetchObjectKeys } from './objectKeys';
 
 const visitor: Visitor<BaseState> = {
   ExportNamedDeclaration(path, state) {
@@ -15,7 +15,11 @@ const visitor: Visitor<BaseState> = {
     }
     const firstDeclarator = declaration.declarations[0];
     const { id, init } = firstDeclarator;
-    if (!u.isIdentifier(id) || !u.isObjectExpression(init) || init.properties.length > 0) {
+    if (
+      !u.isIdentifier(id) ||
+      !u.isObjectExpression(init) ||
+      init.properties.length > 0
+    ) {
       return;
     }
 
@@ -67,7 +71,11 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
       }
       const replacement = u.reuseReplacement(path, state, node);
       if (replacement !== undefined) {
-        console.log(`replacing ${u.generate(node)} with ${u.generate(replacement.replaced)}`);
+        console.log(
+          `replacing ${u.generate(node)} with ${u.generate(
+            replacement.replaced,
+          )}`,
+        );
         u.replace(path, node, replacement.replaced);
         return;
       }
@@ -85,11 +93,16 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
 
       const assignmentSnippet = u.snippetFor(`${service}.get_assign`, vars);
 
-      const stmtPath = path.findParent(path => path.isStatement());
+      const stmtPath = path.findParent(path =>
+        path.isStatement(),
+      ) as u.NodePath<u.Statement>;
       if (stmtPath === null) {
         throw new Error(JSON.stringify(path.parent, null, 2));
       }
-      if (stmtPath.isExpressionStatement() && u.equals(stmtPath.node.expression, id)) {
+      if (
+        stmtPath.isExpressionStatement() &&
+        u.equals(stmtPath.node.expression, id)
+      ) {
         stmtPath.replaceWithMultiple(letSnippet);
       } else if (stmtPath.isWhileStatement()) {
         stmtPath.insertBefore(letSnippet);
@@ -110,7 +123,7 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
       } else {
         stmtPath.insertBefore(letSnippet);
       }
-      u.replace(stmtPath, node, variable);
+      u.replace<u.Statement>(stmtPath, node, variable);
 
       state.replacements.push({
         original: node,
@@ -159,7 +172,9 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
       path.skip();
     },
     VariableDeclaration(path, state): void {
-      const assignment = assignments.find(that => u.includes(path, that.snippet));
+      const assignment = assignments.find(that =>
+        u.includes(path, that.snippet),
+      );
       if (assignment === undefined) {
         return;
       }
@@ -176,11 +191,14 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
         Statement(path) {
           if (
             path.isReturnStatement() ||
-            u.test(path, path => path.isIdentifier() && !path.isReferenced())
+            u.test<u.Statement>(
+              path,
+              path => path.isIdentifier() && !path.isReferenced(),
+            )
           ) {
             path.skip();
           } else {
-            u.replace(path, [left, right], variable);
+            u.replace<u.Statement>(path, [left, right], variable);
             movedStmts.push(cloneDeep(path.node));
             path.remove();
           }
@@ -205,9 +223,10 @@ function objectVisitor(id: u.Identifier, service: string): Visitor<BaseState> {
       const { platform } = state.escapin.config;
 
       const name = variable.name.replace(/[^A-Za-z0-9]/g, '');
-      const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${
-        variable.name
-      }`;
+      const handler = `${Path.basename(
+        state.filename,
+        Path.extname(state.filename),
+      )}.${variable.name}`;
       const resource = left.object.name;
       const { id } = state.escapin;
 

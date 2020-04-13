@@ -16,9 +16,14 @@ function parseMultipart(event) {
   if (event.formData === undefined) {
     event.formData = {};
   }
-  const multipart = Buffer.from(event.binaryBody.toString(), 'base64').toString();
+  const multipart = Buffer.from(
+    event.binaryBody.toString(),
+    'base64',
+  ).toString();
   const boundary = getBoundary(event.header['content-type']);
-  for (const part of multipart.split(boundary).filter(str => !str.startsWith('--'))) {
+  for (const part of multipart
+    .split(boundary)
+    .filter(str => !str.startsWith('--'))) {
     const partLines = part.split(/\r\n/);
     let name;
     for (const item of partLines[1].split(';')) {

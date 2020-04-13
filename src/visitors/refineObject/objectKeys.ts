@@ -2,7 +2,7 @@ import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import * as u from '../../util';
 
-export default function(
+export function fetchObjectKeys(
   path: u.NodePath<u.CallExpression>,
   state: BaseState,
   id: u.Identifier,
@@ -21,11 +21,13 @@ export default function(
       $TEMPVAR: tempVar,
       $VAR: variable,
     });
-    const stmtPath = path.findParent(path => path.isStatement());
+    const stmtPath = path.findParent(path => path.isStatement()) as u.NodePath<
+      u.Statement
+    >;
     for (const line of snippet) {
       stmtPath.insertBefore(line);
     }
-    u.replace(stmtPath, node, variable);
+    u.replace<u.Statement>(stmtPath, node, variable);
 
     state.replacements.push({
       original: node,

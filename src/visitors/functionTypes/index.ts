@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { Visitor } from '@babel/traverse';
 import { commandSync } from 'execa';
-import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { installTypes } from 'types-installer';
+import { TypeDictionary } from '../../functionTypes';
 import { BaseState } from '../../state';
-import * as t from '../../types';
-import * as u from '../../util';
-import visit from './visit';
+import { errorFirstCallback } from '../../types';
+import { getLatestVersion } from '../../util';
+import { getTypings } from './typings';
+import { newVisit } from './visit';
 
 function newVisitor(): Visitor<BaseState> {
   let done = false;
@@ -19,16 +19,22 @@ function newVisitor(): Visitor<BaseState> {
         const { output_dir } = escapin.config;
 
         escapin.save();
+
+        const { dependencies, devDependencies } = escapin.packageJson;
+        const modules = Object.keys(dependencies).concat(
+          Object.keys(devDependencies),
+        );
+
+        getTypings(modules).forEach(typing => {
+          devDependencies[typing] = getLatestVersion(typing);
+        });
+
+        escapin.savePackageJson();
+
         commandSync('npm install', {
           cwd: output_dir,
           stdout: process.stdout,
         });
-
-        const { dependencies, devDependencies } = escapin.packageJson;
-        installTypesInDependencies(dependencies, devDependencies, output_dir);
-
-        const packageJson = JSON.parse(readFileSync(join(output_dir, 'package.json'), 'utf8'));
-        escapin.packageJson = packageJson;
 
         for (const filename in escapin.states) {
           checkFunctionTypes(escapin.types, filename, output_dir);
@@ -45,40 +51,24 @@ function newVisitor(): Visitor<BaseState> {
   };
 }
 
-function installTypesInDependencies(
-  dependencies: { [moduleName: string]: string },
-  devDependencies: { [moduleName: string]: string },
-  pwd: string,
+function checkFunctionTypes(
+  types: TypeDictionary,
+  filename: string,
+  output_dir: string,
 ): void {
-  u.deasyncPromise(
-    installTypes(Object.keys(dependencies), {
-      selections: {
-        dependencies,
-        devDependencies,
-        all: Object.assign(dependencies, devDependencies),
-      },
-      selection: 'all',
-      pwd,
-      toDev: true,
-      packageManager: 'npm',
-    }),
-  );
-}
-
-function checkFunctionTypes(types: t.TypeDictionary, filename: string, output_dir: string): void {
   const program = ts.createProgram([join(output_dir, filename)], {
     allowJs: true,
     typeRoots: [join(output_dir, 'node_modules')],
   });
   const checker = program.getTypeChecker();
-  for (const sourceFile of program.getSourceFiles()) {
+  program.getSourceFiles().forEach(sourceFile => {
     if (!sourceFile.isDeclarationFile) {
-      ts.forEachChild(sourceFile, visit(types, checker));
+      ts.forEachChild(sourceFile, newVisit(types, checker));
     }
-  }
+  });
 
   // TODO: find out the below types from the AST
-  types.put(t.errorFirstCallback('request'));
+  types.put(errorFirstCallback('request'));
 }
 
 export default newVisitor();

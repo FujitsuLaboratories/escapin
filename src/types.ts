@@ -1,9 +1,61 @@
-import { difference, uniq } from 'lodash';
-import * as u from './util';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { OpenAPIV2 } from 'openapi-types';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
+
+export type OneOrMore<T> = T | T[];
+
+export interface Config {
+  name: string;
+  platform: string;
+  default_storage: string;
+  output_dir: string;
+  api_spec?: string;
+  credentials?: Credential[];
+  http_client: string;
+}
+
+export interface Credential {
+  api: string;
+  [x: string]: string;
+}
+
+export interface PackageJson {
+  main?: string;
+  scripts?: { [script: string]: string };
+  dependencies: { [moduleName: string]: string };
+  devDependencies: { [moduleName: string]: string };
+  peerDependencies?: { [moduleName: string]: string };
+  optionalDependencies?: { [moduleName: string]: string };
+  bundledDependencies?: string[];
+  types?: string;
+  typings?: string;
+  [key: string]: any;
+}
+
+export interface ServerlessConfig {
+  service?: string;
+  provider?: any;
+  functions?: { [name: string]: any };
+  resources?: { [name: string]: any };
+}
+
+export interface PathInfo {
+  name: string;
+  path: string;
+  method: string;
+  consumes: string[];
+  produces: string[];
+  parameters: OpenAPIV2.Parameters;
+}
 
 export interface FunctionType {
   names: string[];
-  type: 'asynchronous' | 'error-first-callback' | 'general-callback' | 'general';
+  type:
+    | 'asynchronous'
+    | 'error-first-callback'
+    | 'general-callback'
+    | 'general';
 }
 
 export interface Asynchronous extends FunctionType {
@@ -22,15 +74,21 @@ export interface General extends FunctionType {
   type: 'general';
 }
 
-export function isAsynchronous(entry: FunctionType | undefined): entry is Asynchronous {
+export function isAsynchronous(
+  entry: FunctionType | undefined,
+): entry is Asynchronous {
   return entry?.type === 'asynchronous';
 }
 
-export function isErrorFirstCallback(entry: FunctionType | undefined): entry is ErrorFirstCallback {
+export function isErrorFirstCallback(
+  entry: FunctionType | undefined,
+): entry is ErrorFirstCallback {
   return entry?.type === 'error-first-callback';
 }
 
-export function isGeneralCallback(entry: FunctionType | undefined): entry is GeneralCallback {
+export function isGeneralCallback(
+  entry: FunctionType | undefined,
+): entry is GeneralCallback {
   return entry?.type === 'general-callback';
 }
 
@@ -54,39 +112,45 @@ export function general(...names: string[]): General {
   return { type: 'general', names };
 }
 
-export function getNames(path: u.NodePath): string[] {
-  const names: string[] = [];
-  if (path.isIdentifier()) {
-    names.push(path.node.name);
+export type FunctionToBeRefined =
+  | t.FunctionDeclaration
+  | t.ExpressionStatement
+  | t.VariableDeclaration;
+
+export function isFunctionToBeRefined(
+  node: t.Node,
+): node is FunctionToBeRefined {
+  if (
+    t.isExpressionStatement(node) &&
+    t.isAssignmentExpression(node.expression) &&
+    t.isIdentifier(node.expression.left) &&
+    t.isFunction(node.expression.right)
+  ) {
+    return true;
+  } else if (
+    t.isVariableDeclaration(node) &&
+    t.isFunction(node.declarations[0].init)
+  ) {
+    return true;
+  } else if (t.isFunctionDeclaration(node) && node.id !== null) {
+    return true;
   }
-  path.traverse({
-    Identifier(path) {
-      names.push(path.node.name);
-    },
-  });
-  return uniq(names);
+  return false;
 }
 
-export class TypeDictionary {
-  private types: FunctionType[];
-  constructor() {
-    this.types = [];
-  }
+export type HttpMethod =
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'delete'
+  | 'patch'
+  | 'options'
+  | 'head';
 
-  public getAll(): FunctionType[] {
-    return this.types;
-  }
-
-  public get(...names: string[]): FunctionType | undefined {
-    return this.types.find(entry => 0 === difference(entry.names, names).length);
-  }
-
-  public put(entry: FunctionType): void {
-    const elder = this.get(...entry.names);
-    if (elder) {
-      elder.type = entry.type;
-    } else {
-      this.types.push(entry);
-    }
-  }
+export interface HttpRequest {
+  targetNodePath: NodePath;
+  uri: string;
+  contentType: string;
+  header: t.ObjectExpression;
+  query: t.ObjectExpression;
 }

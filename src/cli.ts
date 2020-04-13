@@ -12,7 +12,10 @@ function dir(val: string): string {
   return path.resolve(val);
 }
 
-function doTranspileProcess(options: { dir: string; ignorePath: string }): void {
+function doTranspileProcess(options: {
+  dir: string;
+  ignorePath: string;
+}): void {
   const { dir, ignorePath } = options;
 
   console.log(`working directory: ${dir}`);
@@ -52,7 +55,7 @@ Latest:  ${chalk.green(latestVersion)}`,
     .option('-d, --dir <dir>', 'working directory', dir, '.')
     .option('--ignore-path <path>', 'specify path of ignore file', '.gitignore')
     .action(doTranspileProcess)
-    .on('--help', function() {
+    .on('--help', function () {
       console.log('escapin [-d <dir>]');
     });
 

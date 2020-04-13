@@ -9,7 +9,10 @@ const $TEMPVAR = new DynamoDB().putItem({
       S: typeof $VAR,
     },
     value: {
-      S: typeof $VAR === 'object' || typeof $VAR === 'function' ? JSON.stringify($VAR) : $VAR,
+      S:
+        typeof $VAR === 'object' || typeof $VAR === 'function'
+          ? JSON.stringify($VAR)
+          : $VAR,
     },
   },
 });

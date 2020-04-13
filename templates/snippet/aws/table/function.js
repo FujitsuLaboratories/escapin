@@ -5,7 +5,8 @@ export function $VAR(event, context, callback) {
         continue;
       }
       const $VAR =
-        record.dynamodb.type.S === 'object' || record.dynamodb.type.S === 'function'
+        record.dynamodb.type.S === 'object' ||
+        record.dynamodb.type.S === 'function'
           ? JSON.parse(record.dynamodb.value.S)
           : record.dynamodb.value.S;
       $BODY;

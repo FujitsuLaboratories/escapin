@@ -4,10 +4,17 @@ import { sync as mkdirp } from 'mkdirp';
 import path from 'path';
 import { sync as rimraf } from 'rimraf';
 import { v4 as uuid } from 'uuid';
-import * as u from '../src/util';
+import { TypeDictionary } from '../src/functionTypes';
 import { BaseState } from '../src/state';
+import {
+  asynchronous,
+  errorFirstCallback,
+  general,
+  generalCallback,
+  Config,
+} from '../src/types';
+import * as u from '../src/util';
 import { Escapin } from '../src';
-import * as types from '../src/types';
 import { Visitor } from '@babel/traverse';
 
 export function initialize(): Escapin {
@@ -24,6 +31,7 @@ export function initialize(): Escapin {
     platform: 'aws',
     default_storage: 'table',
     output_dir: `${__dirname}/${uuid()}`,
+    http_client: 'axios',
   };
   escapin.apiSpec = {
     file: 'test.json',
@@ -58,26 +66,38 @@ export function initialize(): Escapin {
     dependencies: {},
     devDependencies: {},
   };
-  escapin.types = new types.TypeDictionary();
-  escapin.types.put(types.asynchronous('asyncFunc'));
-  escapin.types.put(types.errorFirstCallback('errorFirstCallbackFunc'));
-  escapin.types.put(types.generalCallback('generalCallbackFunc'));
-  escapin.types.put(types.general('generalFunc'));
+  escapin.types = new TypeDictionary();
+  escapin.types.put(asynchronous('asyncFunc'));
+  escapin.types.put(errorFirstCallback('errorFirstCallbackFunc'));
+  escapin.types.put(generalCallback('generalCallbackFunc'));
+  escapin.types.put(general('generalFunc'));
   return escapin;
 }
 
 export function transpile(
   testName: string,
+  config?: Partial<Config>,
   ...visitors: Visitor<BaseState>[]
 ): {
   actual: u.Node;
   expected: u.Node;
 } {
   const escapin = initialize();
+  if (config) {
+    for (const key in config) {
+      escapin.config[key] = config[key];
+    }
+  }
   mkdirp(escapin.config.output_dir);
 
-  const actual = fs.readFileSync(path.join(__dirname, `visitors/${testName}.in.js`), 'utf8');
-  const expected = fs.readFileSync(path.join(__dirname, `visitors/${testName}.out.js`), 'utf8');
+  const actual = fs.readFileSync(
+    path.join(__dirname, `visitors/${testName}.in.js`),
+    'utf8',
+  );
+  const expected = fs.readFileSync(
+    path.join(__dirname, `visitors/${testName}.out.js`),
+    'utf8',
+  );
 
   try {
     const astActual = u.parse(actual);

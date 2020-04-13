@@ -1,6 +1,8 @@
 module.exports = {
   extends: [
     'eslint:recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings',
     'plugin:prettier/recommended',
     'plugin:node/recommended',
     'plugin:@typescript-eslint/recommended',

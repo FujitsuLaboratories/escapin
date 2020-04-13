@@ -1,18 +1,11 @@
 module.exports = {
-  extends: [
-    'eslint:recommended',
-    'plugin:prettier/recommended',
-    'plugin:node/recommended',
-  ],
-  parserOptions: { ecmaVersion: 6, sourceType: 'module' },
-  env: {
-    es6: true,
-  },
   rules: {
     'no-constant-condition': 'off',
     'no-undef': 'off',
     'no-unused-vars': 'off',
     'prefer-const': 'off',
+    'import/no-duplicates': 'off',
+    'import/no-unresolved': 'off',
     'node/no-extraneous-import': 'off',
     'node/no-missing-import': 'off',
     'node/no-unpublished-import': 'off',

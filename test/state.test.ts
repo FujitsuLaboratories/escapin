@@ -28,9 +28,7 @@ test('test pushProgramBody', () => {
   expect(u.purify(state.ast)).toEqual(u.purify(u.parse('hoge();')));
 
   state.pushProgramBody(u.parse('piyo(); fuga();').program.body);
-  expect(u.purify(state.ast)).toEqual(
-    u.purify(u.parse('hoge(); piyo(); fuga();')),
-  );
+  expect(u.purify(state.ast)).toEqual(u.purify(u.parse('hoge(); piyo(); fuga();')));
 });
 
 test('test unshiftProgramBody', () => {
@@ -41,9 +39,7 @@ test('test unshiftProgramBody', () => {
   expect(u.purify(state.ast)).toEqual(u.purify(u.parse('hoge();')));
 
   state.unshiftProgramBody(u.parse('piyo(); fuga();').program.body);
-  expect(u.purify(state.ast)).toEqual(
-    u.purify(u.parse('piyo(); fuga(); hoge();')),
-  );
+  expect(u.purify(state.ast)).toEqual(u.purify(u.parse('piyo(); fuga(); hoge();')));
 });
 
 test('test resolvePath', () => {

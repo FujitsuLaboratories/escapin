@@ -1,25 +1,26 @@
 import { last } from 'lodash';
 import { OpenAPIV2 } from 'openapi-types';
-import { HttpMethod } from '../../types';
 import * as u from '../../util';
 
-export function identifyRootNode(
+export default function(
   spec: OpenAPIV2.Document,
   nodePath: u.NodePath,
-  method: HttpMethod,
+  method: string,
   key: u.Identifier,
 ): {
   uri: string;
   contentType: string;
+  bodyParameter: string;
   params?: u.ObjectExpression;
-  rootNodePath: u.NodePath;
+  rootPath: u.NodePath;
   operation: OpenAPIV2.OperationObject;
 } {
   let maxMatches = 0;
   let uri!: string;
   let contentType!: string;
+  let bodyParameter!: string;
   let params!: u.ObjectExpression;
-  let rootNodePath!: u.NodePath;
+  let rootPath!: u.NodePath;
   let operation!: OpenAPIV2.OperationObject;
   const pathParamPattern = /^\{.*\}$/;
 
@@ -47,16 +48,10 @@ export function identifyRootNode(
         } else if (computed && token.match(pathParamPattern)) {
           newPath = newPath.replace(
             token,
-            u.isStringLiteral(property)
-              ? property.value
-              : `$\{${u.generate(property)}}`,
+            u.isStringLiteral(property) ? property.value : `$\{${u.generate(property)}}`,
           );
           break;
-        } else if (
-          !computed &&
-          u.isIdentifier(property) &&
-          token === property.name
-        ) {
+        } else if (!computed && u.isIdentifier(property) && token === property.name) {
           break;
         }
         iter = iter.get('object') as u.NodePath;
@@ -73,7 +68,8 @@ export function identifyRootNode(
       operation = spec.paths[path][method];
       uri = createURI(spec, newPath);
       contentType = getContentType(spec, operation);
-      rootNodePath = rootCandidate;
+      bodyParameter = getBodyParameter(contentType);
+      rootPath = rootCandidate;
       maxMatches = matches;
     }
   }
@@ -84,17 +80,16 @@ export function identifyRootNode(
   return {
     uri,
     contentType,
+    bodyParameter,
     params,
-    rootNodePath,
+    rootPath,
     operation,
   };
 }
 
 function createURI(spec: OpenAPIV2.Document, path: string): string {
   const scheme =
-    spec.schemes &&
-    Array.isArray(spec.schemes) &&
-    spec.schemes.includes('https')
+    spec.schemes && Array.isArray(spec.schemes) && spec.schemes.includes('https')
       ? 'https'
       : 'http';
   return `${scheme}://${spec.host}${spec.basePath}${path}`;
@@ -110,4 +105,16 @@ function getContentType(
     return spec.consumes[0];
   }
   return 'application/json';
+}
+
+function getBodyParameter(contentType: string): string {
+  switch (contentType) {
+    case 'multipart/form-data':
+      return 'formData';
+    case 'application/x-www-form-urlencoded':
+      return 'form';
+    case 'application/json':
+    default:
+      return 'body';
+  }
 }

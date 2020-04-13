@@ -60,17 +60,17 @@ new DynamoDB().putItem({
       S:
         typeof bar === "object" || typeof bar === "function"
           ? JSON.stringify(bar)
-          : bar,
-    },
-  },
+          : bar
+    }
+  }
 });
 
 // baz = foo[id];
 const temp = new DynamoDB().getItem({
   TableName: "foo-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
   Item: {
-    key: { S: id },
-  },
+    key: { S: id }
+  }
 });
 baz =
   temp === null || temp.Item === undefined
@@ -83,13 +83,13 @@ baz =
 qux = new DynamoDB().scan({
   TableName: "csv-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
   ExpressionAttributeNames: { "#ky": "key" },
-  ProjectionExpression: "#ky",
+  ProjectionExpression: "#ky"
 });
 
 // delete foo[id];
 new DynamoDB().deleteItem({
   TableName: "csv-9fe932f9-32e7-49f7-a341-0dca29a8bb32",
-  Key: { key: { S: id } },
+  Key: { key: { S: id } }
 });
 ```
 
@@ -235,14 +235,14 @@ const { _res, _body } = request({
   contentType: "application/json",
   json: true,
   qs: {
-    foo: "bar",
+    foo: "bar"
   },
   headers: {
-    baz: "qux",
+    baz: "qux"
   },
   body: {
-    quux: "corge",
-  },
+    quux: "corge"
+  }
 });
 ```
 
@@ -583,8 +583,8 @@ switch (_data) {
 現状， `map` , `forEach` のみ並行動作するコードに変換されます．
 
 ```javascript
-args.map((arg) => api.call(arg));
-args.forEach((arg) => api.call(arg));
+args.map(arg => api.call(arg));
+args.forEach(arg => api.call(arg));
 ```
 
 は，以下のようにコンパイルされます．
@@ -595,15 +595,15 @@ args.forEach((arg) => api.call(arg));
 全ての iteration を終わらせて次に進みたい場合は， `forEach` の代わりに `for-of` 文をご利用ください．
 
 ```javascript
-await Promise.all(args.map(async (arg) => await api.call(arg)));
-args.forEach(async (arg) => await api.call(arg));
+await Promise.all(args.map(async arg => await api.call(arg)));
+args.forEach(async arg => await api.call(arg));
 ```
 
 それ以外の関数は，コールバック関数内で非同期処理の終了を待つ，以下のような記述にコンパイルされます（ `deasync` という同期化ライブラリを用います）．
 
 ```javascript
 import deasync from "deasync";
-args.some((arg) => {
+args.some(arg => {
   let _data;
   let done = false;
   new Promise((resolve, reject) => {
@@ -611,11 +611,11 @@ args.some((arg) => {
       if (err) reject(err);
       else resolve(data);
     });
-  }).then((data) => {
+  }).then(data => {
     _data = data;
     done = true;
   });
-  deasync.loopWhile((_) => !done);
+  deasync.loopWhile(_ => !done);
   return _data;
 });
 ```
@@ -638,5 +638,5 @@ args.map(arg => await promisifiedFunc(arg));
 「コールバック関数を引数に持つ関数 (Array.prototype.forEach 等)」と同様に以下のようにコンパイルされます．
 
 ```javascript
-await Promise.all(args.map(async (arg) => await promisifiedFunc(arg)));
+await Promise.all(args.map(async arg => await promisifiedFunc(arg)));
 ```

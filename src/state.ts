@@ -5,18 +5,22 @@ import module from 'module';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
 import { Escapin } from '.';
-import { OneOrMore, PathInfo } from './types';
 import * as u from './util';
 
 export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
+export interface PathInfo {
+  name: string;
+  path: string;
+  method: string;
+  consumes: string[];
+  produces: string[];
+  parameters: OpenAPIV2.Parameters;
+}
+
 export class BaseState {
   public escapin!: Escapin;
-  public replacements!: Array<{
-    original: u.Node;
-    replaced: u.Node;
-    scope: Scope;
-  }>;
+  public replacements!: Array<{ original: u.Node; replaced: u.Node; scope: Scope }>;
   public filename!: string;
   public code!: string;
   public ast!: t.File;
@@ -42,9 +46,7 @@ export class BaseState {
       for (const method in resource) {
         const info = resource[method] as OpenAPIV2.OperationObject;
         const handler = info['x-escapin-handler'] as string;
-        if (
-          handler === `${Path.basename(this.filename, '.js')}.${functionName}`
-        ) {
+        if (handler === `${Path.basename(this.filename, '.js')}.${functionName}`) {
           return {
             name,
             path,
@@ -59,7 +61,7 @@ export class BaseState {
     return undefined;
   }
 
-  public pushProgramBody(snippet: OneOrMore<u.Statement>): void {
+  public pushProgramBody(snippet: u.OneOrMore<u.Statement>): void {
     if (Array.isArray(snippet)) {
       this.ast.program.body.push(...snippet);
     } else {
@@ -67,7 +69,7 @@ export class BaseState {
     }
   }
 
-  public unshiftProgramBody(snippet: OneOrMore<u.Statement>): void {
+  public unshiftProgramBody(snippet: u.OneOrMore<u.Statement>): void {
     if (Array.isArray(snippet)) {
       this.ast.program.body.unshift(...snippet);
     } else {
@@ -76,9 +78,7 @@ export class BaseState {
   }
 
   public resolvePath(file: string): string | undefined {
-    const currentPath = Path.dirname(
-      Path.join(this.escapin.basePath, this.filename),
-    );
+    const currentPath = Path.dirname(Path.join(this.escapin.basePath, this.filename));
     file = Path.join(currentPath, file);
     if (fs.existsSync(file)) {
       return file;

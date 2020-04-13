@@ -1,16 +1,16 @@
 import { Visitor } from '@babel/traverse';
 import { BaseState } from '../../state';
 import * as u from '../../util';
-import { fetchAsynchronous } from './asynchronous';
-import { fetchErrorFirstCallback } from './errorFirstCallback';
-import { fetchGeneralCallback } from './generalCallback';
+import fetchAsynchronous from './asynchronous';
+import fetchErrorFirstCallback from './errorFirstCallback';
+import fetchGeneralCallback from './generalCallback';
 
 function newVisitor(): Visitor<BaseState> {
   const asynchronized: u.Node[] = [];
   let changed = false;
   const visitor: Visitor<BaseState> = {
     Program: {
-      enter(): void {
+      enter(path): void {
         changed = false;
       },
       exit(path, state): void {
@@ -26,12 +26,7 @@ function newVisitor(): Visitor<BaseState> {
         return;
       }
 
-      if (
-        !(
-          u.test<u.Function>(path, path => path.isAwaitExpression()) &&
-          !node.async
-        )
-      ) {
+      if (!(u.test(path, _path => _path.isAwaitExpression()) && !node.async)) {
         return;
       }
 
@@ -67,29 +62,27 @@ function newVisitor(): Visitor<BaseState> {
         return;
       }
 
-      if (!u.test<u.For>(path, path => u.isSimpleAwaitStatement(path.node))) {
+      if (!u.test(path, _path => u.isSimpleAwaitStatement(_path.node))) {
         return;
       }
 
       asynchronized.push(path.node);
 
-      const decl = path.get(
-        path.isForStatement() ? 'init' : 'left',
-      ) as u.NodePath<u.VariableDeclaration>;
+      const decl = path.get(path.isForStatement() ? 'init' : 'left') as u.NodePath<
+        u.VariableDeclaration
+      >;
       for (const declarator of decl.node.declarations) {
         const { id } = declarator;
         if (!u.isIdentifier(id)) {
           continue;
         }
         declarator.id = path.scope.generateUidIdentifier(id.name);
-        u.replace<u.For>(path, id, declarator.id);
+        u.replace(path, id, declarator.id);
       }
 
       const promise = path.scope.generateUidIdentifier('promise');
 
-      path.insertBefore(
-        u.statement('let $PROMISE = [];', { $PROMISE: promise }),
-      );
+      path.insertBefore(u.statement('let $PROMISE = [];', { $PROMISE: promise }));
       const block = path.get('body') as u.NodePath<u.BlockStatement>;
       block.traverse({
         ContinueStatement(path) {
@@ -107,9 +100,7 @@ function newVisitor(): Visitor<BaseState> {
       );
       path.insertAfter(
         u.expressionStatement(
-          u.awaitExpression(
-            u.expression('Promise.all($PROMISE)', { $PROMISE: promise }),
-          ),
+          u.awaitExpression(u.expression('Promise.all($PROMISE)', { $PROMISE: promise })),
         ),
       );
 

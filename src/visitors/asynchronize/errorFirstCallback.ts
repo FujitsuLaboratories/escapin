@@ -1,10 +1,9 @@
 import { EscapinSyntaxError } from '../../error';
-import { getNames } from '../../functionTypes';
 import { BaseState } from '../../state';
-import { isErrorFirstCallback } from '../../types';
+import * as t from '../../types';
 import * as u from '../../util';
 
-export function fetchErrorFirstCallback(
+export default function(
   path: u.NodePath<u.VariableDeclaration>,
   asynchronized: u.Node[],
   state: BaseState,
@@ -33,9 +32,9 @@ export function fetchErrorFirstCallback(
     return false;
   }
 
-  const names = getNames(path.get('declarations.0.init.callee') as u.NodePath);
+  const names = t.getNames(path.get('declarations.0.init.callee') as u.NodePath);
   const entry = state.escapin.types.get(...names);
-  if (!isErrorFirstCallback(entry)) {
+  if (!t.isErrorFirstCallback(entry)) {
     return false;
   }
 
@@ -54,17 +53,12 @@ export function fetchErrorFirstCallback(
         path.parentPath,
         property.key,
         u.memberExpression(data, property.key),
-        path =>
-          path.isObjectProperty() ||
-          path.isMemberExpression() ||
-          path.isFunction(node),
+        path => path.isObjectProperty() || path.isMemberExpression() || path.isFunction(node),
       );
     }
     newId = u.objectExpression(
       id.properties.map(prop =>
-        u.isRestElement(prop)
-          ? u.spreadElement(prop.argument as u.Identifier)
-          : prop,
+        u.isRestElement(prop) ? u.spreadElement(prop.argument as u.Identifier) : prop,
       ),
     );
   } else if (u.isIdentifier(id)) {

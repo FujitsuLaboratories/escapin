@@ -1,17 +1,12 @@
 import { Visitor } from '@babel/traverse';
 import Path from 'path';
-import { BaseState } from '../../state';
-import { PathInfo, isFunctionToBeRefined } from '../../types';
+import { BaseState, PathInfo } from '../../state';
 import * as u from '../../util';
 import aws from './aws';
 
 function newVisitor(
   platform: string,
-): (
-  stmtPath: u.NodePath,
-  func: u.Function,
-  info: PathInfo,
-) => Visitor<BaseState> {
+): (stmtPath: u.NodePath, func: u.Function, info: PathInfo) => Visitor<BaseState> {
   const visitors = { aws };
   return visitors[platform];
 }
@@ -19,14 +14,11 @@ function newVisitor(
 const visitor: Visitor<BaseState> = {
   Function(path, state) {
     const func = path.node;
-    const stmtPath = path.isExpression()
-      ? (path.findParent(path => path.isStatement()) as u.NodePath)
-      : (path as u.NodePath);
-    const { node } = stmtPath;
-    if (!isFunctionToBeRefined(node)) {
+    const stmtPath = path.isExpression() ? path.findParent(path => path.isStatement()) : path;
+    const id = u.getFunctionId(stmtPath, func);
+    if (id === undefined) {
       return;
     }
-    const id = u.getFunctionId(node, func);
 
     const { name } = id;
 
@@ -35,10 +27,7 @@ const visitor: Visitor<BaseState> = {
       return;
     }
 
-    const handler = `${Path.basename(
-      state.filename,
-      Path.extname(state.filename),
-    )}.${name}`;
+    const handler = `${Path.basename(state.filename, Path.extname(state.filename))}.${name}`;
     const { platform } = state.escapin.config;
 
     state.escapin.addServerlessConfig(`${platform}.function`, {

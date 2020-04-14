@@ -13,12 +13,12 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.8.7",
+    "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.5",
-    "babel-loader": "^8.0.6",
-    "escapin": "^0.2.27",
+    "babel-loader": "^8.1.0",
+    "escapin": "^0.3.1",
     "serverless-webpack": "^5.3.1",
-    "webpack": "^4.42.0",
+    "webpack": "^4.42.1",
     "webpack-node-externals": "^1.7.2"
   }
 }

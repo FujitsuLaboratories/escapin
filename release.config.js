@@ -13,7 +13,6 @@ module.exports = {
           { type: 'refactor', scope: 'core-*', release: 'minor' },
           { type: 'refactor', release: 'patch' },
           { scope: 'no-release', release: false },
-          { type: 'chore', scope: 'deps', release: 'patch' },
         ],
         parserOpts: {
           noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'],

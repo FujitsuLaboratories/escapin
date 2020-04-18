@@ -4,16 +4,26 @@ on:
   push:
     branches:
       - develop
+
 jobs:
-  gitPrRelease:
-    name: git-pr-release
+  create-release-pr:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: git-pr-release
-        uses: bakunyo/git-pr-release-action@master
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ruby 2.6
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6.x
+
+      - name: Create a release pull request
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_PR_RELEASE_BRANCH_PRODUCTION: master
           GIT_PR_RELEASE_BRANCH_STAGING: develop
           GIT_PR_RELEASE_LABELS: release
+        run: |
+          gem install -N git-pr-release -v "1.2.0"
+          git-pr-release --no-fetch

@@ -18,7 +18,7 @@
     "babel-loader": "^8.1.0",
     "escapin": "^0.3.1",
     "serverless-webpack": "^5.3.1",
-    "webpack": "^4.42.1",
+    "webpack": "^4.43.0",
     "webpack-node-externals": "^1.7.2"
   }
 }

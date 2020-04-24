@@ -30,7 +30,7 @@ test('[openApiV2.1] ignore conventional import declarations', () => {
   expect(actual).toEqual(expected);
 });
 
-test('[openApiV2.2] nominal case of openApiV2 with axios', () => {
+test('[openApiV2.2] nominal case of openApiV2 with axios', done => {
   const { actual, expected } = transpile(
     'openApiV2.2',
     {},
@@ -38,6 +38,7 @@ test('[openApiV2.2] nominal case of openApiV2 with axios', () => {
     finalize,
   );
   expect(actual).toEqual(expected);
+  done();
 });
 
 test('[openApiV2.3] nominal case of openApiV2 with request', () => {

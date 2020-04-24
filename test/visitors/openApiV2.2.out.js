@@ -42,7 +42,16 @@ axios.post('https://petstore.swagger.io/v2/pet', newPet, {
   headers: {},
   params: {},
 });
-petstore.pet[id].uploadImage(image);
+
+const _params = new FormData();
+
+Object.entries(image).forEach(([key, value]) => {
+  _params.append(key, value);
+});
+axios.post(`https://petstore.swagger.io/v2/pet/${id}/uploadImage`, _params, {
+  headers: { ..._params.getHeaders() },
+  params: {},
+});
 
 const _res10 = axios.delete(`https://petstore.swagger.io/v2/pet/${id}`, {
   headers: {},

@@ -19,7 +19,9 @@ export default function (
   const variable = path.scope.generateUidIdentifier(method);
   const response = path.scope.generateUidIdentifier('res');
 
-  const stmtPath = path.findParent(path => path.isStatement());
+  const stmtPath = path.findParent(path => path.isStatement()) as u.NodePath<
+    u.Statement
+  >;
   const vars = {
     $RES: response,
     $URI: u.parseExpression(`\`${req.uri}\``),
@@ -30,29 +32,13 @@ export default function (
     switch (req.contentType) {
       case 'multipart/form-data':
         {
-          if (!u.isObjectExpression(data)) {
-            break;
-          }
           const params = path.scope.generateUidIdentifier('params');
           stmtPath.insertBefore(
             u.statement('const $PARAMS = new FormData();', {
               $PARAMS: params,
             }),
           );
-          for (const prop of data.properties) {
-            if (!u.isObjectProperty(prop)) {
-              continue;
-            }
-            stmtPath.insertBefore(
-              u.statement('$PARAMS.append($KEY, $VALUE);', {
-                $PARAMS: params,
-                $KEY: u.isStringLiteral(prop.key)
-                  ? prop.key
-                  : u.stringLiteral(prop.key.name),
-                $VALUE: prop.value,
-              }),
-            );
-          }
+          appendSnippet(stmtPath, data, params);
           req.header.properties.push(
             u.spreadElement(
               u.expression('$PARAMS.getHeaders()', {
@@ -65,29 +51,13 @@ export default function (
         break;
       case 'application/x-www-form-urlencoded':
         {
-          if (!u.isObjectExpression(data)) {
-            break;
-          }
           const params = path.scope.generateUidIdentifier('params');
           stmtPath.insertBefore(
             u.statement('const $PARAMS = new URLSearchParams();', {
               $PARAMS: params,
             }),
           );
-          for (const prop of data.properties) {
-            if (!u.isObjectProperty(prop)) {
-              continue;
-            }
-            stmtPath.insertBefore(
-              u.statement('$PARAMS.append($KEY, $VALUE);', {
-                $PARAMS: params,
-                $KEY: u.isStringLiteral(prop.key)
-                  ? prop.key
-                  : u.stringLiteral(prop.key.name),
-                $VALUE: prop.value,
-              }),
-            );
-          }
+          appendSnippet(stmtPath, data, params);
           vars['$DATA'] = params;
         }
         break;
@@ -138,8 +108,38 @@ export default function (
       stmtPath.insertBefore(clientStmt);
       stmtPath.insertBefore(letSnippet);
     }
-    u.replace<u.Node>(stmtPath, req.targetNodePath.node, variable);
+    u.replace<u.Statement>(stmtPath, req.targetNodePath.node, variable);
   } catch (err) {
     new EscapinSyntaxError(err.toString(), stmtPath.node, state);
   }
+}
+
+function appendSnippet(
+  path: u.NodePath<u.Statement>,
+  data: u.Node,
+  params: u.Identifier,
+): void {
+  const variable = path.scope.generateUidIdentifier('data');
+  if (u.isObjectExpression(data)) {
+    path.insertBefore(
+      u.statement('const $VAR = $DATA;', {
+        $VAR: variable,
+        $DATA: data,
+      }),
+    );
+  } else if (u.isIdentifier(data)) {
+    variable.name = data.name;
+  }
+  path.insertBefore(
+    u.statement(
+      `Object.entries($VAR).forEach(
+        ([key, value]) => {
+          $PARAMS.append(key, value);
+        });`,
+      {
+        $PARAMS: params,
+        $VAR: variable,
+      },
+    ),
+  );
 }

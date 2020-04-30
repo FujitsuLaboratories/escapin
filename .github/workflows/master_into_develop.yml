@@ -1,16 +1,13 @@
 on:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: "0 0 * * *"
+
 jobs:
-  merge_master_into_develop:
+  nightly-merge:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x]
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
       - name: merge master into develop
         uses: robotology/gh-action-nightly-merge@v1.2.0
         with:

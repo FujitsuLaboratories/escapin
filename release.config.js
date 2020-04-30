@@ -15,7 +15,6 @@ module.exports = {
           {
             type: 'chore',
             scope: '{deps,!deps-dev}',
-            message: '!*/examples/*',
             release: 'patch',
           },
           { scope: 'no-release', release: false },

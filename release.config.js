@@ -12,6 +12,12 @@ module.exports = {
           { type: 'docs', scope: 'README', release: 'patch' },
           { type: 'refactor', scope: 'core-*', release: 'minor' },
           { type: 'refactor', release: 'patch' },
+          {
+            type: 'chore',
+            scope: '{deps,!deps-dev}',
+            message: '!*/examples/*',
+            release: 'patch',
+          },
           { scope: 'no-release', release: false },
         ],
         parserOpts: {

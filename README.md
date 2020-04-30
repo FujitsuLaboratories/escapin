@@ -8,7 +8,6 @@
 <a href="https://dependabot.com/"><img src="https://api.dependabot.com/badges/status?host=github&repo=FujitsuLaboratories/escapin" alt="Dependabot Status" /></a>
 <a href="https://codecov.io/gh/FujitsuLaboratories/escapin"><img src="https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat" alt="codecov" /></a>
 <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat" alt="code style: prettier" /></a>
-<a href="https://github.com/semantic-release/semantic-release"><img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="semantic-release" /><.a>
 <a href="LICENSE"><img src="http://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="MIT License" /></a>
 </p>
 

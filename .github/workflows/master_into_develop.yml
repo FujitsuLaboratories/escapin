@@ -1,0 +1,21 @@
+on:
+  push:
+    branches:
+      - master
+jobs:
+  merge_master_into_develop:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: merge master into develop
+        uses: robotology/gh-action-nightly-merge@v1.2.0
+        with:
+          stable_branch: master
+          development_branch: develop
+          allow_ff: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

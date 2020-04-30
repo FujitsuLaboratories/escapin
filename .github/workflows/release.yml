@@ -33,8 +33,3 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: Embraser01/update-git-branch-action@v1.0.0
-        with:
-          branch: develop
-          force: 1
-          githubToken: ${{ secrets.GITHUB_TOKEN }}

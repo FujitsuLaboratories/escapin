@@ -1,3 +1,5 @@
+name: merge master into develop
+
 on:
   schedule:
     - cron: "0 0 * * *"

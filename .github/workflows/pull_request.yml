@@ -22,3 +22,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: install and test
         run: npm install-ci-test
+      - name: upload coverage to Codecov
+        uses: codecov/codecov-action@v1

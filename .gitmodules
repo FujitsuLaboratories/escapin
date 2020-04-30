@@ -1,0 +1,6 @@
+[submodule "examples/sendmail"]
+	path = examples/sendmail
+	url = git@github.com:kimusaku/escapin-sendmail.git
+[submodule "examples/thumbnail"]
+	path = examples/thumbnail
+	url = git@github.com:kimusaku/escapin-thumbnail.git

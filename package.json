@@ -26,7 +26,8 @@
     "start": "ts-node src/cli.ts"
   },
   "repository": {
-    "url": "https://github.com/FujitsuLaboratories/escapin.git"
+    "type": "git",
+    "url": "git@github.com:FujitsuLaboratories/escapin.git"
   },
   "keywords": [
     "serverless",

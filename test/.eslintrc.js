@@ -1,6 +1,7 @@
 module.exports = {
   rules: {
     'no-dupe-class-members': 'off',
+    'no-undef': 'off',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',

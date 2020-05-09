@@ -79,7 +79,7 @@
     "@types/lodash": "^4.14.149",
     "@types/mkdirp": "^1.0.0",
     "@types/ncp": "^2.0.3",
-    "@types/node": "^13.11.1",
+    "@types/node": "^13.13.5",
     "@types/node-fetch": "^2.5.6",
     "@types/prettier": "^2.0.0",
     "@types/rimraf": "^3.0.0",

@@ -4,7 +4,7 @@
     "target": "es6",
     "outDir": "bin",
     "sourceMap": false,
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,

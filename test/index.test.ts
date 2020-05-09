@@ -1,51 +1,42 @@
+import { expect } from 'chai';
+import deasync from 'deasync';
 import fs from 'fs';
 import { sync as mkdirp } from 'mkdirp';
 import { ncp as _ncp } from 'ncp';
 import path from 'path';
 import { sync as rimraf } from 'rimraf';
-import { promisify } from 'util';
 import { Escapin } from '../src';
 
-const ncp = promisify(_ncp);
+const ncp = deasync(_ncp);
 
 const EXAMPLES_DIR = path.join(process.cwd(), 'examples');
 // eslint-disable-next-line no-undef
 const TEMP_DIR = path.join(__dirname, 'temp');
 
-test('transpiles all projects in ./examples', async done => {
-  try {
+const PROJECTS = ['sendmail', 'thumbnail'];
+
+describe('Escapin', function () {
+  this.timeout(0);
+
+  before(() => {
     if (fs.existsSync(TEMP_DIR)) {
       rimraf(TEMP_DIR);
     }
     mkdirp(TEMP_DIR);
-    await ncp(EXAMPLES_DIR, TEMP_DIR);
+    ncp(EXAMPLES_DIR, TEMP_DIR);
+  });
 
-    const names = fs.readdirSync(TEMP_DIR, 'utf8');
-    for (const name of names) {
-      const cwd = path.join(TEMP_DIR, name);
-      const stat = fs.lstatSync(cwd);
-      if (!stat.isDirectory()) {
-        continue;
-      }
-      await expect(
-        new Promise((resolve, reject) => {
-          try {
-            const escapin = new Escapin(cwd);
-            escapin.transpile();
-            resolve(true);
-          } catch (e) {
-            reject(e);
-          }
-        }),
-      ).toBeTruthy();
-    }
-  } catch (e) {
-    console.error(e);
-    throw e;
-  } finally {
+  after(() => {
     if (fs.existsSync(TEMP_DIR)) {
       rimraf(TEMP_DIR);
     }
-    done();
-  }
-}, 300000);
+  });
+
+  PROJECTS.forEach(project => {
+    it(`should transpile all projects in ./examples/${project}`, () => {
+      expect(() =>
+        new Escapin(path.join(TEMP_DIR, project)).transpile(),
+      ).to.not.throw();
+    });
+  });
+});

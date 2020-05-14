@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "config:base",
+    ":automergeAll",
+    ":automergePr",
+    ":automergeRequireAllStatusChecks",
+    ":label(dependencies)",
+    ":maintainLockFilesWeekly",
+    ":semanticCommits",
+    ":timezone(Asia/Tokyo)"
+  ],
+  "baseBranches": ["develop"],
+  "postUpdateOptions": ["npmDedupe"],
+  "schedule": ["after 10pm and before 5am every weekday", "every weekend"]
+}

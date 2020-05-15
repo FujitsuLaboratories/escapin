@@ -5,7 +5,7 @@
 <p align='center'>
 <a href="https://www.npmjs.com/package/escapin"><img src="https://img.shields.io/npm/v/escapin.svg?style=flat" alt="npm version" /></a>
 <a href="https://github.com/FujitsuLaboratories/escapin/actions"><img src="https://github.com/FujitsuLaboratories/escapin/workflows/release/badge.svg" alt="Build Status" /></a>
-<a href="https://dependabot.com/"><img src="https://api.dependabot.com/badges/status?host=github&repo=FujitsuLaboratories/escapin" alt="Dependabot Status" /></a>
+<a href="https://renovatebot.com/"><img src="https://img.shields.io/badge/renovate-enabled-brightgreen.svg?style=flat" alt="Renovate enabled" /></a>
 <a href="https://codecov.io/gh/FujitsuLaboratories/escapin"><img src="https://img.shields.io/codecov/c/gh/FujitsuLaboratories/escapin.svg?style=flat" alt="codecov" /></a>
 <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat" alt="code style: prettier" /></a>
 <a href="https://github.com/semantic-release/semantic-release"><img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="semantic-release" /></a>

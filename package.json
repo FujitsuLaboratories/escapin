@@ -73,7 +73,7 @@
     "@types/babel__traverse": "7.0.11",
     "@types/chai": "4.2.11",
     "@types/deasync": "0.1.1",
-    "@types/eslint": "6.8.0",
+    "@types/eslint": "6.8.1",
     "@types/eslint-plugin-prettier": "3.1.0",
     "@types/js-yaml": "3.12.3",
     "@types/lodash": "4.14.150",

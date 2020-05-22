@@ -51,7 +51,6 @@ describe('visitors', function () {
   it('[openApiV2.3] nominal case of openApiV2 with request', () => {
     const { actual, expected } = transpile(
       'openApiV2.3',
-      // eslint-disable-next-line @typescript-eslint/camelcase
       { http_client: 'request' },
       openApiV2,
       finalize,

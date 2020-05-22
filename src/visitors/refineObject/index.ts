@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Visitor } from '@babel/traverse';
 import { cloneDeep } from 'lodash';
 import Path from 'path';

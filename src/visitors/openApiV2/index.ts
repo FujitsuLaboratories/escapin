@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Visitor } from '@babel/traverse';
 import { BaseState } from '../../state';
 import { HttpMethod } from '../../types';

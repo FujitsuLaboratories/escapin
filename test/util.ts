@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import fs from 'fs';
 import { sync as mkdirp } from 'mkdirp';
 import path from 'path';

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Visitor } from '@babel/traverse';
 import { commandSync } from 'execa';
 import { join } from 'path';

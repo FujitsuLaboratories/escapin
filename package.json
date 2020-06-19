@@ -50,7 +50,7 @@
     "commander": "^5.1.0",
     "cosmiconfig": "^6.0.0",
     "deasync": "^0.1.20",
-    "execa": "^4.0.1",
+    "execa": "^4.0.2",
     "https-proxy-agent": "^5.0.0",
     "ignore": "^5.1.4",
     "js-yaml": "^3.13.1",

@@ -11,5 +11,10 @@
   ],
   "baseBranches": ["develop"],
   "postUpdateOptions": ["npmDedupe"],
-  "schedule": ["after 1am and before 9am"]
+  "packageRules": [
+    {
+      "depTypeList": ["dependencies"],
+      "rangeStrategy": "bump"
+    }
+  ]
 }

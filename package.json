@@ -52,7 +52,7 @@
     "deasync": "^0.1.20",
     "execa": "^4.0.2",
     "https-proxy-agent": "^5.0.0",
-    "ignore": "^5.1.4",
+    "ignore": "^5.1.8",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
     "mkdirp": "^1.0.4",

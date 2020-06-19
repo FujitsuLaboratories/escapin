@@ -63,12 +63,13 @@ export default function (
         return;
       }
       for (const prop of id.properties) {
-        if (!u.isObjectProperty(prop)) {
+        if (!u.isObjectProperty(prop) || !u.isIdentifier(prop.key)) {
           continue;
         }
-        const param = parameters.find(param => param.name === prop.key.name);
+        const { name: keyName } = prop.key;
+        const param = parameters.find(param => param.name === keyName);
         if (param === undefined) {
-          throw new Error(`Parameter "${prop.key.name}" does not exist.`);
+          throw new Error(`Parameter "${keyName}" does not exist.`);
         }
         if (param.in !== property.name) {
           throw new EscapinSyntaxError(

@@ -78,7 +78,7 @@ function getObjectPattern(
       const { node } = param;
       if (u.isRestElement(node)) {
         return node;
-      } else if (u.isExpression(node) || u.isPatternLike(node)) {
+      } else if (u.isExpression(node)) {
         return u.objectProperty(node, node, false, true);
       } else {
         throw new EscapinSyntaxError('Unsupported parameter type', node, state);

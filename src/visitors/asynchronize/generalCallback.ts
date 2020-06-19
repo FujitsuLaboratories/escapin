@@ -28,7 +28,7 @@ export function fetchGeneralCallback(
   const { callee } = node;
   let functionName;
 
-  if (u.isMemberExpression(callee)) {
+  if (u.isMemberExpression(callee) && u.isIdentifier(callee.property)) {
     functionName = callee.property.name;
   } else if (u.isIdentifier(callee)) {
     functionName = callee.name;

@@ -49,11 +49,15 @@ export function fetchErrorFirstCallback(
       if (u.isRestElement(property)) {
         continue;
       }
-      args.push(property.key);
+      const { key } = property;
+      if (!u.isIdentifier(key)) {
+        continue;
+      }
+      args.push(key);
       u.replace(
         path.parentPath,
-        property.key,
-        u.memberExpression(data, property.key),
+        key,
+        u.memberExpression(data, key),
         path =>
           path.isObjectProperty() ||
           path.isMemberExpression() ||

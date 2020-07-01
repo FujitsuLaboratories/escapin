@@ -1,7 +1,8 @@
 import { Visitor } from '@babel/traverse';
 import { commandSync } from 'execa';
+import * as fs from 'fs';
 import { join } from 'path';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { TypeDictionary } from '../../functionTypes';
 import { BaseState } from '../../state';
 import { errorFirstCallback } from '../../types';
@@ -9,46 +10,44 @@ import { getLatestVersion } from '../../util';
 import { getTypings } from './typings';
 import { newVisit } from './visit';
 
-function newVisitor(): Visitor<BaseState> {
-  let done = false;
-  return {
-    Program(path, state): void {
-      if (!done) {
-        const { escapin } = state;
-        const { output_dir } = escapin.config;
+const visitor: Visitor<BaseState> = {
+  Program(path, state): void {
+    const { escapin } = state;
+    const { output_dir } = escapin.config;
 
-        escapin.save();
+    escapin.save();
 
-        const { dependencies, devDependencies } = escapin.packageJson;
-        const modules = Object.keys(dependencies).concat(
-          Object.keys(devDependencies),
-        );
+    if (!fs.existsSync(`${output_dir}/node_modules`)) {
+      const { dependencies, devDependencies } = escapin.packageJson;
+      const modules = [
+        ...Object.keys(dependencies),
+        ...Object.keys(devDependencies),
+      ];
 
-        getTypings(modules).forEach(typing => {
-          devDependencies[typing] = getLatestVersion(typing);
-        });
+      getTypings(modules).forEach(typing => {
+        devDependencies[typing] = getLatestVersion(typing);
+      });
 
-        escapin.savePackageJson();
+      escapin.savePackageJson();
 
-        commandSync('npm install', {
-          cwd: output_dir,
-          stdout: process.stdout,
-        });
+      commandSync('npm install', {
+        cwd: output_dir,
+        stdout: process.stdout,
+      });
+    }
 
-        for (const filename in escapin.states) {
-          checkFunctionTypes(escapin.types, filename, output_dir);
-        }
+    checkFunctionTypes(escapin.types, state.filename, output_dir);
 
-        for (const entry of escapin.types.getAll()) {
-          console.log(entry);
-        }
-
-        path.skip();
-        done = true;
+    if (process.env.NODE_ENV === 'test') {
+      console.log(state.filename);
+      for (const entry of escapin.types.getAll()) {
+        console.log(entry);
       }
-    },
-  };
-}
+    }
+
+    path.skip();
+  },
+};
 
 function checkFunctionTypes(
   types: TypeDictionary,
@@ -70,4 +69,4 @@ function checkFunctionTypes(
   types.put(errorFirstCallback('request'));
 }
 
-export default newVisitor();
+export default visitor;

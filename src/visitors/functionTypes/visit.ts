@@ -1,5 +1,5 @@
 import { uniq } from 'lodash';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { TypeDictionary } from '../../functionTypes';
 import {
   asynchronous,
@@ -13,6 +13,92 @@ export function newVisit(
   types: TypeDictionary,
   checker: ts.TypeChecker,
 ): (node: ts.Node) => void {
+  function isErrorFirstCallback(signature: ts.Signature): boolean {
+    const params = signature.getParameters();
+    if (params.length === 0) {
+      if (process.env.NODE_ENV === 'test') {
+        console.log('params.length is 0');
+      }
+      return false;
+    }
+    const lastParam = params[params.length - 1];
+    if (lastParam.valueDeclaration === null) {
+      if (process.env.NODE_ENV === 'test') {
+        console.log('lastParam.valueDeclaration is null');
+      }
+      return false;
+    }
+    let paramType = checker.getTypeOfSymbolAtLocation(
+      lastParam,
+      lastParam.valueDeclaration,
+    );
+    let paramTypeNode = checker.typeToTypeNode(paramType);
+    while (
+      paramTypeNode !== undefined &&
+      ts.isTypeReferenceNode(paramTypeNode)
+    ) {
+      paramType = checker.getTypeFromTypeNode(paramTypeNode);
+      paramTypeNode = checker.typeToTypeNode(paramType);
+    }
+    if (paramTypeNode === undefined || !ts.isFunctionTypeNode(paramTypeNode)) {
+      if (process.env.NODE_ENV === 'test') {
+        console.log('last parameter is not a function');
+      }
+      return false;
+    }
+    const firstParam = paramTypeNode.parameters[0];
+    const firstParamSymbol = checker.getSymbolAtLocation(firstParam.name);
+    if (firstParamSymbol === undefined) {
+      if (process.env.NODE_ENV === 'test') {
+        console.log('firstParamSymbol is undefined');
+      }
+      return false;
+    }
+    const str = checker.symbolToString(firstParamSymbol);
+    return str.match(u.ERROR_PATTERN) !== null;
+  }
+
+  function isGeneralCallback(signature: ts.Signature): boolean {
+    const params = signature.getParameters();
+    if (params.length === 0) {
+      return false;
+    }
+    for (const param of params) {
+      if (param.valueDeclaration === null) {
+        return false;
+      }
+      let paramType = checker.getTypeOfSymbolAtLocation(
+        param,
+        param.valueDeclaration,
+      );
+      let paramTypeNode = checker.typeToTypeNode(paramType);
+      if (
+        paramTypeNode !== undefined &&
+        ts.isTypeReferenceNode(paramTypeNode)
+      ) {
+        paramType = checker.getTypeFromTypeNode(paramTypeNode);
+        paramTypeNode = checker.typeToTypeNode(paramType);
+      }
+      if (paramTypeNode === undefined) {
+        continue;
+      }
+      if (ts.isFunctionTypeNode(paramTypeNode)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function isAsynchronous(signature: ts.Signature): boolean {
+    const returnType = signature.getReturnType();
+    const returnSymbol = returnType.getSymbol();
+    if (returnSymbol === undefined) {
+      return false;
+    }
+    const returnName = checker.symbolToString(returnSymbol);
+    return returnName === 'Promise';
+  }
+
   return function visit(node: ts.Node): void {
     try {
       if (ts.isCallExpression(node)) {
@@ -33,53 +119,15 @@ export function newVisit(
         });
         names = uniq(names);
 
-        const params = signature.getParameters();
-        if (params.length === 0) {
-          return;
-        }
-        const lastParam = params[params.length - 1];
-        if (lastParam.valueDeclaration === null) {
-          return;
-        }
-        let paramType = checker.getTypeOfSymbolAtLocation(
-          lastParam,
-          lastParam.valueDeclaration,
-        );
-        let paramTypeNode = checker.typeToTypeNode(paramType);
-        if (
-          paramTypeNode !== undefined &&
-          ts.isTypeReferenceNode(paramTypeNode)
-        ) {
-          paramType = checker.getTypeFromTypeNode(paramTypeNode);
-          paramTypeNode = checker.typeToTypeNode(paramType);
-        }
-        if (paramTypeNode === undefined) {
-          return;
-        }
-        if (ts.isFunctionTypeNode(paramTypeNode)) {
-          const firstParam = paramTypeNode.parameters[0];
-          const firstParamSymbol = checker.getSymbolAtLocation(firstParam.name);
-          if (firstParamSymbol === undefined) {
-            return;
-          }
-          const str = checker.symbolToString(firstParamSymbol);
-          if (str.match(u.ERROR_PATTERN)) {
-            types.put(errorFirstCallback(...names));
-          } else {
-            types.put(generalCallback(...names));
-          }
+        console.log(names);
+        if (isErrorFirstCallback(signature)) {
+          types.put(errorFirstCallback(...names));
+        } else if (isGeneralCallback(signature)) {
+          types.put(generalCallback(...names));
+        } else if (isAsynchronous(signature)) {
+          types.put(asynchronous(...names));
         } else {
-          const returnType = signature.getReturnType();
-          const returnSymbol = returnType.getSymbol();
-          if (returnSymbol === undefined) {
-            return;
-          }
-          const returnName = checker.symbolToString(returnSymbol);
-          if (returnName === 'Promise') {
-            types.put(asynchronous(...names));
-          } else {
-            types.put(general(...names));
-          }
+          types.put(general(...names));
         }
       }
     } finally {

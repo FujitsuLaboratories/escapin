@@ -19,6 +19,7 @@ module.exports = {
       tryExtensions: ['.ts', '.js', '.json', '.node'],
     },
   },
+  ignorePatterns: ['package.json', 'package-lock.json'],
   rules: {
     'no-dupe-class-members': 'off',
     'no-unused-vars': 'off',

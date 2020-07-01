@@ -1,8 +1,9 @@
 import { last } from 'lodash';
+import asynchronize from '.';
 import { EscapinSyntaxError } from '../../error';
 import { BaseState } from '../../state';
 import { getNames } from '../../functionTypes';
-import { isAsynchronous, isGeneralCallback } from '../../types';
+import { isGeneralCallback } from '../../types';
 import * as u from '../../util';
 
 export function fetchGeneralCallback(
@@ -26,19 +27,35 @@ export function fetchGeneralCallback(
 
   const callback = callbackPath.node;
   const { callee } = node;
-  let functionName;
+  let functionName: string;
 
-  if (u.isMemberExpression(callee)) {
+  if (u.isMemberExpression(callee) && u.isIdentifier(callee.property)) {
     functionName = callee.property.name;
   } else if (u.isIdentifier(callee)) {
     functionName = callee.name;
   } else {
     throw new EscapinSyntaxError('Invalid callee', path.node, state);
   }
+
+  callbackPath.traverse(asynchronize, state);
+
+  let asyncRequired = false;
+  callbackPath.traverse({
+    AwaitExpression(path) {
+      asyncRequired = true;
+      path.skip();
+    },
+  });
+
+  if (!asyncRequired) {
+    path.skip();
+    return true;
+  }
+
+  callback.async = true;
+
   switch (functionName) {
     case 'map':
-      callback.async = true;
-      asynchronized.push(node);
       path.replaceWith(
         u.awaitExpression(
           u.expression('Promise.all($ORG)', {
@@ -46,88 +63,26 @@ export function fetchGeneralCallback(
           }),
         ),
       );
-      return true;
-    case 'forEach':
-      callback.async = true;
-      asynchronized.push(node);
-      return true;
-    default:
       break;
-  }
-  const temp = path.scope.generateUidIdentifier('temp');
-  const data = path.scope.generateUidIdentifier('data');
-  const done = path.scope.generateUidIdentifier('done');
-  callbackPath.traverse({
-    VariableDeclaration(path) {
-      const declarations = path.get('declarations');
-      const init = declarations[0].get('init');
-      if (init.isCallExpression()) {
-        const names = getNames(init.get('callee') as u.NodePath);
-        const entry = state.escapin.types.get(...names);
-        if (!isAsynchronous(entry)) {
-          return;
-        }
-      } else if (
-        !u.isAwaitExpression(init.node) ||
-        !u.isNewPromise(init.node.argument)
-      ) {
-        return;
-      }
-      const func = u.isAwaitExpression(init.node)
-        ? init.node.argument
-        : init.node;
-      if (func === null) {
-        return;
-      }
-      declarations[0].node.init = u.expression(
-        `(() => { let $TEMP; let $DONE = false;
-        $FUNC.then($DATA => { $TEMP = $DATA; $DONE = true; });
-        deasync.loopWhile(_ => !$DONE); return $TEMP; })()`,
-        {
-          $DATA: data,
-          $DONE: done,
-          $FUNC: func,
-          $TEMP: temp,
-        },
-      );
-      state.addDependency('deasync');
-      path.skip();
-    },
-    ExpressionStatement(path) {
-      const { expression } = path.node;
-      const expressionPath = path.get('expression');
-      if (expressionPath.isCallExpression()) {
-        const callExpression = expressionPath as u.NodePath<u.CallExpression>;
-        const names = getNames(callExpression.get('callee'));
-        const entry = state.escapin.types.get(...names);
-        if (!isAsynchronous(entry)) {
-          return;
-        }
-      } else if (
-        !u.isAwaitExpression(expression) ||
-        !u.isNewPromise(expression.argument)
-      ) {
-        return;
-      }
-      const func = u.isAwaitExpression(expression)
-        ? expression.argument
-        : expression;
-      path.replaceWithMultiple(
-        u.statements(
-          `let $DONE = false;
-          $FUNC.then(_ => { $DONE = true; });
-          deasync.loopWhile(_ => !$DONE)`,
+    case 'forEach':
+      break;
+    default:
+      callbackPath.replaceWith(
+        u.expression(
+          `() => { let $TEMP; let $DONE = false;
+        ($FUNC)().then($DATA => { $TEMP = $DATA; $DONE = true; });
+        deasync.loopWhile(_ => !$DONE); return $TEMP; }`,
           {
-            $DONE: done,
-            $FUNC: func,
+            $DATA: path.scope.generateUidIdentifier('data'),
+            $DONE: path.scope.generateUidIdentifier('done'),
+            $FUNC: callback,
+            $TEMP: path.scope.generateUidIdentifier('temp'),
           },
         ),
       );
-      state.unshiftProgramBody(u.snippetFor('misc.import.deasync'));
       state.addDependency('deasync');
-      path.skip();
-    },
-  });
+      break;
+  }
   path.skip();
   return true;
 }

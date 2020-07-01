@@ -238,7 +238,9 @@ export class Escapin {
   private loadServerlessConfig(): void {
     const serverlessFile = Path.join(this.basePath, SERVERLESS_YML);
     if (fs.existsSync(serverlessFile)) {
-      this.serverlessConfig = loadYaml(fs.readFileSync(serverlessFile, 'utf8'));
+      this.serverlessConfig = loadYaml(
+        fs.readFileSync(serverlessFile, 'utf8'),
+      ) as ServerlessConfig;
     } else {
       this.serverlessConfig = {};
     }

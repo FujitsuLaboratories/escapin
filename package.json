@@ -61,7 +61,7 @@
     "package-json": "^6.5.0",
     "rimraf": "^3.0.2",
     "swagger-parser": "^9.0.1",
-    "typescript": "^3.9.5",
+    "typescript": "^3.9.6",
     "uuid": "^8.2.0",
     "validator": "^13.1.1"
   },

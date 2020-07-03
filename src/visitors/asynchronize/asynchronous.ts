@@ -23,6 +23,5 @@ export function fetchAsynchronous(
 
   path.replaceWith(u.awaitExpression(node));
 
-  path.skip();
   return true;
 }

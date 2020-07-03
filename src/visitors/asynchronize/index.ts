@@ -1,9 +1,12 @@
 import { Visitor } from '@babel/traverse';
+import { getNames } from '../../functionTypes';
 import { BaseState } from '../../state';
+import { asynchronous } from '../../types';
 import * as u from '../../util';
 import { fetchAsynchronous } from './asynchronous';
 import { fetchErrorFirstCallback } from './errorFirstCallback';
 import { fetchGeneralCallback } from './generalCallback';
+import { EscapinSyntaxError } from '../../error';
 
 function newVisitor(): Visitor<BaseState> {
   const asynchronized: u.Node[] = [];
@@ -15,35 +18,30 @@ function newVisitor(): Visitor<BaseState> {
       },
       exit(path, state): void {
         if (changed) {
-          path.traverse(visitor, state);
+          u.traverse(visitor, state);
         }
       },
     },
-    Function(path): void {
+    Function(path, state): void {
       const { node } = path;
-      if (asynchronized.includes(node)) {
-        path.skip();
-        return;
-      }
 
       if (
-        !(
-          u.test<u.Function>(path, path => path.isAwaitExpression()) &&
-          !node.async
-        )
+        !u.test<u.Function>(path, path => path.isAwaitExpression()) ||
+        node.async
       ) {
         return;
       }
 
-      const parent = path.parentPath.node;
-
-      if (u.isCallExpression(parent) && parent.callee !== node) {
-        return;
-      }
+      node.async = true;
+      const stmtPath = (path.isFunctionDeclaration()
+        ? path
+        : path.findParent(path => u.isStatement(path.node))) as u.NodePath;
+      const names = getNames(stmtPath);
+      const entry = asynchronous(...names);
+      console.log(entry);
+      state.escapin.types.put(entry);
 
       asynchronized.push(node);
-
-      node.async = true;
       changed = true;
     },
     CallExpression(path, state): void {
@@ -53,6 +51,7 @@ function newVisitor(): Visitor<BaseState> {
       }
 
       const done =
+        fetchErrorFirstCallback(path, asynchronized, state) ||
         fetchGeneralCallback(path, asynchronized, state) ||
         fetchAsynchronous(path, asynchronized, state);
 
@@ -61,7 +60,7 @@ function newVisitor(): Visitor<BaseState> {
         path.skip();
       }
     },
-    For(path): void {
+    For(path, state): void {
       if (asynchronized.includes(path.node)) {
         path.skip();
         return;
@@ -79,7 +78,7 @@ function newVisitor(): Visitor<BaseState> {
       for (const declarator of decl.node.declarations) {
         const { id } = declarator;
         if (!u.isIdentifier(id)) {
-          continue;
+          throw new EscapinSyntaxError('Unsupported type', id, state);
         }
         declarator.id = path.scope.generateUidIdentifier(id.name);
         u.replace<u.For>(path, id, declarator.id);
@@ -115,19 +114,6 @@ function newVisitor(): Visitor<BaseState> {
 
       changed = true;
       path.skip();
-    },
-    VariableDeclaration(path, state): void {
-      if (asynchronized.includes(path.node)) {
-        path.skip();
-        return;
-      }
-
-      const done = fetchErrorFirstCallback(path, asynchronized, state);
-
-      if (done) {
-        changed = true;
-        path.skip();
-      }
     },
   };
 

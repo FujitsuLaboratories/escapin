@@ -48,7 +48,6 @@ export function fetchGeneralCallback(
   });
 
   if (!asyncRequired) {
-    path.skip();
     return true;
   }
 
@@ -83,6 +82,5 @@ export function fetchGeneralCallback(
       state.addDependency('deasync');
       break;
   }
-  path.skip();
   return true;
 }

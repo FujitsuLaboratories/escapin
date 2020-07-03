@@ -20,9 +20,6 @@ function newVisitor(): Visitor {
     ImportDeclaration(path): void {
       const { node } = path;
       const { source, specifiers } = node;
-      if (!u.isStringLiteral(source)) {
-        return;
-      }
       const moduleName = source.value;
       if (!(moduleName in importDeclarations)) {
         importDeclarations[moduleName] = node;
@@ -30,16 +27,8 @@ function newVisitor(): Visitor {
         const { specifiers: elderSpecifiers } = importDeclarations[moduleName];
         for (const specifier of specifiers) {
           if (
-            (u.isImportDefaultSpecifier(specifier) &&
-              !elderSpecifiers.some(that =>
-                u.isImportDefaultSpecifier(that),
-              )) ||
-            (u.isImportNamespaceSpecifier(specifier) &&
-              !elderSpecifiers.some(that =>
-                u.isImportNamespaceSpecifier(that),
-              )) ||
-            (u.isImportSpecifier(specifier) &&
-              !elderSpecifiers.some(that => u.equals(that, specifier)))
+            u.isImportSpecifier(specifier) &&
+            !elderSpecifiers.some(that => u.equals(that, specifier))
           ) {
             elderSpecifiers.push(specifier);
           }

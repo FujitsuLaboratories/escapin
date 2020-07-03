@@ -5,7 +5,11 @@ const TYPINGS_URL =
 
 function assumeTypingName(module: string): string {
   const matches = /^@([^/]+)\/(.*)$/i.exec(module);
-  return matches !== null ? matches.join('__') : module;
+  if (matches === null) {
+    return module;
+  }
+  matches.shift();
+  return matches.join('__');
 }
 
 export function getTypings(modules: string[]): string[] {

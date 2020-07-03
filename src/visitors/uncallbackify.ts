@@ -54,18 +54,32 @@ const visitor: Visitor<BaseState> = {
 
     callbackPath.remove();
 
-    stmtPath.replaceWith(
-      u.statement(
-        'try { const $OBJ = $FUNC; $CONSEQUENT; } catch ($ERROR) { $ALTERNATE; }',
-        {
-          $ALTERNATE: alternate,
-          $CONSEQUENT: consequent,
-          $ERROR: errorParam.node,
-          $FUNC: path.node,
-          $OBJ: getObjectPattern(params, state),
-        },
-      ),
-    );
+    if (params.length > 0) {
+      stmtPath.replaceWith(
+        u.statement(
+          'try { const $OBJ = $FUNC; $CONSEQUENT; } catch ($ERROR) { $ALTERNATE; }',
+          {
+            $ALTERNATE: alternate,
+            $CONSEQUENT: consequent,
+            $ERROR: errorParam.node,
+            $FUNC: path.node,
+            $OBJ: getObjectPattern(params, state),
+          },
+        ),
+      );
+    } else {
+      stmtPath.replaceWith(
+        u.statement(
+          'try { $FUNC; $CONSEQUENT; } catch ($ERROR) { $ALTERNATE; }',
+          {
+            $ALTERNATE: alternate,
+            $CONSEQUENT: consequent,
+            $ERROR: errorParam.node,
+            $FUNC: path.node,
+          },
+        ),
+      );
+    }
   },
 };
 

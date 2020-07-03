@@ -11,6 +11,9 @@ export function getNames<T>(path: u.NodePath<T>): string[] {
     Identifier(path) {
       names.push(path.node.name);
     },
+    Statement(path) {
+      path.skip();
+    },
   });
   return uniq(names);
 }

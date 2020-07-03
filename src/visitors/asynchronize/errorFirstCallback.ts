@@ -4,65 +4,80 @@ import { BaseState } from '../../state';
 import { isErrorFirstCallback } from '../../types';
 import * as u from '../../util';
 
+type FunctionParameter = u.Identifier | u.RestElement | u.TSParameterProperty;
+
+function isFunctionParameter(node: u.Node): node is FunctionParameter {
+  return (
+    u.isIdentifier(node) ||
+    u.isRestElement(node) ||
+    u.isTSParameterProperty(node)
+  );
+}
+
 export function fetchErrorFirstCallback(
-  path: u.NodePath<u.VariableDeclaration>,
+  path: u.NodePath<u.CallExpression>,
   asynchronized: u.Node[],
   state: BaseState,
 ): boolean {
-  const { node } = path;
-  const { declarations } = node;
-  if (declarations.length !== 1) {
-    return false;
-  }
-
-  const { id, init } = declarations[0];
-
-  if (u.isIdentifier(id) && u.isIdentifier(init)) {
-    const entry = state.escapin.types.get(init.name);
-
-    if (entry && state.escapin.types.get(id.name) === undefined) {
-      state.escapin.types.put({ names: [id.name], type: entry.type });
-    }
-    return false;
-  }
-
-  if (
-    !u.isCallExpression(init) ||
-    u.test(path, path => u.isIdentifier(path.node, { name: 'Promise' }))
-  ) {
-    return false;
-  }
-
-  const names = getNames(path.get('declarations.0.init.callee') as u.NodePath);
+  const { node: original } = path;
+  const names = getNames(path.get('callee'));
   const entry = state.escapin.types.get(...names);
   if (!isErrorFirstCallback(entry)) {
     return false;
   }
 
-  asynchronized.push(node);
+  asynchronized.push(original);
+
+  const args: FunctionParameter[] = [u.identifier('err')];
+
+  const declPath = path.findParent(path =>
+    u.isVariableDeclaration(path.node),
+  ) as u.NodePath<u.VariableDeclaration>;
+
+  if (declPath === null) {
+    original.arguments.push(
+      u.parseExpression(
+        'err => { if (err) { reject(err); } else { resolve(); } }',
+      ),
+    );
+    path.replaceWith(
+      u.awaitExpression(
+        u.expression('new Promise((resolve, reject) => {$ORIGINAL})', {
+          $ORIGINAL: u.expressionStatement(original),
+        }),
+      ),
+    );
+    return true;
+  }
 
   const data = path.scope.generateUidIdentifier('data');
-  const args = [u.identifier('err')];
+  const { node } = declPath;
+  const { declarations } = node;
+  const { id } = declarations[0];
+
   let newId!: u.Node;
   if (u.isObjectPattern(id)) {
     for (const property of id.properties) {
-      if (u.isRestElement(property)) {
-        continue;
+      let param!: FunctionParameter;
+      if (u.isObjectProperty(property)) {
+        const { key } = property;
+        if (!isFunctionParameter(key)) {
+          throw new EscapinSyntaxError('Unsupported type', id, state);
+        }
+        param = key;
+        u.replace(
+          declPath.parentPath,
+          param,
+          u.memberExpression(data, param),
+          path =>
+            path.isObjectProperty() ||
+            path.isMemberExpression() ||
+            path.isFunction(node),
+        );
+      } else if (u.isRestElement(property)) {
+        param = property;
       }
-      const { key } = property;
-      if (!u.isIdentifier(key)) {
-        continue;
-      }
-      args.push(key);
-      u.replace(
-        path.parentPath,
-        key,
-        u.memberExpression(data, key),
-        path =>
-          path.isObjectProperty() ||
-          path.isMemberExpression() ||
-          path.isFunction(node),
-      );
+      args.push(param);
     }
     newId = u.objectExpression(
       id.properties.map(prop =>
@@ -73,35 +88,36 @@ export function fetchErrorFirstCallback(
     );
   } else if (u.isIdentifier(id)) {
     args.push(id);
-    u.replace(path.parentPath, id, data);
+    u.replace(declPath.parentPath, id, data);
   } else {
     throw new EscapinSyntaxError('Unsupported type', id, state);
   }
   declarations[0].id = data;
-  const callback = u.arrowFunctionExpression(
-    args,
-    u.blockStatement(
-      u.statements('if (err) { reject(err); } else { resolve($DATA); }', {
-        $DATA: newId || id,
-      }),
+
+  original.arguments.push(
+    u.arrowFunctionExpression(
+      args,
+      u.blockStatement(
+        u.statements('if (err) { reject(err); } else { resolve($DATA); }', {
+          $DATA: newId || id,
+        }),
+      ),
     ),
   );
-  init.arguments.push(callback);
-
-  declarations[0].init = u.awaitExpression(
-    u.expression('new Promise((resolve, reject) => {$INIT})', {
-      $INIT: u.expressionStatement(init),
+  const modified = u.awaitExpression(
+    u.expression('new Promise((resolve, reject) => {$ORIGINAL})', {
+      $ORIGINAL: u.expressionStatement(original),
     }),
   );
-
+  path.replaceWith(modified);
   if (
     !u.test(
-      path.parentPath,
+      declPath.parentPath,
       path => u.equals(path.node, data),
       path => path.node === node,
     )
   ) {
-    path.replaceWith(u.expressionStatement(declarations[0].init));
+    declPath.replaceWith(u.expressionStatement(modified));
   }
   return true;
 }

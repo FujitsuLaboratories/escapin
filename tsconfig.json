@@ -16,7 +16,6 @@
     "noEmitHelpers": true,
     "importHelpers": true,
     "types": ["node"],
-    "typeRoots": ["@types"],
     "esModuleInterop": true,
     "resolveJsonModule": true
   },

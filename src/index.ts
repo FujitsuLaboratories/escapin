@@ -24,7 +24,7 @@ const DEFAULT_OUTPUT_DIR = 'build';
 const DEFAULT_STORAGE = 'table';
 const DEFAULT_HTTP_CLIENT = 'axios';
 const SERVERLESS_YML = 'serverless.yml';
-export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
+export const EXTENSIONS = ['.js', '.mjs', '.jsx', '.ts'];
 
 export class Escapin {
   public id: string;

@@ -1,9 +1,10 @@
 import { Visitor } from '@babel/traverse';
 import { commandSync } from 'execa';
 import * as fs from 'fs';
-import { join } from 'path';
+import path from 'path';
 import ts from 'typescript';
 import { TypeDictionary } from '../../functionTypes';
+import { EXTENSIONS } from '../..';
 import { BaseState } from '../../state';
 import { errorFirstCallback } from '../../types';
 import { getLatestVersion } from '../../util';
@@ -15,28 +16,31 @@ const visitor: Visitor<BaseState> = {
     const { escapin } = state;
     const { output_dir } = escapin.config;
 
-    escapin.save();
-
-    if (!fs.existsSync(`${output_dir}/node_modules`)) {
-      const { dependencies, devDependencies } = escapin.packageJson;
-      const modules = [
-        ...Object.keys(dependencies),
-        ...Object.keys(devDependencies),
-      ];
-
-      getTypings(modules).forEach(typing => {
-        devDependencies[typing] = getLatestVersion(typing);
-      });
-
-      escapin.savePackageJson();
-
-      commandSync('npm install', {
-        cwd: output_dir,
-        stdout: process.stdout,
-      });
+    if (fs.existsSync(`${output_dir}/node_modules`)) {
+      path.skip();
+      return;
     }
 
-    checkFunctionTypes(escapin.types, state.filename, output_dir);
+    escapin.save();
+
+    const { dependencies, devDependencies } = escapin.packageJson;
+    const modules = [
+      ...Object.keys(dependencies),
+      ...Object.keys(devDependencies),
+    ];
+
+    getTypings(modules).forEach(typing => {
+      devDependencies[typing] = getLatestVersion(typing);
+    });
+
+    escapin.savePackageJson();
+
+    commandSync('npm install', {
+      cwd: output_dir,
+      stdout: process.stdout,
+    });
+
+    checkFunctionTypes(escapin.types, output_dir);
 
     if (process.env.NODE_ENV === 'test') {
       console.log(state.filename);
@@ -49,14 +53,14 @@ const visitor: Visitor<BaseState> = {
   },
 };
 
-function checkFunctionTypes(
-  types: TypeDictionary,
-  filename: string,
-  output_dir: string,
-): void {
-  const program = ts.createProgram([join(output_dir, filename)], {
+function checkFunctionTypes(types: TypeDictionary, output_dir: string): void {
+  const names = fs
+    .readdirSync(output_dir)
+    .filter(name => EXTENSIONS.includes(path.extname(name)))
+    .map(name => path.join(output_dir, name));
+  const program = ts.createProgram(names, {
     allowJs: true,
-    typeRoots: [join(output_dir, 'node_modules')],
+    typeRoots: [path.join(output_dir, 'node_modules')],
   });
   const checker = program.getTypeChecker();
   program.getSourceFiles().forEach(sourceFile => {

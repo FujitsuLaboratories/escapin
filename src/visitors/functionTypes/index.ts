@@ -11,6 +11,10 @@ import { getLatestVersion } from '../../util';
 import { getTypings } from './typings';
 import { newVisit } from './visit';
 
+const DEFAULT_OPTIONS = {
+  allowJs: true,
+};
+
 const visitor: Visitor<BaseState> = {
   Program(path, state): void {
     const { escapin } = state;
@@ -58,10 +62,11 @@ function checkFunctionTypes(types: TypeDictionary, output_dir: string): void {
     .readdirSync(output_dir)
     .filter(name => EXTENSIONS.includes(path.extname(name)))
     .map(name => path.join(output_dir, name));
-  const program = ts.createProgram(names, {
-    allowJs: true,
-    typeRoots: [path.join(output_dir, 'node_modules')],
-  });
+  const configPath = path.join(output_dir, 'tsconfig.json');
+  const config = fs.existsSync(configPath)
+    ? JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    : DEFAULT_OPTIONS;
+  const program = ts.createProgram(names, config);
   const checker = program.getTypeChecker();
   program.getSourceFiles().forEach(sourceFile => {
     if (!sourceFile.isDeclarationFile) {

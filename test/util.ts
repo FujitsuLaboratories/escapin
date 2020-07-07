@@ -16,10 +16,10 @@ import * as u from '../src/util';
 import { Escapin } from '../src';
 import { Visitor } from '@babel/traverse';
 
-export function initialize(): Escapin {
+export function initialize(basePath: string): Escapin {
   const state = new BaseState();
   state.filename = 'dummy.js';
-  const escapin = new Escapin(process.cwd());
+  const escapin = new Escapin(basePath);
   escapin.states = {
     'dummy.js': state,
   };
@@ -29,7 +29,7 @@ export function initialize(): Escapin {
     name: 'test',
     platform: 'aws',
     default_storage: 'table',
-    output_dir: `${__dirname}/${uuid()}`,
+    output_dir: `${basePath}/build`,
     http_client: 'axios',
   };
   escapin.apiSpec = {
@@ -81,7 +81,11 @@ export function transpile(
   actual: u.Node;
   expected: u.Node;
 } {
-  const escapin = initialize();
+  const dir = `${__dirname}/${uuid()}`;
+  if (!fs.existsSync(dir)) {
+    mkdirp(dir);
+  }
+  const escapin = initialize(dir);
   if (config) {
     for (const key in config) {
       escapin.config[key] = config[key];
@@ -112,6 +116,6 @@ export function transpile(
 
     return { actual: u.purify(astActual), expected: u.purify(astExpected) };
   } finally {
-    rimraf(escapin.config.output_dir);
+    rimraf(dir);
   }
 }

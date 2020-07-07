@@ -55,7 +55,7 @@ export class Escapin {
       for (const filename in this.states) {
         u.traverse(visitor, this.states[filename]);
       }
-      this.updateJSFiles();
+      this.updatePrograms();
     }
 
     this.save();
@@ -66,14 +66,15 @@ export class Escapin {
     this.loadPackageJson();
     this.loadAPISpec();
     this.loadServerlessConfig();
-    this.loadJSFiles();
+    this.loadPrograms();
   }
 
   public save(): void {
     this.savePackageJson();
     this.saveAPISpec();
     this.saveServerlessConfig();
-    this.saveJSFiles();
+    this.savePrograms();
+    this.copyRestOfFiles();
   }
 
   private loadConfig(): void {
@@ -184,40 +185,23 @@ export class Escapin {
     }
   }
 
-  private loadJSFilesRecursive(current: string, ig: Ignore): void {
-    const names = fs.readdirSync(current, 'utf8');
-    for (const name of names) {
-      const path = Path.join(current, name);
-      const relPath = Path.relative(this.basePath, path);
-      if (ig.ignores(relPath)) {
-        continue;
-      }
-      const stat = fs.lstatSync(path);
-      if (stat.isDirectory()) {
-        this.loadJSFilesRecursive(path, ig);
-      } else if (stat.isFile() && EXTENSIONS.includes(Path.extname(name))) {
-        const filename = Path.relative(this.basePath, path);
+  private loadPrograms(): void {
+    this.applyToFiles(
+      src => EXTENSIONS.includes(Path.extname(src)),
+      src => {
+        const filename = Path.relative(this.basePath, src);
         console.log(`loading JS file ${filename}`);
         const state = new BaseState();
         state.escapin = this;
         state.filename = filename;
-        state.code = fs.readFileSync(path, 'utf8');
+        state.code = fs.readFileSync(src, 'utf8');
         state.ast = u.parse(state.code);
         this.states[filename] = state;
-      }
-    }
+      },
+    );
   }
 
-  private loadJSFiles(): void {
-    const ignoreFile = Path.join(this.basePath, this.ignorePath);
-    const ig = ignore();
-    if (fs.existsSync(ignoreFile)) {
-      ig.add(fs.readFileSync(ignoreFile, 'utf8'));
-    }
-    this.loadJSFilesRecursive(this.basePath, ig);
-  }
-
-  private saveJSFiles(): void {
+  private savePrograms(): void {
     for (const filename in this.states) {
       const state = this.states[filename];
       state.code = u.generate(state.ast);
@@ -226,13 +210,26 @@ export class Escapin {
     }
   }
 
-  private updateJSFiles(): void {
+  private updatePrograms(): void {
     for (const filename in this.states) {
       const state = this.states[filename];
       u.traverse(finalize, state);
       state.code = u.generate(state.ast);
       state.ast = u.parse(state.code);
     }
+  }
+
+  private copyRestOfFiles(): void {
+    this.applyToFiles(
+      (src, dest) => !fs.existsSync(dest),
+      (src, dest) => {
+        const dir = Path.dirname(dest);
+        if (!fs.existsSync(dir)) {
+          mkdirp(dir);
+        }
+        fs.copyFileSync(src, dest);
+      },
+    );
   }
 
   private loadServerlessConfig(): void {
@@ -281,5 +278,40 @@ export class Escapin {
   private saveServerlessConfig(): void {
     const serverlessFile = Path.join(this.config.output_dir, SERVERLESS_YML);
     fs.writeFileSync(serverlessFile, dumpYaml(this.serverlessConfig), 'utf8');
+  }
+
+  private forEachFile(
+    current: string,
+    ig: Ignore,
+    where: (src: string, dest: string) => boolean,
+    apply: (src: string, dest: string) => void,
+  ): void {
+    const names = fs.readdirSync(current, 'utf8');
+    for (const name of names) {
+      const src = Path.join(current, name);
+      const relPath = Path.relative(this.basePath, src);
+      if (ig.ignores(relPath)) {
+        continue;
+      }
+      const stat = fs.lstatSync(src);
+      const dest = Path.join(this.config.output_dir, relPath);
+      if (stat.isDirectory()) {
+        this.forEachFile(src, ig, where, apply);
+      } else if (stat.isFile() && where(src, dest)) {
+        apply(src, dest);
+      }
+    }
+  }
+
+  private applyToFiles(
+    where: (src: string, dest: string) => boolean,
+    apply: (src: string, dest: string) => void,
+  ): void {
+    const ignoreFile = Path.join(this.basePath, this.ignorePath);
+    const ig = ignore();
+    if (fs.existsSync(ignoreFile)) {
+      ig.add(fs.readFileSync(ignoreFile, 'utf8'));
+    }
+    this.forEachFile(this.basePath, ig, where, apply);
   }
 }

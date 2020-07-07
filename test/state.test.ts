@@ -5,7 +5,7 @@ import { BaseState } from '../src/state';
 import { initialize } from './util';
 
 describe('state', function () {
-  const escapin = initialize();
+  const escapin = initialize(process.cwd());
   const state = escapin.states['dummy.js'];
 
   describe('getPathInfo()', () => {

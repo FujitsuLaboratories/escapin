@@ -24,7 +24,10 @@ function doTranspileProcess(options: {
   const escapin = new Escapin(dir, ignorePath);
 
   try {
+    const start = Date.now();
     escapin.transpile();
+    const elapsed = Date.now() - start;
+    console.log(`elapsed: ${elapsed} [ms]`);
   } catch (err) {
     console.error(err);
     // eslint-disable-next-line no-process-exit

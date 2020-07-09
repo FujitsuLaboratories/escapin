@@ -206,6 +206,10 @@ export class Escapin {
       const state = this.states[filename];
       state.code = u.generate(state.ast);
       const path = Path.join(this.config.output_dir, filename);
+      const dir = Path.dirname(path);
+      if (!fs.existsSync(dir)) {
+        mkdirp(dir);
+      }
       fs.writeFileSync(path, state.code, 'utf8');
     }
   }

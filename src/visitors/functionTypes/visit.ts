@@ -119,7 +119,6 @@ export function newVisit(
         });
         names = uniq(names);
 
-        console.log(names);
         if (isErrorFirstCallback(signature)) {
           types.put(errorFirstCallback(...names));
         } else if (isGeneralCallback(signature)) {

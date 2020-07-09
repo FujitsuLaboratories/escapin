@@ -19,7 +19,7 @@ const visitor: Visitor<BaseState> = {
       return;
     }
     const params = callbackPath.get('params') as u.NodePath[];
-    if (!u.isErrorParam(params[0].node)) {
+    if (!u.isErrorParam(params[0]?.node)) {
       return;
     }
     const errorParam = params.shift() as u.NodePath<u.Identifier>;

@@ -41,13 +41,11 @@ const visitor: Visitor<BaseState> = {
 
     commandSync('npm install', {
       cwd: output_dir,
-      stdout: process.stdout,
     });
 
     checkFunctionTypes(escapin.types, output_dir);
 
     if (process.env.NODE_ENV === 'test') {
-      console.log(state.filename);
       for (const entry of escapin.types.getAll()) {
         console.log(entry);
       }

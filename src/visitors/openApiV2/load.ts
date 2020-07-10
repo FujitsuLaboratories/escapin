@@ -22,10 +22,8 @@ export function loadOpenApiV2(
       cleanupNeeded = true;
     } else {
       resolved = state.resolvePath(uri);
-      if (resolved === undefined) {
-        throw new Error(`${uri} not found.`);
-      } else if (!fs.existsSync(resolved)) {
-        throw new Error(`${resolved} not found.`);
+      if (resolved === undefined || !fs.existsSync(resolved)) {
+        return null;
       }
     }
     spec = deasyncPromise(dereference(resolved));
@@ -33,18 +31,8 @@ export function loadOpenApiV2(
       rimraf(resolved);
     }
   } catch (err) {
-    if (state.hasDependency(uri)) {
-      console.log(`${uri} is a module.`);
-    }
-    const index = uri.lastIndexOf('/');
-    const actualUri = index > 0 ? uri.substring(0, uri.lastIndexOf('/')) : uri;
-    if (state.hasDependency(actualUri)) {
-      console.log(`${actualUri} is a module.`);
-    } else if (fs.existsSync(actualUri)) {
-      console.log(`${actualUri} is a local module.`);
-    } else {
-      throw err;
-    }
+    console.error(err);
+    return null;
   }
   return spec;
 }

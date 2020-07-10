@@ -24,7 +24,15 @@ const DEFAULT_OUTPUT_DIR = 'build';
 const DEFAULT_STORAGE = 'table';
 const DEFAULT_HTTP_CLIENT = 'axios';
 const SERVERLESS_YML = 'serverless.yml';
-export const EXTENSIONS = ['.js', '.mjs', '.jsx', '.ts'];
+export const EXTENSIONS = [
+  '.js',
+  '.mjs',
+  '.jsx',
+  '.ts',
+  '.d.ts',
+  'tsx',
+  '.node',
+];
 
 export class Escapin {
   public id: string;
@@ -121,9 +129,10 @@ export class Escapin {
     moduleName: string,
     location: 'dependencies' | 'devDependencies' = 'dependencies',
   ): void {
-    this.packageJson[location][moduleName] = `^${u.getLatestVersion(
-      moduleName,
-    )}`;
+    const deps = this.packageJson[location];
+    if (deps !== undefined) {
+      deps[moduleName] = `^${u.getLatestVersion(moduleName)}`;
+    }
   }
 
   public savePackageJson(): void {

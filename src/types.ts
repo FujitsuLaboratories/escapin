@@ -23,8 +23,8 @@ export interface Credential {
 export interface PackageJson {
   main?: string;
   scripts?: { [script: string]: string };
-  dependencies: { [moduleName: string]: string };
-  devDependencies: { [moduleName: string]: string };
+  dependencies?: { [moduleName: string]: string };
+  devDependencies?: { [moduleName: string]: string };
   peerDependencies?: { [moduleName: string]: string };
   optionalDependencies?: { [moduleName: string]: string };
   bundledDependencies?: string[];

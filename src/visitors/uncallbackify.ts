@@ -30,15 +30,19 @@ const visitor: Visitor<BaseState> = {
     for (const stmtPath of blockPath) {
       if (stmtPath.isIfStatement() && u.includes(stmtPath, errorParam.node)) {
         const stmt = stmtPath.node;
-        const result = u.evalSnippet(stmt.test, {
-          [errorParam.node.name]: new Error(),
-        });
-        if (result) {
-          alternate.push(...u.toStatements(stmt.consequent));
-          if (stmt.alternate !== null) {
-            consequent.push(...u.toStatements(stmt.alternate));
+        try {
+          const result = u.evalSnippet(stmt.test, {
+            [errorParam.node.name]: new Error(),
+          });
+          if (result) {
+            alternate.push(...u.toStatements(stmt.consequent));
+            if (stmt.alternate !== null) {
+              consequent.push(...u.toStatements(stmt.alternate));
+            }
+          } else {
+            throw new Error('result is undefined');
           }
-        } else {
+        } catch (err) {
           consequent.push(...u.toStatements(stmt.consequent));
           if (stmt.alternate !== null) {
             alternate.push(...u.toStatements(stmt.alternate));

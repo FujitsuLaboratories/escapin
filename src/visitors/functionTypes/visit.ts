@@ -47,6 +47,12 @@ export function newVisit(
       return false;
     }
     const firstParam = paramTypeNode.parameters[0];
+    if (firstParam === undefined) {
+      if (process.env.NODE_ENV === 'test') {
+        console.log('firstParam is undefined');
+      }
+      return false;
+    }
     const firstParamSymbol = checker.getSymbolAtLocation(firstParam.name);
     if (firstParamSymbol === undefined) {
       if (process.env.NODE_ENV === 'test') {

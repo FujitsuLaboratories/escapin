@@ -27,7 +27,8 @@ const visitor: Visitor<BaseState> = {
 
     escapin.save();
 
-    const { dependencies, devDependencies } = escapin.packageJson;
+    const dependencies = escapin.packageJson.dependencies || new Object();
+    const devDependencies = escapin.packageJson.devDependencies || new Object();
     const modules = [
       ...Object.keys(dependencies),
       ...Object.keys(devDependencies),

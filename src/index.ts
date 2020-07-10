@@ -121,9 +121,10 @@ export class Escapin {
     moduleName: string,
     location: 'dependencies' | 'devDependencies' = 'dependencies',
   ): void {
-    this.packageJson[location][moduleName] = `^${u.getLatestVersion(
-      moduleName,
-    )}`;
+    const deps = this.packageJson[location];
+    if (deps !== undefined) {
+      deps[moduleName] = `^${u.getLatestVersion(moduleName)}`;
+    }
   }
 
   public savePackageJson(): void {

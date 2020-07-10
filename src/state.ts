@@ -114,6 +114,7 @@ export class BaseState {
     return (
       moduleName in
       Object.assign(
+        new Object(),
         dependencies,
         devDependencies,
         peerDependencies,

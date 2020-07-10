@@ -4,11 +4,9 @@ import fs from 'fs';
 import module from 'module';
 import { OpenAPIV2 } from 'openapi-types';
 import Path from 'path';
-import { Escapin } from '.';
+import { Escapin, EXTENSIONS } from '.';
 import { OneOrMore, PathInfo } from './types';
 import * as u from './util';
-
-export const EXTENSIONS = ['.js', '.mjs', '.jsx'];
 
 export class BaseState {
   public escapin!: Escapin;

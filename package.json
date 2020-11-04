@@ -1,6 +1,6 @@
 {
   "name": "escapin",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "Escapin the Transpiler for Escaping from Complicated Usage of Cloud Services and APIs",
   "main": "bin/index.js",
   "engines": {

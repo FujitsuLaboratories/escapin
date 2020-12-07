@@ -53,7 +53,7 @@
     "execa": "^5.0.0",
     "https-proxy-agent": "^5.0.0",
     "ignore": "^5.1.8",
-    "js-yaml": "^3.14.0",
+    "js-yaml": "^3.14.1",
     "lodash": "^4.17.20",
     "mkdirp": "^1.0.4",
     "node-fetch": "^2.6.1",

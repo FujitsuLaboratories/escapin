@@ -62,7 +62,7 @@
     "rimraf": "^3.0.2",
     "swagger-parser": "^10.0.2",
     "typescript": "^3.9.7",
-    "uuid": "^8.3.1",
+    "uuid": "^8.3.2",
     "validator": "^13.5.1"
   },
   "devDependencies": {

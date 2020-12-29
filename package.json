@@ -45,7 +45,7 @@
     "@babel/template": "^7.12.7",
     "@babel/traverse": "^7.12.10",
     "@babel/types": "^7.12.10",
-    "boxen": "^4.2.0",
+    "boxen": "^5.0.0",
     "chalk": "^4.1.0",
     "commander": "^6.2.1",
     "cosmiconfig": "^7.0.0",

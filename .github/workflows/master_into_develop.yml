@@ -11,7 +11,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: merge master into develop
-        uses: robotology/gh-action-nightly-merge@v1.3.1
+        uses: robotology/gh-action-nightly-merge@v1.3.2
         with:
           stable_branch: master
           development_branch: develop

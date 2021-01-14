@@ -81,7 +81,7 @@
     "@types/mocha": "8.2.0",
     "@types/ncp": "2.0.4",
     "@types/node": "13.13.5",
-    "@types/node-fetch": "2.5.7",
+    "@types/node-fetch": "2.5.8",
     "@types/prettier": "2.1.5",
     "@types/rimraf": "3.0.0",
     "@types/uuid": "8.3.0",

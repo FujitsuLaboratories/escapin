@@ -47,7 +47,7 @@
     "@babel/types": "^7.12.10",
     "boxen": "^5.0.0",
     "chalk": "^4.1.0",
-    "commander": "^6.2.1",
+    "commander": "^7.0.0",
     "cosmiconfig": "^7.0.0",
     "deasync": "^0.1.21",
     "execa": "^5.0.0",

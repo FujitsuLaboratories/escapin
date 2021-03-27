@@ -80,7 +80,7 @@
     "@types/mkdirp": "1.0.1",
     "@types/mocha": "8.2.2",
     "@types/ncp": "2.0.4",
-    "@types/node": "13.13.47",
+    "@types/node": "13.13.48",
     "@types/node-fetch": "2.5.8",
     "@types/prettier": "2.1.5",
     "@types/rimraf": "3.0.0",

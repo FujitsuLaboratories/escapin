@@ -46,7 +46,7 @@
     "@babel/traverse": "^7.12.10",
     "@babel/types": "^7.12.10",
     "boxen": "^5.0.1",
-    "chalk": "^4.1.0",
+    "chalk": "^4.1.1",
     "commander": "^7.2.0",
     "cosmiconfig": "^7.0.0",
     "deasync": "^0.1.21",

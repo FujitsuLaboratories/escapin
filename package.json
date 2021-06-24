@@ -58,7 +58,7 @@
     "mkdirp": "^1.0.4",
     "node-fetch": "^2.6.1",
     "openapi-types": "^8.0.0",
-    "package-json": "^6.5.0",
+    "package-json": "^7.0.0",
     "rimraf": "^3.0.2",
     "swagger-parser": "^10.0.2",
     "typescript": "^3.9.10",

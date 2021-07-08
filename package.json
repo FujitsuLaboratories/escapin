@@ -71,7 +71,7 @@
     "@types/babel__generator": "7.6.2",
     "@types/babel__template": "7.4.0",
     "@types/babel__traverse": "7.0.13",
-    "@types/chai": "4.2.18",
+    "@types/chai": "4.2.21",
     "@types/deasync": "0.1.1",
     "@types/eslint": "7.2.13",
     "@types/eslint-plugin-prettier": "3.1.0",

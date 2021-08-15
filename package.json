@@ -60,7 +60,7 @@
     "openapi-types": "^8.0.0",
     "package-json": "^7.0.0",
     "rimraf": "^3.0.2",
-    "swagger-parser": "^10.0.2",
+    "swagger-parser": "^10.0.3",
     "typescript": "^3.9.10",
     "uuid": "^8.3.2",
     "validator": "^13.6.0"
